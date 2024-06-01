@@ -1,0 +1,150 @@
+{% extends 'master_teacher.html' %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+
+<h1 style="font-size: 20px;" class="slide-in-left">Teaching Modules</h1>
+<hr>
+
+
+
+<p class="slide-in-left">Instruments</p>
+
+<div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative;">
+    <div class="button-wrapper">
+        {% for instrument_major in instrument_majors %}
+        <button onclick="filterInstruments(this, '{{ instrument_major }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+            {{ instrument_major }}
+        </button>
+        {% endfor %}
+    </div>
+    <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
+</div>
+
+<br><br>
+
+{% for instrument in instruments %}
+    {% if instrument.instrument_major_name %}
+        {% if instrument.instrument_minor_name %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}" data-minor="{{ instrument.instrument_minor_name }}">
+                <p>
+                    <i class="fa fa-chevron-right" aria-hidden="true" style="color: rgba(23, 23, 117, 0.526);"></i> <!-- Arrow icon -->
+                    {{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}
+                </p>
+                
+                <div class="student-details-container slide-in-left">
+                    {% for bookinstrument in instrument.bookinstrument_set.all %}
+    {% with book=bookinstrument.bookID %}
+    <a href="{% url 'student_progress' instrument_minor=instrument.instrument_minor_name instrument_major=instrument.instrument_major_name book_id=book.id %}">
+
+            <div class="book-container" style="background-color: white;">
+                <ul>
+                    <li style="margin-left: 10px;">{{ book.book }}</li>
+                </ul>
+                <div class="book-detail-container">
+                    <div class="book-detail-content">
+                        <!-- Book details will be populated here -->
+                    </div>
+                    <button class="close-detail-button">Close</button>
+                </div>
+            </div>
+        </a>
+    {% endwith %}
+{% empty %}
+    <div class="empty-message" style="cursor: default;">
+        No books associated with this instrument
+    </div>
+{% endfor %}
+
+                </div>
+                
+            </div>
+        {% else %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}">
+                <p>{{ instrument.instrument_major_name }}</p>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+<style>
+    .highlighted {
+        background-color: #5b7cfa !important; /* Highlight color on hover */
+        border-color: #5b7cfa; /* Change border color on hover */
+        color: #fff;
+    }
+
+    .highlighted li {
+        color: white;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .book-detail-container {
+        display: none;
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .close-detail-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 1010; /* Ensure the close button is above other elements */
+    }
+</style>
+
+<script>
+    window.addEventListener('load', function() {
+        // Filter by default when the page loads
+        filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
+        var firstButton = document.querySelector('.filter-buttons-container button');
+        if (firstButton) {
+            firstButton.classList.add('actives');
+        }
+    });
+
+    function filterInstruments(button, major) {
+        // Remove the 'actives' class from all buttons
+        var buttons = document.querySelectorAll('.filter-buttons-container button');
+        buttons.forEach(function(btn) {
+            btn.classList.remove('actives');
+        });
+
+        // Add the 'actives' class to the clicked button
+        if (button) {
+            button.classList.add('actives');
+        }
+
+        // Loop through all student boxes and show/hide based on the selected major name
+        var items = document.querySelectorAll('.student-box');
+        items.forEach(function(item) {
+            var itemMajor = item.getAttribute('data-major');
+            if (itemMajor === major) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<script src="{% static 'js/learning_modules.js' %}"></script>
+<script src="{% static 'js/accounts.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
+
+{% endblock %}

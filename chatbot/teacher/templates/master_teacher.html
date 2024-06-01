@@ -1,0 +1,115 @@
+
+{%load static%}
+
+{% load custom_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Teacher Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Update the link tag to point to your CSS file -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+
+
+    <style>
+        li, ul {
+            border-color: #32373d;
+        }
+
+    </style>
+</head>
+<body>
+
+    {% include 'loading_screen.html' %}
+
+
+    <div class="wrapper d-flex align-items-stretch " style="font-size: small; ">
+        <nav id="sidebar" class="collapsed" style="position: fixed;" >
+            <div class="custom-menu">
+                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;">
+                </button>
+            </div>
+            <div class="img bg-wrap text-center py-4" style="background-color: #32373d !important;">
+                <div class="user-logo">
+                    <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
+                    <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
+                    <h3 style="font-size: small;"> 
+                        {% for group in request.user.groups.all %}
+                           You're a {{ group }}
+                        {% endfor %}
+                    </h3>
+                </div>
+            </div>
+
+
+            <ul class="list-unstyled components mb-5" style="padding-left: 0; " >
+                <li class="{% if request.path == '/teacher' %}active{% endif %}">
+                    <a href="{% url 'teacher' %}"  style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-home mr-3" ></span><span class="text"> Home</span></a>
+                </li>
+                
+                <li class = "{% if request.path == '/teacher/teaching-modules' %}active{% endif %} ">
+                    <a href="{% url 'teaching_modules' %}" style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
+                </li>
+                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                    <a href="" style="margin-left: 1px;" ><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Attendance</span></a>
+                </li>
+                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                    <a href="" style="margin-left: 1px;" ><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
+                </li>
+                <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
+                    <a href="" style="margin-left: 1px;">
+                        <span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span>
+                    </a>
+                </li>
+<!--                 
+                <li >
+                    <a href="#"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
+                </li>
+                <li  class="{% if request.path == '/administrator/activity/' %}active{% endif %} {% if request.path == '/administrator/activity/register-activity' %}active{% endif %} "  >
+                    <a href=""><span class="fa fa-pencil mr-3"></span><span class="text"> Activity</span></a>
+                </li>
+                <li class="{% if request.path == '/administrator/media/' %}active{% endif %} "  >
+                    <a href=""><span class="fa fa-camera mr-3"></span><span class="text"> Media</span></a>
+                </li> -->
+                <li style="position: absolute; bottom: 0; left: 0; width: 100%;">
+                    <a href="{% url 'logout' %}"><span class="fa fa-sign-out mr-3"></span><span class="text"> Sign Out</span></a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content  -->
+      
+        <div id="content" class="p-4 p-md-5 pt-5">
+
+            {% block content %}
+            <h3 class="mb-4">Dashboard</h3><hr>
+            <p>All content will be displayed here.</p>
+            
+            {% endblock %}
+        </div>
+
+
+
+    </div>
+
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+        // Toggle sidebar collapse
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+    </script>
+    
+</body>
+</html>

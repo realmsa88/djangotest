@@ -1,0 +1,45 @@
+{% extends 'master_admin.html' %}
+{% load static %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Dynamic Navbar - Django</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="home">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="about">About</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div id="dynamic-content">
+    <!-- Content will be loaded here -->
+</div>
+
+{% endblock %}
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        // Click event listeners for navbar links
+        $('#home').on('click', function(e) {
+            e.preventDefault();
+            $('#dynamic-content').html('<h2>Home Page Content</h2><p>Welcome to the Home Page!</p>');
+        });
+
+        $('#about').on('click', function(e) {
+            e.preventDefault();
+            $('#dynamic-content').html('<h2>About Page Content</h2><p>Learn more about us!</p>');
+        });
+
+        // Trigger the click event for the initial page load
+        $('#home').click();
+    });
+</script>

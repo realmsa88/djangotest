@@ -1,0 +1,227 @@
+{% extends 'master_admin.html' %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+
+<style>
+.highlighted {
+    background-color: #5b7cfa !important; /* Highlight color on hover */
+    border-color: #5b7cfa; /* Change border color on hover */
+    color: #fff;
+    
+}
+
+.highlighted li {
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
+
+.book-detail-container {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.close-detail-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 1010; /* Ensure the close button is above other elements */
+}
+</style>
+
+<h1 style="font-size: 20px;" class="slide-in-left">Learning Modules</h1>
+<hr>
+
+<p class="slide-in-left">Instruments</p>
+
+<div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative;">
+    <div class="button-wrapper">
+        {% for instrument in instruments %}
+        <button onclick="filterInstruments(this, '{{ instrument.instrument_major_name }}', '{{ instrument.instrument_minor_name }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+            {{ instrument.instrument_major_name }}
+        </button>
+        {% endfor %}
+    </div>
+    <!-- Position scrollbar inside the filter-buttons-container -->
+    <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
+</div>
+
+<br><br>
+
+<!-- learning_modules.html -->
+
+{% for instrument, books in instruments_with_books %}
+    {% if instrument.instrument_major_name %}
+        {% if instrument.instrument_minor_name %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}" data-minor="{{ instrument.instrument_minor_name }}">
+                <p>
+                    <i class="fa fa-chevron-right" aria-hidden="true" style="color: rgba(23, 23, 117, 0.526);"></i> <!-- Arrow icon -->
+                    {{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}
+                </p>
+                
+                <div class="student-details-container slide-in-left">
+                    {% for book in books %}
+                        <div class="book-container" data-book-id="{{ book.id }}" style="background-color: white;">
+                            <ul>
+                                <li style="margin-left: 10px;" >{{ book.book }}</li> <!-- Assuming Book model has an 'id' field for the book ID -->
+                            </ul>
+                            <div class="book-detail-container">
+                                <div class="book-detail-content">
+                                    <!-- Book details will be populated here -->
+                                </div>
+                                <button class="close-detail-button">Close</button>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-message" style="cursor: default;">
+                        No books associated with this instrument
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}">
+                <p>{{ instrument.instrument_major_name }}</p>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+<script>
+    window.addEventListener('load', function() {
+        // Filter by default when the page loads
+        filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
+        var firstButton = document.querySelector('.filter-buttons-container button');
+        if (firstButton) {
+            firstButton.classList.add('actives');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle book container click event and redirect to book detail page
+    function showBookDetail(bookContainer, bookId) {
+        // Get instrument major and minor names from the book container's parent (student-details-container)
+        const instrumentMajor = bookContainer.closest('.student-box').getAttribute('data-major');
+        const instrumentMinor = bookContainer.closest('.student-box').getAttribute('data-minor');
+
+        // Construct the URL for the book detail page
+        const url = `/administrator/modules/book_detail/${bookId}/${instrumentMinor}/${instrumentMajor}/`;
+
+
+        // Redirect to the book detail page
+        window.location.href = url;
+    }
+
+    // Add click event listeners to all book containers
+    const bookContainers = document.querySelectorAll('.book-container');
+    bookContainers.forEach(function(container) {
+        container.addEventListener('click', function() {
+            const bookId = this.getAttribute('data-book-id');
+            showBookDetail(this, bookId);
+        });
+    });
+
+    // Add click event listener to the close button
+    const closeDetailButtons = document.querySelectorAll('.close-detail-button');
+    closeDetailButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent triggering the parent click event
+            hideBookDetail();
+        });
+    });
+});
+
+    function filterInstruments(button, major) {
+        // Close all student boxes and reset positions
+        closeAllStudentBoxes();
+        resetAllBoxPositions();
+
+        // Remove active class from all buttons
+        var buttons = document.querySelectorAll('.filter-buttons-container button');
+        buttons.forEach(function(btn) {
+            btn.classList.remove('actives');
+        });
+
+        // Add active class to the clicked button
+        if (button) {
+            button.classList.add('actives');
+        }
+        
+        var items = document.querySelectorAll('.student-box');
+        items.forEach(function(item) {
+            var itemMajor = item.getAttribute('data-major');
+            var itemMinor = item.getAttribute('data-minor');
+            
+            if (itemMajor === major || itemMinor === major) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function closeAllStudentBoxes() {
+        var detailsContainers = document.querySelectorAll('.student-details-container');
+        detailsContainers.forEach(function(container) {
+            container.style.display = 'none';
+        });
+    }
+
+    function resetAllBoxPositions() {
+        var studentBoxes = document.querySelectorAll('.student-box');
+        studentBoxes.forEach(function(box) {
+            box.style.top = '0';
+        });
+    }
+
+    var scrollbar = document.querySelector('.scrollbar');
+    var buttonWrapper = document.querySelector('.button-wrapper');
+
+    // Variables to keep track of initial mouse position and scroll position
+    var startX, startScrollLeft;
+
+    // Function to handle mouse down event on the scrollbar
+    scrollbar.addEventListener('mousedown', function(e) {
+        startX = e.clientX;
+        startScrollLeft = buttonWrapper.scrollLeft;
+
+        // Add mousemove and mouseup event listeners to the document
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+
+    // Function to handle mouse move event on the document
+    function onMouseMove(e) {
+        var deltaX = e.clientX - startX;
+        buttonWrapper.scrollLeft = startScrollLeft - deltaX;
+    }
+
+    // Function to handle mouse up event on the document
+    function onMouseUp() {
+        // Remove mousemove and mouseup event listeners from the document
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+</script>
+
+<script src="{% static 'js/learning_modules.js' %}"></script>
+<script src="{% static 'js/accounts.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
+
+{% endblock %}

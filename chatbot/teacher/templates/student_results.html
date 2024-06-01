@@ -1,0 +1,232 @@
+{% extends "master_teacher.html" %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/student_results.css' %}">
+<link rel="stylesheet" href="{% static 'css/star-rating.css' %}"> <!-- Add the star rating CSS -->
+
+<style>
+    
+    /* Add this CSS to your existing stylesheet or a new one */
+.checked-yellow {
+    color: rgba(255, 217, 0, 0.814);
+}
+
+.star-rating input[type="radio"] + label {
+            font-weight: normal; /* Default font weight for all labels */
+            color: black;
+        }
+
+        .star-rating input[type="radio"]#star3 + label,
+        .star-rating input[type="radio"]#star4 + label {
+            font-weight: normal; /* Bold font weight for 3 stars and 4 stars labels */
+            color: black;
+        }
+
+</style>
+
+<h1 style="font-size: 20px;" class="slide-in-left">Grading Student Results</h1>
+
+<hr class="slide-in">
+
+<div class="student-info">
+    <p>{{ student.studentName }} -</p>
+    <p> Book {{ book_id }} -</p>
+    <p>{{ instrument_minor_name }} {{ instrument_major_name }}</p>
+</div>
+
+<hr>
+
+{% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="main-container progress-main-container slide-in" style="margin-top: 50px; margin-bottom: 20px;">
+    <div class="progress-background-title">Student Academic Progress</div>
+    <div class="progress-container">
+        <progress id="progress1" value="{{ practice_completion_percentage }}" max="100" style="width: 95%;"></progress>
+        <p style="margin-left: 20px; color: black;">Practice : {{ practice_completion_percentage }}% Completed</p>
+    </div>
+    <div class="progress-container">
+        <progress max="100" value="{{ repertoire_completion_percentage }}" style="width: 95%;">{{ repertoire_completion_percentage }}%</progress>
+        <p style="margin-left: 20px; color: black;">Repertoire : {{ repertoire_completion_percentage }}% Completed</p>
+    </div>
+   
+</div>
+
+<div class="main-container slide-in-left" style="margin-top: 60px;">
+
+    <p class="background-title">Student Progress</p>
+    <div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative; margin-top: 20px;">
+        <div class="button-wrapper">
+            <button onclick="filterInstruments(this, 'All')" class="active"
+                    style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+                All
+            </button>
+            {% for module_type in module_types %}
+                <button onclick="filterInstruments(this, '{{ module_type }}')"
+                        style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+                    {{ module_type }}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr>
+
+    {% for module, results in results_by_module.items %}
+    <div class="module-header-container module-header-{{ forloop.counter }}">
+        <div class="module-header">Module {{ forloop.counter }}</div>
+        <div class="module-header" style="margin-right: 630px;">Description</div>
+    </div>
+        <div class="module-input-container">
+            <input type="text" class="module-name" value="{{ module.module_name }}" readonly>
+            <input class="module-description" value="{{ module.description }}" readonly>
+            <input type="text" value="{{ module.module_type }}" readonly style="visibility:hidden; width: 0;">
+            <div class="module-result" style="margin-right: 40px;">
+                {% if results %}
+                    {% for result in results %}
+                        {% if result|add:0 == 3 %}
+                            <div class="star-rating">
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                               
+                                <p style="font-size: 14px;">Satisfactory</p>
+                            </div>
+                        {% elif result|add:0 == 4 %}
+                            <div class="star-rating">
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <p style="font-size: 14px;">Good</p>
+                            </div>
+                        {% elif result|add:0 == 5 %}
+                            <div class="star-rating">
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <span class="fa fa-star checked-yellow"></span>
+                                <p style="font-size: 14px;">Excellent</p>
+                            </div>
+                        {% else %}
+                            <p style="color: green; margin-top: 20px;"> {{ result }} </p>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p style="margin-bottom: -100px; display: inline;">No result available</p>
+                    <div class="icon-container"
+                         onclick="confirmUpdate(this, '{{ module.module_name }}', '{{ module.description }}', '{{ module.id }}')"
+                         data-username="{{ account.username }}" style="margin-left: 30px; border-color: #5b7cfa; display: inline; margin-top: 80px;">
+                        <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+        </div>
+    {% endfor %}  
+    <button style="background-color: red; color: white; border-radius: 5px; border: none; height: 40px;width:100px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">Print Report </button>  
+</div>
+
+<!-- Modal -->
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close" >&times;</span>
+        <div class="topic-background" style="background-color: #32373d; ">
+            <p style="color: white;  padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Update Result for <span id="module-name-modal"></span></p>
+        </div>
+        <p id="module-name-modal"></p>
+
+        <p>Description</p>
+        <p id="module-description-modal"></p>
+        <!--  -->
+        <form id="update-result-form" method="post" action="{% url 'update_student_result' student.studentName %}">
+            {% csrf_token %}
+            <input type="hidden" name="module_id" id="module-id-input">
+            <input type="hidden" name="student_name" value="{{ student.studentName }}">
+            <label for="result" style="font-weight: normal;color: black;">Result</label>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="result" value="5"><label for="star5" title="Excellent">5 stars</label>
+                <input type="radio" id="star4" name="result" value="4"><label for="star4" title="Good">4 stars</label>
+                <input type="radio" id="star3" name="result" value="3" checked><label for="star3" title="Satisfactory">3 stars</label>
+                <input type="radio" id="star2" name="result" value="2" disabled><label for="star2" title="Needs Improvement"></label>
+                <input type="radio" id="star1" name="result" value="1" disabled><label for="star1" title="Needs Improvement"></label>
+            </div>
+            <button type="submit" style="border-radius: 5px;background-color: #5b7cfa;color: white; border: none; width: 20%; height: 50%;margin-left: 200px;">Update</button>
+        </form>
+    </div>
+    
+<script>
+
+function filterInstruments(button, moduleType) {
+    var containers = document.querySelectorAll('.module-input-container');
+    var headers = document.querySelectorAll('.module-header-container');
+
+    if (moduleType === 'All') {
+        containers.forEach(function (container) {
+            container.style.display = 'flex';
+        });
+        headers.forEach(function (header) {
+            header.style.display = 'flex';
+        });
+    } else {
+        containers.forEach(function (container, index) {
+            var moduleInput = container.querySelector('input[type="text"][value="' + moduleType + '"]');
+            if (moduleInput) {
+                container.style.display = 'flex';
+                headers[index].style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+                headers[index].style.display = 'none';
+            }
+        });
+    }
+
+    document.querySelectorAll('.button-wrapper button').forEach(function (btn) {
+        btn.classList.remove('active');
+    });
+
+    button.classList.add('active');
+}
+
+document.querySelectorAll('.button-wrapper button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        filterInstruments(this, this.textContent.trim());
+    });
+});
+
+function confirmUpdate(iconContainer, moduleName, moduleDescription, moduleId) {
+    var modal = document.getElementById("myModal");
+    var span = document.getElementsByClassName("close")[0];
+
+    document.getElementById("module-name-modal").textContent = moduleName;
+    document.getElementById("module-description-modal").textContent = moduleDescription;
+    document.getElementById("module-id-input").value = moduleId;
+
+    modal.style.display = "block";
+
+    span.onclick = function () {
+        modal.style.display = "none";
+    };
+}
+
+
+</script>
+
+{% endblock %}
+

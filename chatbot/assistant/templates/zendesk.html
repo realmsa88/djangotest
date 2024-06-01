@@ -1,0 +1,58 @@
+{%load static%}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+   
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/zendesk.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome for icons -->
+    <!-- <script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=adc05c73-f935-4a9e-b0e0-f764cc5be2f8"></script> -->
+
+    <style>
+       
+    </style>
+</head>
+
+<body>
+
+    <!-- Chat Icon -->
+    <button id="chatIcon" type="button">
+        <i class="fas fa-comment"></i>
+    </button>
+
+    <!-- Chatbot Container -->
+    <div class="container mt-5" id="chat-container">
+        <div id="container-div">
+            <h3 class="text-message" style="font-size: medium;">
+                Jazz AI<i class="fas fa-robot" style="margin-left: 10px;"></i> 
+            </h3>
+        
+        </div>
+
+        <div class="chat-box" style="margin-top: 70px;">
+            <!-- Messages will be displayed here -->
+        </div>
+
+        <div class="form-group">
+            <form id="user-input-form" class="input-container">
+                {% csrf_token %}
+                <div style="position: relative;">
+                    <input type="text" name="user_input" id="user-input" class="form-control" placeholder="Ask something...">
+                    <button id="sendBtn" type="submit"><i class="fas fa-paper-plane fa-sm"></i></button> <!-- Icon for send button -->
+                </div>
+            </form>
+        </div>
+    </div>
+
+                
+<!-- Your JavaScript code -->
+<script src="{% static 'js/zendesk.js' %}"></script>
+
+
+</body>
+
+</html>

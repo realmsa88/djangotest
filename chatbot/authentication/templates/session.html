@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+<!-- Hidden alert message element -->
+<div id="session-expired" style="display: none;">{{ messages }}</div>
+
+<!-- Your HTML content here -->
+
+</body>
+
+<script>
+     document.addEventListener("DOMContentLoaded", function() {
+        // Get the current username from the hidden input
+        var currentUsername = document.getElementById("current-username").value;
+
+        // If the current username exists, display it in an alert message
+        if (currentUsername) {
+            alert("Welcome, " + currentUsername + "!");
+        }
+    });
+</script> 
+
+</html>

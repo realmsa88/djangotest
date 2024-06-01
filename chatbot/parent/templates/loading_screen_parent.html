@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        #loading-bar {
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px; /* Adjust height as needed */
+            background-color: #3498db; /* Loading bar color */
+            display: none;
+        }
+
+        .hidden-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="hidden-content">
+        <!-- Your content here -->
+        <p>This is hidden content</p>
+    </div>
+
+    <div id="loading-bar"></div>
+    
+</body>
+<script>
+    // JavaScript function to show the loading bar
+    function showLoadingBar() {
+        // Hide the content
+        document.querySelectorAll('.hidden-content').forEach(function(element) {
+            element.style.display = 'none';
+        });
+
+        // Display the loading bar
+        document.getElementById('loading-bar').style.display = 'block';
+    }
+
+    function hideLoadingBar() {
+        // Hide the loading bar
+        document.getElementById('loading-bar').style.display = 'none';
+
+        // Reveal the content
+        document.querySelectorAll('.hidden-content').forEach(function(element) {
+            element.style.display = 'block';
+        });
+    }
+
+    // Show loading bar when browser refresh is triggered
+    window.addEventListener('beforeunload', function() {
+        showLoadingBar();
+    });
+</script>
+</html>

@@ -1,0 +1,111 @@
+{% extends "master_admin.html" %}
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vertical Drawer Example</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .button-bar {
+    position: fixed;
+    top: 43%;
+    left: 35%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 2; /* Ensure the button is above the drawer */
+  }
+
+  .button {
+    background-color: #555;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    outline: none;
+    border-radius: 5px;
+  }
+
+  .drawer-container {
+    position: fixed;
+    top: 55%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    background-color: #fff;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1;
+    height: 0;
+    transition: height 0.3s ease;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .drawer-container.open {
+    height: auto;
+  }
+
+  .drawer-content {
+    display: none;
+  }
+
+  .drawer-container.open .drawer-content {
+    display: block;
+  }
+
+  .drawer-content p {
+    margin: 0; /* Remove default margin */
+    margin-top: 10px; /* Apply custom margin */
+  }
+</style>
+</head>
+<body>
+
+  {% include 'loading_screen.html' %}
+
+  <h1 style="font-size: 26px;" class="slide-in-left">Accounts List</h1>
+    
+    <hr class="slide-in">
+
+<div class="button-bar">
+  <button class="button" onclick="toggleDrawer('drawer1')">Toggle Drawer</button>
+</div>
+
+<div class="drawer-container" id="drawer1">
+  <div class="drawer-content">
+    <button class="button" onclick="toggleDrawer('drawer1')">Close Drawer</button>
+    <!-- Include the content of accounts_list.html here -->
+    {% include 'accounts_list.html' %}
+  </div>
+</div>
+
+<script>
+  function toggleDrawer(drawerId) {
+    var drawer = document.getElementById(drawerId);
+    drawer.classList.toggle("open");
+  }
+</script>
+
+</body>
+</html>
+{% endblock %}

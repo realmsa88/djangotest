@@ -1,0 +1,39 @@
+<div id="conversation">
+    {% for message in messages %}
+        <div>
+            <p>{{ message.message }}</p>
+            <small>From: {{ message.sender.username }} | Sent: {{ message.sent_at }}</small>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    function fetchNewMessages() {
+        var ticketId = "{{ ticket.id }}";
+        $.ajax({
+            url: "{% url 'fetch_new_messages' %}",
+            method: "GET",
+            data: { ticket_id: ticketId },
+            dataType: "json",
+            success: function(response) {
+                response.messages.forEach(function(message) {
+                    // Append new messages to the conversation display
+                    $("#conversation").append("<div><p>" + message.message + "</p><small>From: " + message.sender + " | Sent: " + message.sent_at + "</small></div>");
+                });
+                // After appending new messages, fetch again immediately
+                fetchNewMessages();
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching new messages:", error);
+                // Retry fetching new messages after a short delay
+                setTimeout(fetchNewMessages, 2000); // Retry every 2 seconds
+            }
+        });
+    }
+
+    // Start fetching new messages
+    // fetchNewMessages();
+});
+</script>

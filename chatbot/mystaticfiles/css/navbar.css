@@ -1,0 +1,35 @@
+/* Basic styling for the navbar */
+#navbar {
+    background-color: #fff;
+    color: black; 
+    border-radius: 5px;
+    border: 1px solid black; /* Add border property here */
+    overflow: hidden;
+    margin-left: auto;
+}
+
+
+
+.navbar-link {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.navbar-link:hover {
+    background-color: #ddd;
+}
+
+.navbar-link.active {
+    background-color: #32373d; /* Change to your desired active link color */
+    color: white; /* Change to your desired active link text color */
+}
+
+/* Container for dynamically loaded content */
+#content-container {
+    margin-top: 20px;
+}

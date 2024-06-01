@@ -1,0 +1,188 @@
+{% load static %}
+{% load custom_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Administrator Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <style>
+        li, ul, nav{
+            background-color:  ;
+        }
+
+        .a:hover {
+            background-color: #5bca32 !important;
+        }
+
+        .bg-wrap {
+            background-color: #5b7cfa !important;
+        }
+
+        .img.bg-wrap.text-center.py-4::after {
+            background-color: transparent;
+        }
+
+        /* Dropdown styles */
+        .dropdown-container {
+    display: none;
+    padding-left: 20px;
+    background-color: #5b7cfa !important; /* Set background color here */
+}
+
+.dropdown-container a {
+    /* Remove background color from here */
+    color: #333;
+}
+
+.dropdown-container a:hover {
+    background-color: #ddd;
+}
+
+
+        .dropdown-btn {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+      
+
+        /* Chevron rotation */
+        .chevron {
+            transition: transform 0.3s;
+        }
+
+        .dropdown-btn.active .chevron {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    {% include 'loading_screen.html' %}
+    <div class="wrapper d-flex align-items-stretch " style="font-size: small;">
+        <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #985bfa">
+            <div class="custom-menu">
+                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
+            </div>
+            <div class="img bg-wrap text-center py-4" style="background-color: #985bfa !important;">
+                <div class="user-logo">
+                    <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
+                    <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
+                    <h3 style="font-size: small;">
+                        {% for group in request.user.groups.all %}
+                           You're an {{ group }}
+                        {% endfor %}
+                    </h3>
+                </div>
+            </div>
+
+            <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #985bfa;">
+                <li class="{% if request.path == '/administrator/dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard' %}" style="margin-left: 0px;" onclick="showLoadingScreen()">
+                        <span class="fa fa-home mr-3"></span><span class="text"> Home</span>
+                    </a>
+                </li>
+
+                <li class="{% if request.path == '/administrator/accounts/' %}active{% endif %} {% if request.path == '/administrator/accounts/register' %}active{% endif %}">
+                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 0px;">
+                        <span class="fa fa-list mr-3"></span><span class="text"> Accounts Management</span>
+                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
+                    </a>
+                    <div class="dropdown-container" style="background-color: #5b7cfa;">
+                        <a href="{% url 'accounts' %}" onclick="showLoadingScreen()" >View Accounts</a>
+                        <a href="{% url 'register' %}" onclick="showLoadingScreen()">Register Account</a>
+                    </div>
+                </li>
+
+                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 1px;">
+                        <span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span>
+                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
+                    </a>
+                    <div class="dropdown-container">
+                        <a href="{% url 'student' %}" onclick="showLoadingScreen()">View Students</a>
+                        <a href="{% url 'register-student' %}" onclick="showLoadingScreen()">Register Student</a>
+                    </div>
+                </li>
+
+                <li class="{% if request.path == '/administrator/modules/' %}active{% endif %}">
+                    <a href="{% url 'modules' %}"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
+                </li>
+
+                <!-- <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
+                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 1px;">
+                        <span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span>
+                        <span class="fa fa-chevron-right chevron"></span>
+                    </a>
+                    <div class="dropdown-container">
+                        <a href="{% url 'modules' %}" onclick="showLoadingScreen()">View Modules</a>
+                        <a href="{% url 'add_module' %}" onclick="showLoadingScreen()">Add Module</a>
+                    </div>
+                </li> -->
+
+                <li>
+                    <a href="#"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
+                </li>
+
+                <li class="{% if request.path == '/administrator/activity/' %}active{% endif %} {% if request.path == '/administrator/activity/register-activity' %}active{% endif %}">
+                    <a href="javascript:void(0)" class="dropdown-btn"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span>
+                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
+                    </a>
+                    <div class="dropdown-container">
+                        <a href="{% url 'activity' %}" onclick="showLoadingScreen()">View Activities</a>
+                        <a href="{% url 'register-activity' %}" onclick="showLoadingScreen()">Register Activity</a>
+                    </div>
+                </li>
+
+                <li class="{% if request.path == '/administrator/media/' %}active{% endif %}">
+                    <a href="{% url 'media' %}"><span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span></a>
+                </li>
+
+                <li style="position: absolute; bottom: 0; left: 0; width: 100%;">
+                    <a href="{% url 'logout' %}"><span class="fa fa-sign-out mr-3"></span><span class="text"> Sign Out</span></a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content" class="p-4 p-md-5 pt-5">
+            {% block content %}
+            <h3 class="mb-4">Dashboard</h3><hr>
+            <p>All content will be displayed here.</p>
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        // Toggle sidebar collapse
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // Toggle dropdown menus
+        document.querySelectorAll('.dropdown-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                this.classList.toggle('active');
+                const dropdownContainer = this.nextElementSibling;
+                if (dropdownContainer.style.display === "block") {
+                    dropdownContainer.style.display = "none";
+                } else {
+                    dropdownContainer.style.display = "block";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

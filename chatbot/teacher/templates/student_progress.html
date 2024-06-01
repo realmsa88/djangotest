@@ -1,0 +1,133 @@
+{% extends "master_teacher.html" %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+
+<style>
+    .container {
+        border-radius: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        margin-top: 20px;
+        height: 130px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    .container:hover {
+        background-color: #5b7cfa;
+    }
+
+    .container:hover p {
+        color: white !important;
+    }
+
+    p {
+        color: black;
+        margin: 0;
+    }
+
+    .progress-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        background-color: #f3f3f3;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .progress-circle {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(rgb(0, 245, 110) {{ student.progress_percentage }}%, #adf {{ student.progress_percentage }}%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .progress-text {
+        position: absolute;
+        font-size: 16px;
+        font-weight: bold;
+        color: black;
+    }
+
+    .info p {
+        margin-left: 0;
+    }
+
+    .info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-right: 20px;
+    }
+
+    .date-progress {
+        display: flex;
+        align-items: center;
+        margin-left: 20px;
+    }
+
+    .date-progress p {
+        margin-left: 20px;
+    }
+</style>
+
+<h1 style="font-size: 20px;" class="slide-in-left">Student Progress</h1>
+<hr class="slide-in-left">
+<p style="color: black;" class="slide-in-left">Module - {{ instrument_minor }} {{ instrument_major }} - Book {{ book_id }}</p>
+<hr>
+
+<div style="display: inline-block;" class="slide-in">
+    <p style="display: inline;">Student Name</p>
+    <!-- <p style="display: inline; margin-left: 400px;">Updated On</p> -->
+    <p style="display: inline; margin-left: 710px;">Progress Bar (Total)</p>
+</div>
+
+{% for student in students %}
+
+ <!-- Debugging output inside the loop -->
+ <!-- <p>Total Progress: {{ total_progress }}</p>
+ <p>Pass Progress: {{ student.pass_progress_count }}</p>
+ <p>Progress Percentage: {{ student.progress_percentage }}</p>
+ <p>Remaining Progress Percentage: {{ student.remaining_progress_percentage }}</p> -->
+    <div class="container slide-in-left" onclick="redirectToStudentResults('{{ student.studentName }}')">
+        <div class="info">
+            <p>{{ student.studentName }}</p>
+            <p style="color: orange;">{{ student.assigned_parent.email }}</p>
+        </div>
+        <div class="date-progress">
+            <p style="margin-right: 200px;">{{ student.current_book.updated_at|date:"F j, Y" }}</p>
+            <div class="progress-container" style="margin-right: 200px;">
+                <div class="progress-circle" style="background: conic-gradient(rgb(56, 194, 79) {{ student.progress_percentage }}%, #adf {{ student.progress_percentage }}%);">
+                    <div class="progress-text">{{ student.progress_percentage|floatformat:1 }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<script>
+    function redirectToStudentResults(studentName) {
+        window.location.href = "/student_results/" + encodeURIComponent(studentName);
+    }
+</script>
+
+{% endblock %}

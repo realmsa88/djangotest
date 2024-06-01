@@ -1,0 +1,329 @@
+<!-- book_detail.html -->
+{% extends 'master_admin.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+<style>
+/* Existing CSS */
+.form-container-wrapper {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    padding: 30px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+p {
+    color: black;
+}
+
+input[type="text"] {
+    padding-left: 7px;
+    width: 400px; 
+    height: 40px;
+    margin-top: 10px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-container p {
+    margin: 0;
+}
+
+.floating-button {
+    background-color: #5b7cfa;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-button:hover {
+    background-color: #18ad3d;
+    color: white;
+}
+
+/* Modal CSS */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.confirm-delete,
+.cancel {
+    background-color: #ed5565;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 80px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.cancel {
+    background-color: grey;
+}
+
+.confirm-delete:hover,
+.cancel:hover {
+    background-color: #32373d;
+}
+
+/* Success message CSS */
+#successMessage {
+    display: none;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+}
+
+.back {
+    margin-top: 20px;
+    border-radius: 10px;
+    background-color: #5b7cfa;
+    padding: 10px;
+    color: white;
+    border-color: white;
+    border: none;
+    width: 10%;
+    float: right;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+.back:hover {
+    background-color: #32373d;
+    color: white;
+}
+</style>
+
+<h1 style="font-size: 20px;">Learning Modules</h1>
+
+<hr>
+
+<p style="color: black; " class="slide-in-left"> Module - {{ instrument_minor }} {{ instrument_major }} - {{book.book}} </p>
+
+<br>
+
+<div id="successMessage" >Module deleted successfully.</div>
+
+<div class="form-container-wrapper slide-in">
+    <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill in module details for {{ instrument_minor }} {{ instrument_major }} - {{book.book}}. </p>
+    <hr>
+
+    <div class="flex-container">
+        <p>Practice</p>
+        <p style="margin-right: 500px;">Description</p>
+    </div>
+
+    <div>
+        {% for module in modules %}
+            {% if module.module_type == "Practice"%}
+            <div class="module-container" data-module-id="{{ module.id }}" data-module-name="{{ module.module_name }}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <input type="text" readonly value="{{ module.module_name }}" style="color: black;">
+
+                <div style="display: flex; align-items: center; justify-content: flex-end; flex-grow: 1;">
+                    <input type="text" readonly value="{{ module.description }}" style="color: black; margin-left: 10px;width: 80%;">
+                    <div class="icon-container" style="margin-left: 12px; margin-top: 10px;">
+                        <i class="fa fa-trash delete-icon" style="cursor: pointer;"></i>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <input type="text" placeholder="Add practice module" style="color: black;" data-module-type="Practice">
+        <div style="display: flex; align-items: center; flex-grow: 1; justify-content: flex-end;">
+            <input type="text" placeholder="Write module description" style="color: black; margin-left: 10px; width: 80%;">
+            <div style="margin-left: 10px;">
+                <button class="floating-button" style="margin-top: 10px;">+</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex-container" style="margin-top: 60px;">
+        <p>Repertoire</p>
+        <p style="margin-right: 500px;">Description</p>
+    </div>
+
+    <div>
+        {% for module in modules %}
+            {% if module.module_type == "Repertoire"%}
+            <div class="module-container" data-module-id="{{ module.id }}" data-module-name="{{ module.module_name }}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <input type="text" readonly value="{{ module.module_name }}" style="color: black;">
+
+                <div style="display: flex; align-items: center; justify-content: flex-end; flex-grow: 1;">
+                    <input type="text" readonly value="{{ module.description }}" style="color: black; margin-left: 10px;width: 80%;">
+                    <div class="icon-container" style="margin-left: 12px; margin-top: 10px;">
+                        <i class="fa fa-trash delete-icon" style="cursor: pointer;"></i>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <input type="text" placeholder="Add repertoire module" style="color: black;" data-module-type="Repertoire">
+       
+        <div style="display: flex; align-items: center; flex-grow: 1; justify-content: flex-end;">
+            <input type="text" placeholder="Write module description" style="color: black; margin-left: 10px; width: 80%;">
+            <div style="margin-left: 10px;">
+                <button class="floating-button" style="margin-top: 10px;">+</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="back slide-in" onclick="window.history.back()">Back</button>
+
+
+<!-- Modal HTML structure for delete -->
+<div id="deleteConfirmationModal" class="modal" >
+    <div class="modal-content" style="margin-bottom: 310px;">
+        <div class="close-container">
+            <span class="close">&times;</span>
+            <div class="close-background" style="margin-bottom: ;"></div>
+        </div>
+        <!-- Add the topic background div with the topic title -->
+        <div class="topic-background" style="margin-top: -48px;">
+            <p style="color: white;  padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Delete Confirmation</p>
+        </div>
+        <!-- End of topic background div -->
+        <p style="color: black; text-align: center; margin-top: 30px;">Are you sure you want to remove <span id="deleteModule" style="font-weight: bold; color: red;"></span> ?</p>
+        <div style="margin-top: 20px;">
+            <button class="confirm-delete" style="border-radius: 80px;width: 100px;" >Yes</button>
+            <button class="cancel" style="margin-right: 10px; border-radius: 80px; width: 100px;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var successMessage = document.getElementById("successMessage");
+
+        document.querySelectorAll(".floating-button").forEach(function(button) {
+            button.addEventListener("click", function() {
+                var container = this.closest("div").previousElementSibling.closest("div");
+                var moduleTypeElement = container.querySelector(".flex-container p");
+                var moduleType = moduleTypeElement.textContent.trim(); // Get the module type text
+
+                // Select the input elements based on the module type
+                var moduleNameInput = container.querySelector("input[placeholder='Add module'][data-module-type='" + moduleType + "']");
+                var descriptionInput = container.querySelector("input[placeholder='Write module description'][data-module-type='" + moduleType + "']");
+
+                // Checking if both inputs are found
+                if (!moduleNameInput || !descriptionInput) {
+                    alert("Please ensure both input fields are available.");
+                    return;
+                }
+
+                // Accessing the value property only if inputs are found
+                var moduleName = moduleNameInput.value;
+                var description = descriptionInput.value;
+
+                // Checking the module type based on container attributes
+                var bookInstrumentId = "{{ bookInstrument.id }}";
+
+                var formData = new FormData();
+                formData.append('module_type', moduleType);
+                formData.append('module_name', moduleName);
+                formData.append('description', description);
+                formData.append('bookInstrument', bookInstrumentId);
+
+                fetch("{% url 'add_module' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and reset input fields
+                        successMessage.style.display = "block";
+                        moduleNameInput.value = "";
+                        descriptionInput.value = "";
+
+                        // Hide success message after 3 seconds
+                        setTimeout(function() {
+                            successMessage.style.display = "none";
+                        }, 3000);
+
+                        // Optionally, you can perform other actions like appending the new module to the DOM
+                    } else {
+                        // Show error message
+                        alert("Failed to add module.");
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert("Failed to add module.");
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,334 @@
+{% extends "master_parent.html" %}
+{% load static %}
+{% load parent_tags %}
+
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/student_results.css' %}">
+<link rel="stylesheet" href="{% static 'css/star-rating.css' %}"> <!-- Add the star rating CSS -->
+
+<style>
+
+.star {
+        font-size: 24px; /* Adjust size as needed */
+        color: gray; /* Default color for empty stars */
+    }
+    .filled {
+        color: gold; /* Color for filled stars */
+    }
+    .student-box {
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 10px;
+        position: relative;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .newdrawer {
+        display: none;
+        position: absolute;
+        top: 110%;
+        left: 0;
+        z-index: 900;
+        width: 100%;
+        height: 1500px;
+        overflow-y: auto;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        background-color: white;
+        cursor: default;
+        border-radius: 10px;
+        padding: 16px;
+        color: black;
+    }
+
+    
+
+    .newdrawer.open {
+        display: block;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        line-height: 1;
+        outline: none;
+        z-index: 999;
+    }
+
+    .close-btn:hover {
+        color: red;
+    }
+
+    .details-background {
+        background-color: green;
+        margin-top: -30px; /* Adjust as needed */
+        margin-left: -20px; /* Adjust as needed */
+        width: calc(100% + 40px); /* Adjust as needed */
+        height: 60px;
+        position: sticky; /* Change position to sticky */
+        top: 0; /* Stick to the top */
+        z-index: 1;
+    }
+
+    .slide-in-right {
+        animation: slideInRight 1s ease-in-out forwards; /* Apply animation */
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px); /* Slide in from right */
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    input[type="text"] {
+        padding-right: 25px; /* Adjust as needed */
+    }
+
+    /* Style the caret */
+    input[type="text"]::after {
+        content: '▼'; /* Unicode character for caret */
+        position: absolute;
+        top: 50%;
+        right: 8px; /* Adjust as needed */
+        transform: translateY(-50%);
+        pointer-events: none; /* Ensure caret is not clickable */
+        color: black; /* Adjust color as needed */
+    }
+
+    input[type="text"] {
+        padding-right: 40px; /* Adjust as needed */
+    }
+
+    /* Style the caret */
+    input {
+        font-weight: 500;
+        color: rgb(78, 78, 78);
+        height: 35px;
+        border-radius: 5px;
+        border-width: 0.2px;
+        border-color: rgb(169, 168, 168);
+    }
+
+    input[type="text"] {
+        padding-left: 10px; /* Adjust as needed */
+    }
+
+    .student-box:hover,
+    .student-box.selected {
+        border-color: #5b7cfa; /* Change border color on hover and selected */
+        background-color: #5b7cfa; /* Highlight color on hover and selected */
+    }
+
+    .student-box:hover .try,
+    .student-box.selected .try {
+        color: white !important;
+    }
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Information</h1>
+</div>
+
+<hr class="slide-in">
+<p style="color: black;" class="slide-in">Registered students: {{ students_data|length }}</p> 
+<hr>
+<p style="color: black;" class="slide-in-left">Student Name</p>
+
+{% for data in students_data %}
+<div class="student-box slide-in-left" onclick="toggleDrawer(event, '{{ data.student.id }}')" data-student-id="{{ data.student.id }}">
+    
+    <p style="color: black; font-weight:" class="try">{{ data.student.studentName }} - {{ data.student.instrument}}</p>
+
+    <div class="newdrawer slide-in-right" id="newdrawer_{{ data.student.id }}">
+        <div class="main-container progress-main-container slide-in" style="margin-top: 25px; margin-bottom: 20px;">
+            <div class="progress-background-title" style="background-color: green;">Student Academic Progress</div>
+            <div class="progress-container">
+                <progress id="progress1" value="{{ data.practice_completion_percentage }}" max="100" style="width: 95%;"></progress>
+                <p style="margin-left: 20px; color: black;">Practice : {{ data.practice_completion_percentage }}% Completed</p>
+            </div>
+            <div class="progress-container">
+                <progress max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 95%;">{{ data.repertoire_completion_percentage }}%</progress>
+                <p style="margin-left: 20px; color: black;">Repertoire : {{ data.repertoire_completion_percentage }}% Completed</p>
+            </div>
+        </div>
+        
+        <div class="main-container slide-in-left" style="margin-top: 60px;">
+            <p class="background-title" style="background-color: green;">Student Progress</p>
+            <div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative; margin-top: 20px;">
+                <div class="button-wrapper">
+                    <button onclick="filterInstruments(this, 'All')" class="active"
+                            style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+                        All
+                    </button>
+                    {% for module_type in data.module_types %}
+                        <button onclick="filterInstruments(this, '{{ module_type }}')"
+                                style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+                            {{ module_type }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div><hr >
+
+            {% for module, results in data.results_by_module.items %}
+            <div class="module-container slide-in" data-module-type="{{ module.module_type }}">
+                <p style="color: black; font-weight: bold;display: inline;">{{ module.module_name }}  </p><p style="">{{module.description}}</p>
+                {% if not results %}
+                    <p style="color: gray; font-style: italic;">Achieve 3 stars and above to pass this module</p>
+                {% else %}
+                    <div class="star-rating" style="margin-top: -30px;">
+                        {% for result in results %}
+                            {% if result == "5" %}
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span style="color: gray; font-style: italic; font-size: 14px;">Excellent</span>
+                            {% elif result == "4" %}
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star">★</span>
+                                <span  style="color: gray; font-style: italic; font-size: 14px;">Good</span>
+                            {% elif result == "3" %}
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star filled">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span  style="color: gray; font-style: italic; font-size: 14px;">Satisfactory</span>
+                            {% else %}
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span>{{ result }}</span>
+                            {% endif %}
+                            <br>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+
+
+    var openDrawerId = null; // Variable to store the ID of the currently open drawer
+
+    function toggleDrawer(event, studentId) {
+        var drawer = document.getElementById('newdrawer_' + studentId);
+
+        // If a drawer is already open and it's not the one being clicked, close it
+        if (openDrawerId && openDrawerId !== 'newdrawer_' + studentId) {
+            var currentDrawer = document.getElementById(openDrawerId);
+            if (currentDrawer) {
+                currentDrawer.classList.remove('open');
+            }
+            resetBoxPositions();
+        }
+
+        // Toggle the clicked drawer
+        drawer.classList.toggle('open');
+        openDrawerId = drawer.classList.contains('open') ? 'newdrawer_' + studentId : null;
+
+        // Adjust box positions if the drawer is opened
+        if (drawer.classList.contains('open')) {
+            hideOtherBoxes(studentId);
+        } else {
+            resetBoxPositions();
+        }
+
+        event.stopPropagation(); // Prevent click event propagation to parent
+    }
+
+    function hideOtherBoxes(clickedStudentId) {
+        var boxes = document.querySelectorAll('.student-box');
+        boxes.forEach(function(box) {
+            var boxId = box.getAttribute('data-student-id');
+            if (boxId !== clickedStudentId) {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+            }
+        });
+    }
+
+    function resetBoxPositions() {
+        var boxes = document.querySelectorAll('.student-box');
+        boxes.forEach(function(box) {
+            box.style.position = '';
+            box.style.top = ''; // Reset top position to default
+            box.style.display = 'block'; // Make all boxes visible again
+        });
+    }
+
+    // Prevent closing the drawer when clicking inside it
+    document.querySelectorAll('.newdrawer').forEach(function(drawer) {
+        drawer.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const studentBoxes = document.querySelectorAll('.student-box');
+
+        // Add event listeners for hover and click
+        studentBoxes.forEach(function(box) {
+            box.addEventListener('mouseenter', function() {
+                this.classList.add('hover');
+            });
+            box.addEventListener('mouseleave', function() {
+                this.classList.remove('hover');
+            });
+            box.addEventListener('click', function() {
+                // Remove 'selected' class from previously selected box, if any
+                const prevSelected = document.querySelector('.student-box.selected');
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
+                // Add 'selected' class to the clicked box
+                this.classList.add('selected');
+            });
+        });
+    });
+
+    // Close button functionality
+    function hideModal(studentId) {
+        var drawer = document.getElementById('newdrawer_' + studentId);
+        drawer.classList.remove('open');
+        resetBoxPositions();
+    }
+
+</script>
+{% endblock %}

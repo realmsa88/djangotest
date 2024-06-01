@@ -1,0 +1,11 @@
+<!-- view_ticket_conversation.html -->
+<h1>Conversation for Ticket: {{ ticket.subject }}</h1>
+
+<ul>
+  {% for message in messages %}
+    <li>
+      <p>{{ message.message }}</p>
+      <small>From: {{ message.sender.username }} | Sent: {{ message.sent_at }}</small>
+    </li>
+  {% endfor %}
+</ul>

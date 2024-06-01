@@ -1,0 +1,31 @@
+{% extends "master_admin.html" %}
+{% load static %}
+
+{% block content %}
+
+<h1>{{ activity.activity_name }}</h1>
+<p>Date: {{ activity.activity_date }}</p>
+<p>Type: {{ activity.activity_type }}</p>
+
+<!-- Display individual media object -->
+{% if media %}
+    <p>Single Media:</p>
+    <div class="media-item">
+        <img src="{% static '/images/' %}{{ media.media_name }}" alt="{{ media.media_type }}">
+    </div>
+   
+{% endif %}
+
+<div class="media-container">
+    <!-- Display media items associated with the activity -->
+    {% for media_item in activity.media_set.all %}
+    <div class="media-item">
+        <img src="{% static 'images/' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
+    </div>
+    <p>{{ media.media_name }}</p>
+    {% endfor %}
+</div>
+
+<p>Media Count: {{ activity.media_set.count }}</p>
+
+{% endblock %}

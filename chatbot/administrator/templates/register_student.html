@@ -1,0 +1,234 @@
+{%extends "master_admin.html"%}
+{%load static%}
+
+{%block content%}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+
+.form-container-wrapper {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        padding: 30px;
+        border-radius: 10px ;
+        width: 100%;
+    }
+p {
+    color: black;
+}
+
+input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    textarea,
+    select {
+        padding-left: 7px;
+        /* Adjust the padding to create space for the caret */
+    }
+
+    @media screen and (max-width: 768px) {
+        .form-container-wrapper {
+            padding: 10px; /* Adjust padding for smaller screens */
+        }
+
+        .header-container h1 {
+            font-size: 18px; /* Adjust font size for smaller screens */
+        }
+
+        /* Adjust the margins and positions of form elements for smaller screens */
+        .form-container div {
+            display: block;
+            margin: 10px 0;
+        }
+
+        /* Adjust the width of input fields for smaller screens */
+        input[type="number"],
+        input[type="date"] {
+            width: calc(100% - 14px);
+        }
+
+        /* Adjust the width of the instrument field for smaller screens */
+        #instrument-div {
+            margin-left: 0;
+        }
+    }
+
+    .radio-inline {
+    display: inline-block;
+    margin-right: 10px; /* Adjust as needed to add space between the buttons */
+}
+
+    
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Register Student</h1>
+
+    <div id="navbar">
+        <a href="{% url 'student' %}" class="navbar-link">Student List</a>
+        <a href="{% url 'register-student' %}" class="navbar-link">Register Student</a>
+    </div>
+</div>
+
+<hr>
+
+<div class="form-container-wrapper slide-in">
+    <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill all student information below.</p>
+    <hr>
+
+    <div class="form-container slide-in-left">
+        <form method="POST" action="">
+            {% csrf_token %}
+
+            <div style="display: inline-block;">
+                <p>Student Name</p>
+                {{ student_form.studentName }} <br>
+                
+            </div>
+            
+            <!-- <div style="display: inline-block; margin-left: 10px;">
+                <p>IC Number</p>
+                {{ student_form.identification_number}}
+            </div> -->
+
+            <div style="display: inline-block; margin-left: 20px;">
+                <p>Parent</p>
+                {{ student_form.assigned_parent }}
+            </div>
+            
+            <div style="display: inline-block; margin-left: 20px;">
+                <p>Teacher</p>
+                {{ student_form.assigned_teacher }}
+            </div>
+
+            <div style="display: inline-block; margin-left: 0px;">
+
+                <p>IC Number</p>
+                {{student_form.identification_number}}
+
+            </div>
+
+
+            <div style="margin-top: 20px; display: inline-block; margin-left: 11px; ">
+                <p>Gender</p>
+                {{student_form.gender}}
+
+            </div>
+            <div style="display: inline-block; margin-left: 11px;">
+
+                <p>Race</p>
+                {{student_form.race}}
+
+            </div>
+            <div style="display: inline-block; margin-left: 20px;">
+                <p>Instrument</p>
+                {{student_form.instrument}}
+            </div>
+
+            <div style="display: inline-block; margin-left: 20px;">
+                <p>Student Photo</p>
+                <button>Choose A File</button>
+            </div>
+
+            <div style="margin-top: 15px;">
+              
+            
+                <div style="display: inline-block; margin-left: 0px;">
+                    <p>Age</p>
+                    <input type="number" name="age" id="id_age" oninput="preventZero(event)" min="1" value="{{ student_form.age.value }}" style="width: 70px; height: 40px; ">
+                </div>
+
+                <div style="display: inline-block; margin-left: 10px;">
+                <p >Birth Date</p>
+                <input type="date" name="birthdate" id="id_birthdate" value="{{ student_form.birthdate.value }}" style="width: 315px;  height: 40px;">
+                
+                </div>
+
+                <div style="display: inline-block; margin-left: 10px;">
+                    <p>Book</p>
+                {{student_form.book}}
+                    
+                    </div>
+                
+                
+                <div style="display: inline-block; margin-left: 20px;">
+                    <p>Learning Mode</p>
+                    {% for value, label in student_form.learningmode.field.choices %}
+                        <input type="radio" id="learning_mode_{{ value }}" name="learningmode" value="{{ value }}" {% if value == student_form.learningmode.value %} checked {% endif %}>
+                        <label for="learning_mode_{{ value }}">{{ label }}</label><br>
+                    {% endfor %}
+                </div>
+                <input class="btn btn-primary slide-in" type="submit" value="Register Student" style="font-size: 14px; float: right; border-radius: 2px;  margin-top: 60px; "> 
+            </div>
+
+
+            <!-- <div style="display: inline-block; margin-left: 0px;">
+
+                <p>IC Number</p>
+                {{student_form.identification_number}}
+
+            </div>
+
+
+            <div style="margin-top: 20px; display: inline-block; margin-left: 11px; ">
+                <p>Gender</p>
+                {{student_form.gender}}
+
+            </div>
+            <div style="display: inline-block; margin-left: 11px;">
+
+                <p>Race</p>
+                {{student_form.race}}
+
+            </div> -->
+           
+              
+        </form>
+        
+    </div>
+    
+</div>
+
+{% if messages %}
+        {% for message in messages %}
+            <h3 class="messages" style="font-size: 18px; color: black;">{{ message }}</h3>
+        {% endfor %}
+    {% endif %}
+
+<script>
+    // Function to prevent age from going to 0
+    function preventZero(event) {
+        if (event.target.value <= 0) {
+            event.target.value = '';
+        }
+    }
+
+    function updateBooks() {
+    const instrumentId = document.getElementById("id_instrument").value;
+    fetch(`/get-books/${instrumentId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const bookField = document.getElementById("id_book");
+            bookField.innerHTML = "";  // Clear existing options
+            data.books.forEach(book => {
+                const option = document.createElement("option");
+                option.value = book.id;
+                option.textContent = book.book;  // Ensure the property name matches the book name field in your Book model
+                console.log(book)
+                bookField.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching books:', error);
+        });
+}
+
+</script>
+{%endblock%}

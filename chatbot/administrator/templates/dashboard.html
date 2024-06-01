@@ -1,0 +1,321 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" style="font-size: 16px;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Choose Our Digital Agency">
+    <meta name="description" content="">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/nicepage.css' %}" media="screen">
+    <link rel="stylesheet" href="{% static 'css/Home.css' %}" media="screen">
+    <script class="u-script" type="text/javascript" src="{% static 'js/jquery.js' %}" defer=""></script>
+    <script class="u-script" type="text/javascript" src="{% static 'js/nicepage.js' %}" defer=""></script>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Update the link tag to point to your CSS file -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="generator" content="Nicepage 6.7.6, nicepage.com">
+    <!-- <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i"> -->
+    <!-- <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "Organization",
+            "name": "",
+            "logo": "images/default-logo.png"
+        }
+    </script> -->
+    <style>
+        /* Add custom CSS here */
+
+        .sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: rgba(96, 105, 108, 0.5);
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        @media screen and (max-height: 450px) {
+            .sidenav {padding-top: 15px;}
+            .sidenav a {font-size: 18px;}
+        }
+
+        .img-music {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: -90px;
+        }
+
+        #carousel_170e {
+            margin-top: 500px; /* Adjust the value as needed */
+        }
+
+        .video-container {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .video {
+            position: absolute;
+            top: 0;
+            left: 50%; /* Center the video horizontally */
+            transform: translateX(-50%); /* Move it back to the left by half of its width */
+            width: 100vw; /* Adjusted to cover the entire viewport width */
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            background-color: #000; /* Set background color to black */
+            opacity: ; /* Adjust the opacity to make it darker */
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Set the background color to black */
+            z-index: 1; /* Ensure the overlay is above other elements */
+        }
+
+        /* Add styles for the tiles */
+        .tiles-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 150px;
+        }
+
+        .tile {
+            width: 290px;
+            height: 400px;
+            background-color: #f0f0f0;
+            border-radius: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 0px; /* Add some margin between tiles */
+        }
+
+        /* Apply border-radius only to top left and bottom left corners */
+        .tile:first-child {
+            border-top-left-radius: 30px;
+            border-bottom-left-radius: 30px;
+        }
+
+        .tile:last-child {
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        .tile-icon {
+            font-size: 36px;
+            color: #333;
+        }
+
+        .tile-text {
+            font-size: 16px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .tile:hover {
+            background-color: #a38484;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha value (last parameter) to control darkness */
+            z-index: -1;
+        }
+
+        .u-size-15 {
+            flex: 1 1 20%; /* Adjust the size of the column */
+        }
+
+        .u-size-30-md {
+            flex: 1 1 40%; /* Adjust the size of the column */
+        }
+
+        .u-layout-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .u-container-style {
+            margin-bottom: 20px; /* Add margin to separate cells */
+        }
+
+        .u-shape-rectangle.u-shape-1 {
+            /* Adjust the width as needed */
+            width: 1000px;
+            /* Use linear-gradient to create a gradient from yellow to transparent */
+            background: linear-gradient(to right, transparent, transparent);
+        }
+
+        .hamburger {
+            color: white; /* Set the color to white */
+            font-size: 30px; /* Adjust the size as needed */
+            cursor: pointer;
+            position: absolute;
+            top: 20px; /* Adjust the top position */
+            right: 100px; /* Adjust the right position */
+            z-index: 9999; /* Ensure the icon is above other elements */
+        }
+
+        .u-sheet-1 {
+            /* Adjust the padding as needed */
+            width: 800px;
+        }
+
+        /* @import url(https://fonts.googleapis.com/css?family=Open+Sans);
+
+        html {
+            height:100%;
+            background-image: linear-gradient(to right top, #8e44ad 0%, #3498db 100%);
+        } */
+
+        nav {
+            max-width: 1200px;
+            mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, #000000 25%, #000000 75%, rgba(255, 255, 255, 0) 100%);
+            margin: 0 auto;
+            margin-top: -80px;
+            padding: 60px 0;
+        }
+
+        nav ul {
+            text-align: center;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.2) 25%, rgba(255, 255, 255, 0.2) 75%, rgba(255, 255, 255, 0) 100%);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.1), inset 0 0 1px rgba(255, 255, 255, 0.6);
+        }
+
+        nav ul li {
+            display: inline-block;
+        }
+
+        nav ul li a {
+            padding: 18px;
+            font-weight: 200;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), inset 0 0 1px rgba(0, 0, 0, 0.6);
+            background: rgb(255, 255, 255);
+            color: rgb(0, 0, 0);
+        } 
+
+    </style>
+
+
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="Home">
+    <meta property="og:type" content="website">
+    <meta data-intl-tel-input-cdn-path="intlTelInput/">
+</head>
+
+{% include 'loading_screen.html' %}
+<body data-home-page="Home.html" data-home-page-title="Home" data-path-to-root="./" data-include-products="false" class="u-body u-xl-mode" data-lang="en" style="font-family: ;">
+    <section class="u-clearfix u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-section-1">
+        <div class="img bg-wrap text-center py-4">
+             <!-- <div style="float: right; margin-right: 50px;">
+                <a style="color: #fff; font-size: 34px;" class="fa fa-home" href="#"></a>
+            </div>  -->
+            <div style="float: left; " class="hamburger">
+                <a style="color: #fff; font-size: 34px;" class="fa fa-sign-out" href="{% url 'logout' %}"></a>
+                
+            </div>
+            <div class="user-logo" style="height: 190px;">
+                <div class="img" style="background-image: url({% static 'images/logo.jpg' %})"></div>
+                <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
+                <h3 style="font-size: small;">
+                    {% for group in request.user.groups.all %}
+                       You're an {{ group }}
+                    {% endfor %}
+                </h3>
+               
+            </div>
+            
+            <!-- <span class="hamburger" onclick="openNav()">&#9776;</span> -->
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'accounts' %}">Accounts Management</a>
+                </li>
+                <li>
+                    <a href="#">Student Information</a>
+                </li>
+                <li>
+                    <a href="#">Learning Modules</a>
+                </li>
+                <li>
+                    <a href="#">Billing</a>
+                </li>
+                <li>
+                    <a href="#">Media & Activities</a>
+                </li>
+            </ul>
+        </nav>
+        <video autoplay loop muted class="video">
+            <source src="{% static 'mp4/orchestra.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <!-- <div id="mySidenav" class="sidenav">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <a href="">Change Password</a>
+          </div> -->
+        <p style="color: white;font-weight: lighter; text-align: center; font-size: small;">Click on the profile picture to update profile.</p>
+        <p style="color: white;font-weight: lighter; text-align: center; font-size: small;">&copy; 2024 Music Academy Management System. All rights reserved.</p>
+    </section>
+</body>
+
+<script>
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "250px";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+    }
+</script>
+</html>

@@ -1,0 +1,12 @@
+
+App ID :
+66166b6d88ea4e4fa68bb6bf
+
+Key ID :
+app_661675032ad33e4bc7f613d4
+
+Secret Key:
+YaFU-HYpZWZNqDMyoVsOpG48zozJApito-zCLv25lnV3vPOgvn_azMOvhJcFIyjzrL1iX-d9ODpjHKPaxs4QtA
+
+Zendesk API :
+Lb95qIwuEPI5JDQ80zWjK2AMvYWJxkX6pIlveoC0

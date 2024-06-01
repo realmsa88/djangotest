@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome for icons -->
+    <style>
+        /* Chat container styles */
+        #chat-container {
+            position: fixed;
+            bottom: 85px;
+            right: 20px;
+            width: 350px;
+            height: 600px;
+            background-color: #ffffff;
+            display: none;
+            z-index: 9999; /* Ensure it's above other content */
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4); /* Add box shadow */
+            border-radius: 10px; /* Add rounded corners */
+            padding-bottom: 60px; /* Adjust padding to accommodate input box and button */
+            transition: transform 1s ease;  
+        }
+
+        /* Styling for the chat box */
+        .chat-box {
+            max-height: calc(100% - 100px);
+            overflow-y: auto;
+            padding: 10px;
+            position: relative; /* Ensure relative positioning */
+            margin-right: -14px; /* Remove right margin */
+            margin-bottom: -20px; /* Remove bottom margin */
+            margin-left: -20px; /* Remove left margin */
+        }
+
+        /* Scrollbar styling */
+        .chat-box::-webkit-scrollbar {
+            width: 10px; /* Adjust scrollbar width as needed */
+        }
+
+        /* Track styling */
+        .chat-box::-webkit-scrollbar-track {
+            background: transparent; /* Set track color */
+        }
+
+        /* Handle styling */
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.5); /* Set handle color */
+            border-radius: 20px; /* Set handle border radius */
+        }
+
+        /* Positioning the scrollbar */
+        .chat-box::-webkit-scrollbar {
+            right: 20px; /* Position the scrollbar on the far-right side */
+        }
+
+        /* Styling for the input box container */
+        .input-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid gray;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Styling for the input box */
+        #user-input {
+            width: 330px; /* Adjust width to accommodate send button */
+            margin-right: 10px;
+            margin-bottom: 5px;
+            padding-right: 40px; /* Ensure space for the icon */
+            background-color: #ffffff; /* Match input box background color */
+            color: #000000; /* Match input box text color */
+            border: none; /* Remove border */
+        }
+
+        /* Styling for the send button */
+        #sendBtn {
+            position: absolute;
+            top: 40%;
+            right: 15px;
+            transform: translateY(-50%);
+            width: 20px; /* Decrease size of the icon */
+            height: 20px; /* Decrease size of the icon */
+            background-color: #fff; /* Match input box background color */
+            border-color: #fff;
+            color: #32373d; /* Match input box text color */
+            border : none;
+        }
+
+        /* Positioning for the chat icon */
+        #chatIcon {
+            position: fixed;
+            bottom: 20px;
+            width: 50px;
+            height: 50px;
+            right: 30px;
+            z-index: 10000; /* Ensure it's above other content */
+            background-color: #32373d;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 24px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+        }
+
+        /* Styling for user messages */
+        .user-message {
+            background-color: #32373d;
+            color: #fff;
+            margin-left: 40px;
+            margin-right: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+        }
+
+        /* Styling for chatbot messages */
+        .bot-message {
+            background-color: #f2f2f2;
+            color: #000000;
+            font-size: 14px;
+            margin-right: 40px;
+            margin-left: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #user-input::placeholder {
+            color: black; /* Set placeholder text color to black */
+            opacity: 1; /* Ensure it's fully visible */
+        }
+
+        #user-input:focus {
+            outline: none; /* Remove default blue outline */
+            box-shadow: none; /* Remove any box shadow when focused */
+            border-color: #000000; /* Set border color to your desired color */
+        }
+
+        #container-div {
+            background-color: #32373d;
+            height: 70px; /* Adjust height as needed */
+            width: calc(100% - 0px); /* Make the div fit the whole width */
+            position: absolute; /* Position absolutely relative to its parent */
+            left: 0; /* Align to the left edge of the parent container */
+            top: 0; /* Align to the top edge of the parent container */
+            border-radius: 10px 10px 0 0; /* Add rounded corners only to the top */
+        }
+
+        .text-message {
+            color: white;
+            margin-left: 25px;
+            margin-top: 20px;
+        }
+
+        /* Animation for sliding in messages */
+        .slide-in {
+            animation: slideIn 2s ease-in-out forwards;
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Chat Icon -->
+    <button id="chatIcon" type="button">
+        <i class="fas fa-comment"></i>
+    </button>
+
+    <!-- Chatbot Container -->
+    <div class="container mt-5" id="chat-container">
+        <div id="container-div">
+            <h3 class="text-message" style="font-size: medium;">
+                Jazz AI<i class="fas fa-robot" style="margin-left: 10px;"></i> 
+            </h3>
+        
+        </div>
+
+        <div class="chat-box" style="margin-top: 70px;">
+            <!-- Messages will be displayed here -->
+        </div>
+
+        <div class="form-group">
+            <form id="user-input-form" class="input-container">
+                {% csrf_token %}
+                <div style="position: relative;">
+                    <input type="text" name="user_input" id="user-input" class="form-control" placeholder="Ask something...">
+                    <button id="sendBtn" type="submit"><i class="fas fa-paper-plane fa-sm"></i></button> <!-- Icon for send button -->
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Your JavaScript code -->
+    <!-- Your JavaScript code -->
+<!-- Your JavaScript code -->
+<script>
+   const chatIcon = document.querySelector("#chatIcon");
+   const chatContainer = document.querySelector("#chat-container");
+
+   // Function to slide the container in
+// Function to slide the container out
+
+    function isContainerVisible() {
+        const style = window.getComputedStyle(chatContainer);
+        return style.getPropertyValue('transform') === 'matrix(1, 0, 0, 1, 0, 0)'; // Check if the container is fully visible
+    }
+    function slideOutContainer() {
+        chatContainer.style.transform = "translateX(100%)"; // Slide the container off-screen
+        chatContainer.addEventListener("transitionend", () => {
+            chatContainer.style.display = "none 0.3s ease"; // Hide the container after the slide-out animation
+            chatIcon.innerHTML = '<i class="fas fa-comment"></i>';
+        }, { once: true }); // Remove the event listener after it's used once
+    }
+
+    // Function to slide the container in
+    function slideInContainer() {
+        chatContainer.style.display = "block"; // Show the container
+        chatContainer.style.transform = "translateX(100%)"; // Move the container off-screen initially
+        setTimeout(() => {
+            chatContainer.style.transform = "translateX(0)"; // Slide the container into view
+        }, 20);
+    }
+
+    chatIcon.addEventListener("click", () => {
+        if (!isContainerVisible()) {
+            slideInContainer(); // Slide the container in if it's not visible
+            chatIcon.innerHTML = '<i class="fas fa-times"></i>';
+        } else {
+            slideOutContainer(); // Slide the container out if it's already visible
+        }
+    });
+
+
+
+        // Add transitionend event listener to handle smooth display and hiding of the chat container
+    // chatContainer.addEventListener("transitionend", () => {
+    //     if (chatContainer.style.display === "block") {
+    //         chatContainer.style.opacity = "1"; // Set opacity to 1 after sliding in
+    //     } else {
+    //         chatContainer.style.display = "none"; // Hide the container after sliding out
+    //     }
+    // });
+
+    function scrollToBottom() {
+            const chatBox = document.querySelector(".chat-box");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+    function scrollToLowerPosition() {
+        const chatBox = document.querySelector(".chat-box");
+        const containerDivHeight = document.querySelector("#container-div").offsetHeight;
+        const offset = 20; // Adjust the offset as needed
+        chatBox.scrollTop = containerDivHeight + offset;
+    }
+
+    // Add event listener to submit form asynchronously
+    const form = document.querySelector("#user-input-form");
+
+    form.addEventListener("submit", async(e) => {
+        e.preventDefault(); // Prevent the default form submission behavior
+        const formData = new FormData(form);
+        const userMessage = formData.get("user_input");
+
+        // Get the CSRF token from the cookie
+        const csrftoken = getCookie("csrftoken");
+
+        // Display user message in the chat box
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.classList.add("mt-3", "p-3", "rounded", "user-message", );
+        userMessageDiv.innerHTML = `<p>${userMessage}</p>`;
+        document.querySelector(".chat-box").appendChild(userMessageDiv);
+
+        try {
+            console.log("Sending request...");
+            const response = await fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrftoken // Include the CSRF token in the headers
+                },
+                body: new URLSearchParams({
+                    user_input: userMessage
+                })
+            });
+
+            // Check if the response was successful (status code in the range 200-299)
+            if (response.ok) {
+                console.log("Request successful");
+                const data = await response.json();
+                console.log("Response data:", data);
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+                messageDiv.innerHTML = `<p>${data.response}</p>`;
+                document.querySelector(".chat-box").appendChild(messageDiv);
+                // Add slide-in animation only to bot messages
+                messageDiv.classList.add("slide-in");
+                scrollToBottom();
+            } else {
+                // Handle server-side errors or other non-successful responses
+                console.error("Server responded with an error:", response.statusText);
+            }
+        } catch (error) {
+            // Handle any other errors that might occur during the fetch
+            console.error("Error during fetch:", error);
+        }
+
+        // Clear the input box after submitting the message
+        document.querySelector("#user-input").value = "";
+    });
+
+    // Function to get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Sample pre-existing answers
+        const preExistingAnswers = [
+            "Hello! I'm Jazz. How can I assist you today?",
+           
+        ];
+
+        // Add pre-existing answers to the chatbox with animation
+        const chatBox = document.querySelector(".chat-box");
+        preExistingAnswers.forEach((answer, index) => {
+            setTimeout(() => {
+                const botMessageDiv = document.createElement("div");
+                botMessageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+                botMessageDiv.innerHTML = `<p>${answer}</p>`;
+                chatBox.appendChild(botMessageDiv);
+                // Only apply slide-in animation to bot messages
+                botMessageDiv.classList.add("slide-in");
+                scrollToBottom();
+            }, index * 1000); // Add a delay between each message for a staggered effect
+        });
+    });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+<!-- templates/email/new_ticket_notification.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Support Ticket Created</title>
+</head>
+<body>
+    <h1>New Support Ticket Created</h1>
+    <p>A new support ticket has been created:</p>
+    <ul>
+        <li>Title: {{ ticket.title }}</li>
+        <li>Description: {{ ticket.description }}</li>
+        <li>Created by: {{ ticket.created_by.username }}</li>
+    </ul>
+</body>
+</html>

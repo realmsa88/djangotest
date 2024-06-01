@@ -1,0 +1,296 @@
+    {% extends "master_admin.html" %}
+    {% load static %}
+    {% load custom_filters %}
+
+
+    {% block content %}
+
+    <script src="{% static 'js/navbar.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+    <style>
+        /* Add these styles to ensure the buttons have a white background */
+        .filter-buttons-container button {
+            border: 0.2px solid black;
+            background-color: white; /* Ensure the background color is white */
+        }
+    
+        .filter-buttons-container button:hover {
+            background-color: #ddd; /* Optional: change background on hover */
+        }
+    
+        /* Entries dropdown styling */
+        .entries-dropdown {
+            color: black;
+        }
+    
+        /* Additional button styles to ensure consistency */
+        #navbar a {
+            background-color: white !important;
+            color: black;
+        }
+
+        .navbar-link {
+            background-color: white !important;
+        }
+    
+        #navbar a:hover {
+            background-color: #ddd !important;
+        }
+
+        #navbar a.navbar-link {
+        background-color: white !important;
+    }
+
+    #navbar a.navbar-link:hover {
+        background-color: #ddd !important;
+    }
+    
+        .confirm-delete,
+        .cancel {
+            background-color: white;
+            color: black;
+            border: 1px solid black;
+        }
+    
+        .confirm-delete:hover,
+        .cancel:hover {
+            background-color: #ddd;
+        }
+    
+        .confirm-update {
+            background-color: #5b7cfa;
+            color: white;
+            border: none;
+        }
+    
+        .confirm-update:hover {
+            background-color: #4a68d4;
+        }
+    </style>
+    
+
+    <div class="header-container">
+        <h1 style="font-size: 20px;" class="slide-in-left">Accounts List</h1>
+
+        <div id="navbar">
+            <a href="{% url 'accounts' %}" class="navbar-link" style="background-color: white;">Accounts List</a>
+            <a href="{% url 'register' %}" class="navbar-link">Register Account</a>
+        </div>
+    </div>
+
+    <hr class="slide-in">
+
+    <div style="height: 13px;"></div>
+
+    <div class="filter-buttons-container slide-in">
+        <button id="allBtn" data-role="all" style="border: 0.2px solid black;">All</button>
+        <button id="adminBtn" data-role="admin" style="border: 0.2px solid black;">Admin</button>
+        <button id="teacherBtn" data-role="teacher" style="border: 0.2px solid black;">Teacher</button>
+        <button id="parentBtn" data-role="parent" style="border: 0.2px solid black;">Parent</button>
+        <p style="margin-top: 20px;">Click on a row to view user details</p>
+    </div>
+
+   
+    
+
+    <div class="entries-dropdown slide-in-left" style="color: black;">
+
+        Search: <input type="text" id="search-input" placeholder="Search" style="margin-right: 30px; margin-left: 5px;">
+        <label for="entries-per-page" style="color: #000000;">Entries per page:</label>
+        <select id="entries-per-page" onchange="changeEntriesPerPage(this)">
+            
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="{{ accounts.paginator.count }}">All</option>
+        </select>
+
+       
+        
+    </div>
+
+    
+
+    <table border="1" class="slide-in-left" style="border-color: gray; margin-top: 0px;">
+        <thead>
+        <tr>
+
+            <th>Name</th>
+            <!-- <th>Email</th>
+            <th>Phone Number</th> -->
+            <th>Group</th>
+            <th style="text-align: center;">Actions</th>
+            
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+        <tr>
+
+            <td 
+                data-id="{{ account.id }}"
+                data-email="{{ account.email }}" 
+                data-name="{{ account.first_name }} {{ account.last_name }}" 
+                data-us="{{ account.username }}" 
+                data-phone="{{ user_phone_numbers|get_value:account.id }}" 
+                data-address="{{ user_address|get_value:account.id }}">
+                {{ account.first_name }} {{ account.last_name }}
+            </td>
+            <!-- <td 
+                data-email="{{ account.email }}" 
+                data-name="{{ account.first_name }} {{ account.last_name }}" 
+                data-us="{{ account.username }}" 
+                data-phone="{{ user_phone_numbers|get_value:account.id }}" 
+                data-address="{{ user_address|get_value:account.id }}">
+                {{account.email}}
+            </td>
+            <td 
+                data-email="{{ account.email }}" 
+                data-name="{{ account.first_name }} {{ account.last_name }}" 
+                data-us="{{ account.username }}" 
+                data-phone="{{ user_phone_numbers|get_value:account.id }}" 
+                data-address="{{ user_address|get_value:account.id }}">
+                {{ user_phone_numbers|get_value:account.id }}
+            </td> -->
+            <td 
+            data-id="{{ account.id }}"
+            data-email="{{ account.email }}" 
+            data-name="{{ account.first_name }} {{ account.last_name }}" 
+            data-us="{{ account.username }}" 
+            data-phone="{{ user_phone_numbers|get_value:account.id }}" 
+            data-address="{{ user_address|get_value:account.id }}">    
+                {% for group in account.groups.all %}
+                    {% for role in roles %}
+                        {% if group.name == role.name %}
+                            {{ role.name }}
+                        {% endif %}
+                    {% endfor %}
+                    {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td style="text-align: center;">
+                <div class="filter-buttons-container" style="height: 20px;">
+
+                    <!-- <button class="details-button" 
+                        data-account="{{ account.id }}" 
+                        data-email="{{ account.email }}" 
+                        data-name="{{ account.first_name }} {{ account.last_name }}" 
+                        data-us="{{ account.username }}" 
+                        data-phone="{{ user_phone_numbers|get_value:account.id }}" 
+                        data-address="{{ user_address|get_value:account.id }}">
+                        Details
+                    </button> -->
+
+                    <!-- <div class = "pencil-container" onclick="confirmUpdate(this)">
+                        <a class="fa fa-pencil"></a>
+                    </div> -->
+                    
+                    <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ account.username }}" style="margin-left: 0px;">
+                        <i class="fa fa-trash" id="deleteIcon"></i>
+                    </div>
+                
+                </div>
+            </td>
+        
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination links -->
+    <div class="pagination" style="margin-top: 15px; float: right;">
+        {% if accounts.has_other_pages %}
+        <span class="step-links">
+            {% if accounts.has_previous %}
+                <a href="?page=1{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">&laquo; First</a>
+                <a href="?page={{ accounts.previous_page_number }}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ accounts.number }} of {{ accounts.paginator.num_pages }}.
+            </span>
+
+            {% if accounts.has_next %}
+                <a href="?page={{ accounts.next_page_number }}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">Next</a>
+                <a href="?page={{ accounts.paginator.num_pages }}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">Last &raquo;</a>
+            {% endif %}
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Modal HTML structure -->
+    <div id="detailsModal" class="modal" >
+        <div class="modal-content" >
+            <div class="close-container">
+                <span class="close">&times;</span>
+                <div class="close-background"></div>
+            </div>
+                <div class="topic-background" style="background-color: #32373d; ">
+                    <p style="color: white;  padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">User Account Details</p>
+                </div>
+                <p style = "color: black; font-weight: bold;">Account ID: <span id="accountID" style = "font-weight: 400; color: gray;"></span></p>
+                <p style = "color: black; font-weight: bold;">Full Name: <span id="fullName" style = "font-weight: 400; color: gray;"></span></p>
+                <p style = "color: black; font-weight: bold;">Username: <span id="userName" style="font-weight: 400; color: gray; "></span></p>
+                <p style = "color: black; font-weight: bold;">User Email: <span id="userEmail" style="font-weight: 400; color: gray;"></span></p>
+                <p style = "color: black; font-weight: bold;">Phone Number: <span id="phone" style = "font-weight: 400; color: gray;"></span></p>
+                <p style = "color: black; font-weight: bold;">Home Address: <span id="address" style = "font-weight: 400; color: gray;"></span></p>
+            
+        </div>
+    </div>
+
+    <!-- Modal HTML structure for delete -->
+    <div id="deleteConfirmationModal" class="modal" >
+        <div class="modal-content" style="margin-bottom: 310px;">
+            <div class="close-container">
+                <span class="close">&times;</span>
+                <div class="close-background"></div>
+            </div>
+            <!-- Add the topic background div with the topic title -->
+            <div class="topic-background">
+                <p style="color: white;  padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Delete Confirmation</p>
+            </div>
+            <!-- End of topic background div -->
+            <p style="color: black; text-align: center; margin-top: 30px;">Are you sure you want to remove <span id="deleteUsername" style="font-weight: bold; color: red;"></span> ?</p>
+            <div style="margin-top: 20px;">
+                <button class="confirm-delete" style="border-radius: 80px;width: 100px;" >Yes</button>
+                <button class="cancel" style="margin-right: 10px; border-radius: 80px; width: 100px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+<!-- Modal HTML structure for update -->
+<div id="updateModal" class="modal">
+    <div class="modal-content">
+        <div class="close-container">
+            <span class="close">&times;</span>
+            <div class="close-background"></div>
+        </div>
+        <div class="topic-background " style="background-color: #5b7cfa;">
+            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Update Account</p>
+        </div>
+        <form id="updateForm">
+            <!-- Add form fields for updating account details -->
+            <label for="updateUserName" style="color: #000000;">Username:</label><br>
+            <input type="text" id="updateUserName" name="updateUserName" placeholder="Enter username"><br><br>
+            <label for="updateFirstName" style="color: #000000;">First Name:</label><br>
+            <input type="text" id="updateFirstName" name="updateFirstName" placeholder="Enter first name"><br><br>
+            <label for="updateLastName">Last Name:</label>
+            <input type="text" id="updateLastName" name="updateLastName" placeholder="Enter last name"><br><br>
+            <!-- Add more fields as needed -->
+            <button type="submit" class="confirm-update" style="margin-right: 10px; border-radius: 80px; width: 100px; background-color: #5b7cfa; color: #ffffff; border-color: white; border-width: 0px;">Update</button>
+        </form>
+    </div>
+</div>
+
+
+
+    <script src="{% static 'js/accounts.js' %}"></script>
+    <script src="{% static 'js/search.js' %}"></script>
+
+
+    {% endblock %}

@@ -1,0 +1,291 @@
+{% extends "navbar_accounts.html" %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+    ::-webkit-scrollbar {
+    display: none;
+}
+
+    /* Your custom styles */
+    .right-align {
+        text-align: right;
+    }
+    .form-column {
+        width: 50%;
+        /* Adjust the width as needed */
+    }
+    .form-container {
+        max-width: 1200px;
+        /* Adjust the maximum width as needed */
+        margin: 0 auto;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+    .input-group label {
+        margin-right: 20px;
+        /* Increase the margin to push the label further */
+    }
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        padding-left: 7px;
+        /* Adjust the padding to create space for the caret */
+    }
+
+    .form-container-wrapper {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        padding: 30px;
+        border-radius: 10px ;
+        width: 100%;
+    }
+
+    /* Reset default margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+}
+
+/* Apply a consistent padding to all table cells */
+.table td {
+    padding: 10px;
+}
+
+/* Set a consistent width for each table cell */
+.table td {
+    width: 33.33%; /* Equal width for each cell */
+}
+
+/* Adjust margins for specific elements */
+.input-group label {
+    margin-right: 10px; /* Adjust margin between labels and input fields */
+}
+
+/* Ensure consistent margin and padding for form elements */
+.form-container {
+    padding: 20px;
+}
+
+/* Ensure the same spacing for each column */
+.form-container table tr td {
+    margin-bottom: 10px; /* Adjust margin between rows */
+}
+
+/* Ensure consistent spacing for the header container */
+
+
+
+
+
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Register Account</h1>
+
+    <div id="navbar" style="margin-right: 0px;">
+        <a href="{% url 'accounts' %}" class="navbar-link" >Accounts List</a>
+        <a href="{% url 'register' %}" class="navbar-link">Register Account</a>
+        <!-- <a href="#" class="navbar-link">Update Account</a> -->
+    </div>
+</div>
+
+<hr>
+
+<div style="height: 20px;"></div>
+
+<div class="form-container-wrapper slide-in">
+<p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill all user information below.</p>
+
+<hr>
+
+<div class="form-container slide-in-left">
+    <form method="POST" action="">
+        {% csrf_token %}
+
+        <div style="display: inline-block;">
+            <p> Username </p>
+            {{ user_form.username }}         
+        </div>
+
+        <div style="display: inline-block; margin-left: 30px;">
+            <p> User Group </p>
+            {{ user_form.group }} <br>           
+        </div>
+        
+        
+        
+        <div style="display: block;"> <!-- Change display to block to force new line -->
+            <div style="display: inline-block;"> <!-- Nested inline-block to keep "First Name" inline -->
+                <p>First Name</p>
+                {{ user_form.first_name }}
+
+                <div style="display: inline-block; margin-left: 30px;"> <!-- Maintain inline-block for "Last Name" -->
+                    <!-- Nested inline-block for "Last Name" -->
+                       <p>Last Name</p>
+                       {{ user_form.last_name }} <br>            
+                  
+               </div>
+            </div>
+        </div>
+
+        <div style="display: inline-block;">
+            <p> Email </p>
+            {{ user_form.email}}         
+        </div>
+
+        <div style="display: inline-block; margin-left: 20px;">
+            <p style="margin-left: 15px;"> Phone </p>
+            {{ details_form.phone_number }}        
+        </div>
+
+        <div style="">
+            <p> Birthdate </p>
+            {{ details_form.birthdate  }}        
+        </div>
+
+        <div style="display: inline-block;">
+            <p> Address </p>
+            {{ details_form.address}}        
+        </div>
+        
+        
+        
+        
+        
+        
+
+      
+
+        <div class="table-responsive">
+            <table class="table" border="0">
+                <tbody>
+                    
+             
+                    <!-- Add JavaScript to handle dynamic display of the input box -->
+                    <!-- <tr id="additional-info-row" style="display: none;">
+                        <td><label for="id_additional_info">Additional Info</label></td>
+                        <td>{{ user_form.additional_info }}</td> -->
+                        <!-- You can adjust the colspan as needed -->
+                        <!-- <td colspan="2"></td>
+                    </tr> -->
+                    <!-- End of additional info row -->
+
+
+<!--             
+                        <td><label for="id_email">Email</label><br>{{ user_form.email }}</td>
+
+                        <td ><label for="id_phone_number">Phone</label><br>
+                   
+                            <select name="country_code" id="id_country_code">
+                                {% for code, label in details_form.fields.country_code.choices %}
+                                    <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ details_form.phone_number }}
+                    
+                        </td>
+                       
+               
+                        <td><label for="id_address">Address</label><br>{{ details_form.address }}</td> -->
+
+                   
+                
+                  
+                    <tr>
+                       
+                   
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><label for="id_password1">Password</label><br>{{ user_form.password1 }}<i id="passwordToggle1" class="fa fa-eye-slash" aria-hidden="true" onclick="togglePasswordVisibility('id_password1', 'passwordToggle1')" style="margin-left: -20px; cursor: pointer;"></i></td>
+                        <td><label for="id_password2">Confirm Password</label><br> {{ user_form.password2 }}
+                            <i id="passwordToggle2" class="fa fa-eye-slash" aria-hidden="true" onclick="togglePasswordVisibility('id_password2', 'passwordToggle2')" style="margin-left: -25px; cursor: pointer;"></i>
+                            {% if user_form.password2.value != user_form.password1.value %}
+                            <p>Password must be the same as the first password.</p>
+                            {% endif %}
+                        </td>
+                        <!-- <td>
+                            
+                            <div class="input-group">
+                                {{ user_form.password2 }}
+                                <i id="passwordToggle2" class="fa fa-eye-slash" aria-hidden="true" onclick="togglePasswordVisibility('id_password2', 'passwordToggle2')" style="margin-left: 3px; cursor: pointer;"></i>
+                            </div>
+                            {% if user_form.password2.value != user_form.password1.value %}
+                                <p>Password must be the same as the first password.</p>
+                            {% endif %}
+                        </td> -->
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+           
+               
+                        <td><input class="btn btn-primary slide-in" type="submit" value="Register Account" style="font-size: 14px; float: right; border-radius: 2px; "></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+    {% if messages %}
+        {% for message in messages %}
+            <h3 class="messages" style="font-size: 18px; color: black;">{{ message }}</h3>
+        {% endfor %}
+    {% endif %}
+</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function togglePasswordVisibility(inputId, toggleId) {
+        var passwordInput = document.getElementById(inputId);
+        var toggleIcon = document.getElementById(toggleId);
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        } else {
+            passwordInput.type = "password";
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        }
+    }
+
+    // JavaScript/jQuery code for handling the change event of the group dropdown
+$(document).ready(function() {
+    $('#id_group').change(function() {
+        var selectedGroup = $(this).val();
+        $.ajax({
+            url: '/update_additional_info/',
+            type: 'GET',
+            data: {'group': selectedGroup},
+            dataType: 'json',
+            success: function(data) {
+                $('#additional-info-row').html(data.html);
+            }
+        });
+    });
+});
+
+
+
+
+</script>
+
+{% endblock %}

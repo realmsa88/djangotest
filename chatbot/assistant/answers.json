@@ -1,0 +1,24 @@
+{
+    "attendance": {
+        "parent": [
+            "To check your child's attendance, navigate to the following: Dashboard > Attendance",
+            "Attendance records are available for parent viewing on the student dashboard."
+        ],
+        "teacher": [
+            "You can view attendance records for your students through the teacher dashboard.",
+            "Attendance tracking is available on the teacher portal."
+        ]
+    },
+    "billing": {
+        "parent": [
+            "For any billing inquiries related to your child's account, please contact our billing department.",
+            "Billing-related questions for parents can be addressed by emailing billing@example.com.",
+            "Yes, you can pay it in the billing section for next month's class.",
+            "You can navigate to the billing section for payment purposes."
+        ],
+        "teacher": [
+            "For billing inquiries related to teacher accounts, please contact our billing department.",
+            "Teachers can access billing information through the teacher dashboard."
+        ]
+    }
+}

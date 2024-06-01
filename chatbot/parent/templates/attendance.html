@@ -1,0 +1,35 @@
+{% extends "master_parent.html" %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+
+.activity-list {
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 10px;
+        position: relative;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Attendance</h1>
+</div>
+
+<hr>
+
+<div>
+
+    <p>Activity Name</p>
+</div>
+
+<div class="activity-list slide-in"></div>
+{% endblock %}

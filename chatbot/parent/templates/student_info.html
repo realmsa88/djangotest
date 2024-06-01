@@ -1,0 +1,293 @@
+{% extends "master_parent.html" %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+    .student-box {
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 10px;
+        position: relative;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .newdrawer {
+        display: none;
+        position: absolute;
+        top: 110%;
+        left: 0;
+        z-index: 900;
+        width: 100%;
+        height: 350px;
+        overflow-y: auto;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        border-radius: 10px;
+        padding: 16px;
+        color: black;
+        border: 2px solid rgb(0, 0, 0);
+    }
+
+    .newdrawer.open {
+        display: block;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        line-height: 1;
+        outline: none;
+        z-index: 999;
+    }
+
+    .close-btn:hover {
+        color: red;
+    }
+
+    .details-background {
+        background-color: black;
+        margin-top: -30px;
+        margin-left: -20px; /* Adjust this value as needed */
+        width: 105%;
+        height: 60px;
+    }
+
+    .slide-in-right {
+        animation: slideInRight 1s ease-in-out forwards; /* Apply animation */
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px); /* Slide in from left */
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    input[type="text"] {
+        padding-right: 25px; /* Adjust as needed */
+    }
+
+    /* Style the caret */
+    input[type="text"]::after {
+        content: '▼'; /* Unicode character for caret */
+        position: absolute;
+        top: 50%;
+        right: 8px; /* Adjust as needed */
+        transform: translateY(-50%);
+        pointer-events: none; /* Ensure caret is not clickable */
+        color: black; /* Adjust color as needed */
+    }
+
+    input[type="text"] {
+        padding-right: 40px; /* Adjust as needed */
+    }
+
+    /* Style the caret */
+    input {
+        font-weight: 500;
+        color: rgb(78, 78, 78);
+        height: 35px;
+        border-radius: 5px;
+        border-width: 0.2px;
+        border-color: rgb(169, 168, 168);
+    }
+
+    input[type="text"] {
+        padding-left: 10px; /* Adjust as needed */
+    }
+
+    .student-box:hover,
+    .student-box.selected {
+        border-color: #5b7cfa; /* Change border color on hover and selected */
+        background-color: #5b7cfa; /* Highlight color on hover and selected */
+    }
+
+    .student-box:hover .try,
+.student-box.selected .try {
+    color: white !important;
+}
+
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Information</h1>
+</div>
+
+<hr class="slide-in">
+<p style="color: black;" class="slide-in">Registered students: {{ students|length }}</p> 
+<hr>
+<p style="color: black;" class="slide-in-left">Student Name</p>
+{% for student in students %}
+<div class="student-box slide-in-left" onclick="toggleDrawer(event, '{{ student.id }}')" data-student-id="{{ student.id }}">
+    <p style="color: black; font-weight:" class="try">{{ student.studentName }}</p>
+    <div class="newdrawer slide-in-right" id="newdrawer_{{ student.id }}">
+        <div class="details-background"></div>
+        <p style="color: white; text-align: center; margin-top: -35px;">Student Details</p>
+        <button class="close-btn" onclick="hideModal('{{ student.id }}')">×</button>
+        <div style="display: inline-block;">
+            <p style="color: black; margin-bottom: 5px; margin-top: 20px;">Age</p>
+            <input type="text" id="studentAge_{{ student.id }}" value="{{ student.age }}" style="margin-bottom: 30px;" readonly>
+            <p style="color: black; margin-bottom: 5px;">Gender</p>
+            <input type="text" id="studentGender_{{ student.id }}" value="{{ student.gender }}" readonly>
+            <p style="color: black; margin-bottom: 5px;">Race</p>
+            <input type="text" id="studentRace_{{ student.id }}" value="{{ student.race }}" readonly>
+        </div>
+        <div style="display: inline-block; margin-left: 20px;">
+            <p style="color: black; margin-bottom: 5px;">Teacher</p>
+            <input type="text" id="studentTeacher_{{ student.id }}" value="{{ student.assigned_teacher.first_name }} {{ student.assigned_teacher.last_name }}" readonly>
+            <p style="color: black; margin-bottom: 5px;">Learning Mode</p>
+            <input type="text" id="studentMode_{{ student.id }}" value="{{ student.teaching_mode }}" readonly>
+            <p style="color: black; margin-bottom: 5px;">Instrument</p>
+            <input type="text" id="studentInstrument_{{ student.id }}" value="{{ student.instrument }}" readonly>
+        </div>
+        <div style="display: inline-block; margin-left: 20px;">
+            <p style="color: black; margin-bottom: 5px;">Date of Birth</p>
+            <input type="text" id="studentBirthDate_{{ student.id }}" value="{{ student.birthdate }}" readonly>
+            <p style="color: black; margin-bottom: 5px;">Identification Number</p>
+            <input type="text" id="studentIC_{{ student.id }}" value="{{ student.identification_number }}" readonly>
+            <p style="color: black; margin-bottom: 5px;">Current Book</p>
+            <input type="text" id="studentIC_{{ student.id }}" value="{{ student.current_book }}" readonly>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    var openDrawerId = null; // Variable to store the ID of the currently open drawer
+
+    function toggleDrawer(event, studentId) {
+    var drawer = document.getElementById('newdrawer_' + studentId);
+
+    // If a drawer is already open and it's not the one being clicked, close it
+    if (openDrawerId && openDrawerId !== 'newdrawer_' + studentId) {
+        var currentDrawer = document.getElementById(openDrawerId);
+        if (currentDrawer) {
+            currentDrawer.classList.remove('open');
+            resetBoxPositions(); // Reset box positions when closing the drawer
+            showAllBoxes(); // Show all boxes when closing the drawer
+        }
+    }
+
+    // Toggle the clicked drawer
+    drawer.classList.toggle('open');
+    openDrawerId = drawer.classList.contains('open') ? 'newdrawer_' + studentId : null;
+
+    // Adjust box positions if the drawer is opened
+    if (drawer.classList.contains('open')) {
+        adjustBoxPositions(studentId);
+        hideOtherBoxes(studentId); // Hide other boxes when drawer is opened
+    } else {
+        resetBoxPositions(); // Reset box positions when closing the drawer
+        showAllBoxes(); // Show all boxes when closing the drawer
+    }
+
+    event.stopPropagation(); // Prevent click event propagation to parent
+}
+
+
+
+    function adjustBoxPositions(clickedStudentId) {
+        var boxes = document.querySelectorAll('.student-box');
+        var clickedBox = document.querySelector('.student-box[data-student-id="' + clickedStudentId + '"]');
+        var clickedBoxBottom = clickedBox.getBoundingClientRect().bottom;
+        var drawerHeight = document.getElementById('newdrawer_' + clickedStudentId).offsetHeight;
+
+        boxes.forEach(function(box) {
+            var boxId = box.getAttribute('data-student-id');
+            if (boxId !== clickedStudentId) {
+                box.style.position = 'relative';
+                var boxTop = box.getBoundingClientRect().top;
+
+                if (boxTop > clickedBoxBottom) {
+                    box.style.top = drawerHeight + 'px';
+                } else {
+                    box.style.top = '0px';
+                }
+            }
+        });
+    }
+
+    function hideOtherBoxes(clickedStudentId) {
+        var boxes = document.querySelectorAll('.student-box');
+        boxes.forEach(function(box) {
+            var boxId = box.getAttribute('data-student-id');
+            if (boxId !== clickedStudentId) {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+            }
+        });
+    }
+
+    function showAllBoxes() {
+    var boxes = document.querySelectorAll('.student-box');
+    boxes.forEach(function(box) {
+        box.style.display = 'block';
+    });
+}
+
+
+    function resetBoxPositions() {
+        var boxes = document.querySelectorAll('.student-box');
+        boxes.forEach(function(box) {
+            box.style.position = '';
+            box.style.top = ''; // Reset top position to default
+        });
+    }
+
+    // Prevent closing the drawer when clicking inside it
+    document.querySelectorAll('.newdrawer').forEach(function(drawer) {
+        drawer.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const studentBoxes = document.querySelectorAll('.student-box');
+
+        // Add event listeners for hover and click
+        studentBoxes.forEach(function(box) {
+            box.addEventListener('mouseenter', function() {
+                this.classList.add('hover');
+            });
+            box.addEventListener('mouseleave', function() {
+                this.classList.remove('hover');
+            });
+            box.addEventListener('click', function() {
+                // Remove 'selected' class from previously selected box, if any
+                const prevSelected = document.querySelector('.student-box.selected');
+                if (prevSelected) {
+                    prevSelected.classList.remove('selected');
+                }
+                // Add 'selected' class to the clicked box
+                this.classList.add('selected');
+            });
+        });
+    });
+</script>
+
+{% endblock %}

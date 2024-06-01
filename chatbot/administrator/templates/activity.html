@@ -1,0 +1,248 @@
+{% extends 'master_admin.html' %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<style>
+    .emoji-text {
+        display: inline-block;
+        margin-right: 5px;
+        /* Adjust the margin as needed */
+    }
+
+    .month {
+        font-size: 18px;
+        font-weight: bold;
+        /* color: #148634; */
+    }
+
+    .day {
+        font-size: 48px;
+        font-weight: bold;
+        /* color: #148634; */
+    }
+
+    .modal-header {
+        background-color: #165227;
+        color: white;
+
+    }
+
+    .custom-close-button {
+        border: none;
+        /* Removes the border */
+        outline: none;
+        /* Removes the outline that appears when the button is focused */
+        background: transparent;
+        /* Ensures the background is transparent */
+        padding: 0;
+        /* Removes any padding that might create visual space */
+        margin: 0;
+        /* Removes any margin */
+        box-shadow: none;
+        /* Removes any box-shadow which might look like a border */
+        color: white;
+        font-size: 1.5rem;
+        /* Adjust the size as needed */
+    }
+
+    .custom-close-button:hover,
+    .custom-close-button:focus {
+        outline: none;
+        /* Ensures no outline appears when focused or hovered */
+    }
+
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        /* background-color: #148634; */
+        background-color: #165227;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .floating-button:hover {
+        /* background-color: #165227; */
+        background-color: #148634;
+    }
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Activity List</h1>
+
+    <div id="navbar">
+        <a href="{% url 'activity' %}" class="navbar-link">Activity List</a>
+        <a href="{% url 'register-activity' %}" class="navbar-link">Register Activity</a>
+    </div>
+</div>
+
+<hr class="slide-in-left"> 
+
+
+<div class="wrapper">
+
+    <div class="main">
+        <div class="container p-5 slide-in">
+            <!-- d-flex nowrap justify-content-center align-items-center -->
+        
+                <div class="filter-buttons mb-3 text-center">
+                    Filter by Category:
+               
+                  
+                    <a href="{% url 'activity'%}" class="btn btn-outline-secondary btn-md mx-2">All</a>
+                    {% for type in activity_types %}
+                    <a href="?category={{ type }}" class="btn btn-outline-secondary btn-md mx-2">{{ type }}</a>
+                {% endfor %}
+                </div>
+     
+
+
+       
+
+            {% for activity in activities %}
+                <div class="row mb-3 justify-content-center align-items-center slide-in-left">
+
+                    <div class="card mb-3" style="width: 90%;height: 90%; padding: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); border-radius: 10px;">
+                        <div class="row g-0">
+                            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center"
+                                style="border-right: 1px solid black;">
+                                <div class="month" style="color: black;">{{ activity.activity_date|date:"F" }}</div>
+                                <div class="day" style="color: black;">{{ activity.activity_date|date:"d" }}</div>
+
+                            </div>
+                            
+                            <div class="col-md-6">
+                                
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">{{activity.activity_name}}</h5>
+                                    <div class="no-margin">
+                                        <p class="card-text"><span class="emoji-text">🕒</span>
+                                            {{activity.start_time}} - {{activity.end_time}}
+                                               
+                                        </p>
+                                    </div>
+                                    <div class="no-padding">
+                                        <p class="card-text" style=" margin-left: 6px;"><span class="emoji-text">📍</span>
+                                            {{activity.location}}
+                                         </p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+
+                            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+                                <div class="month" style="font-weight: normal; color: black; font-size:medium;"> {{activity.activity_type}}</div>
+                            </div>
+                            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+                                <div class=" mt-2 text-center">
+                                    <!-- Details Button -->
+                                    <button data-href=""
+                                        class="btn btn-outline-success btn-xs mb-2" role="button" data-toggle="modal"
+                                        data-target="#activityModal">Details</button>
+                                    <!-- Edit Button -->
+                                    <a href=">"
+                                        class="btn btn-outline-primary btn-xs mb-2" role="button">Edit</a>
+                                    <!-- Delete Button -->
+                                    <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ account.username }}" style="margin-left: 0px;">
+                                        <i class="fa fa-trash" id="deleteIcon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+
+
+          
+
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="activityModal" tabindex="-1" role="dialog"
+                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="activityModal">Activity Details</h5>
+                                <button type="button" class="custom-close-button" data-dismiss="modal"
+                                    aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Activity details will be loaded here -->
+                            </div>
+                            <!-- <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <button class="floating-button">+</button> -->
+ 
+
+
+
+
+
+        </div>
+
+
+    </div>
+</div>
+
+<!-- jQuery, Popper.js, and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $('#activityModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var url = button.data('href'); // Extract info from data-* attributes
+        var modal = $(this);
+
+        // Clear previous content before making the AJAX request
+        modal.find('.modal-body').html('<div class="text-center"><img src="../pictures/icons/loading.gif" alt="Loading..."></div>');
+
+
+        // Use jQuery to load the content of the URL into the modal body
+        $.ajax({
+            url: url,
+            success: function (data) {
+                modal.find('.modal-body').html(data);
+            }
+        });
+    });
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
+</script>
+
+
+{% endblock %}

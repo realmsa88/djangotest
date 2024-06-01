@@ -1,0 +1,193 @@
+    /* Style for the topic background */
+    /* Style for the topic background */
+    .topic-background {
+        background-color: #ed5565;
+        width: calc(100% + 40px); /* Adjusted width to cover entire modal width */
+        height: 65px;
+        margin-top: -45px;
+        margin-left: -20px;
+        margin-bottom: 10px; /* Adjust margin as needed */
+        position: relative; /* Set position to relative */
+        
+    }
+
+    /* Style for the modal content */
+    .modal-content {
+        border-radius: 10px; /* Adjust the border radius as needed */
+        overflow: hidden; /* Ensure the border-radius is applied correctly */
+    }
+
+
+
+        /* Style for close button container */
+    .close-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* Style for close background */
+    .close-background {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        width: 30px;
+        height: 30px;
+        background-color: rgba(0, 0, 0, 0.1); /* Adjust opacity as needed */
+        border-radius: 50%;
+        z-index: -1; /* Ensure the background is behind the close button */
+    }
+
+    /* Style for close button */
+    /* Style for close button */
+    .close {
+        position: relative;
+        cursor: pointer;
+        color: black;
+        font-size: 25px;
+        z-index: 9999; /* Ensure the close button appears above the modal background */
+    }
+
+
+    /* Highlight icons when hovered */
+    .confirm-delete {
+        background-color: #ed5565;
+        color : white;
+        border-radius: 2px;
+        border-color: white;
+        border-width: 0px;
+        float: right;
+        padding: 5px;
+    }
+
+    table thead {
+        background-color: #5b7cfa;
+        border: transparent;
+        
+    }
+
+    .cancel {
+        background-color: #32373d;
+        color: white;
+        border-radius: 2px;
+        border-color: white;
+        border-width: 0px;
+        padding: 5px;
+        float: right;
+
+    }
+
+    /* Highlight icons when hovered */
+    .filter-buttons-container:hover .icon-container {
+        
+        cursor: pointer;
+    }
+
+    /* Change color of the icon when hovered */
+    .filter-buttons-container:hover .icon-container {
+        color: white; /* Change color to white on hover */
+    }
+    .pencil-container:hover {
+        color: gray; /* Change color to white on hover */
+    }
+
+
+
+    .pencil-container {
+        display: inline-block;
+        border: 0px solid black; /* Add a border around the icon */
+        border-radius: 3px; /* Add some padding to the border */
+        padding: 5px;
+        margin-left: 20px;
+        cursor: pointer;
+    }
+    .icon-container {
+        display: inline-block;
+        border: 1px solid #ed5565; /* Add a border around the icon */
+        border-radius: 3px; /* Add some padding to the border */
+        padding: 5px;
+        margin-left:-20px;
+    }
+
+        .icon-container i, .pencil-container a {
+            font-size: 20px; /* Adjust the font size as needed */
+        }
+    .details-button:hover {
+            color: white; /* Change color to white on hover */
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add glow effect */
+            /* Add any other styles you want for hover effect */
+        }
+
+        tbody tr:hover {
+            background-color: #dcd9d9b8; /* Change background color on hover */
+        }
+
+    .icon-container:hover i {
+        color: white; /* Change color to white on hover */
+    }
+
+    /* Add hover effect to the container */
+    .icon-container:hover {
+        background-color: #ed5565; /* Change background color of the container */
+        border: 1px solid #ed5565; /* Add border to ensure the container is fully covered */
+        cursor: pointer;
+    }
+
+
+
+        i:hover
+    {
+            cursor: pointer;
+            color: white; /* Change color to white on hover */
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            background-color: #ed5565;
+        }
+        i {
+            color: #ed5565;
+            font-size: large;
+            margin-top: 3px;
+        
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .red-icon {
+            color: red;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            min-width: 400px;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        #search-input {
+            margin-left: 5px; /* Add margin from the left edge */
+            padding-left: 10px; /* Adjust padding to create space for the caret */
+        }
+
+        /* Hide the default scrollbar */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Style the custom scrollbar */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+        

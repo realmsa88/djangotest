@@ -1,0 +1,78 @@
+{%extends "master_admin.html"%}
+{%load static%}
+
+{%block content%}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+<style>
+
+
+    
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Information</h1>
+
+    <div id="navbar">
+        <a href="{% url 'student' %}" class="navbar-link">Student List</a>
+        <a href="{% url 'register-student' %}" class="navbar-link">Register Student</a>
+    </div>
+</div>
+
+<hr class="slide-in">
+
+<p style="margin-top: 20px;" class="slide-in">Click on a row to view user details</p>
+
+<div class="entries-dropdown slide-in-left" style="color: black;">
+
+    
+
+    Search: <input type="text" id="search-input" placeholder="Search" style="margin-right: 30px; margin-left: 5px;">
+    <label for="entries-per-page" style="color: #000000;">Entries per page:</label>
+    <select id="entries-per-page" onchange="changeEntriesPerPage(this)">
+        
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="{{ accounts.paginator.count }}">All</option>
+    </select>
+
+   
+    
+</div>
+
+<br>
+<br>
+
+<table border="1" class="slide-in">
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Assigned Teacher</th>
+            <th style="text-align: center;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+
+        <tr>
+            <td>
+                {{student.studentName}}
+            </td>
+            <td>{{student.assigned_teacher.first_name}} {{student.assigned_teacher.last_name}}</td>
+            <td style="text-align: center;"> 
+                <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ account.username }}" style="margin-left: 0px;">
+                    <i class="fa fa-trash" id="deleteIcon"></i>
+                </div>
+            </td>
+        </tr>
+        
+
+        {% endfor %}
+    </tbody>
+
+</table>
+{%endblock%}
