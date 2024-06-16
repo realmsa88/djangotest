@@ -13,14 +13,17 @@
     <div class="media-item">
         <img src="{% static '/images/' %}{{ media.media_name }}" alt="{{ media.media_type }}">
     </div>
+    <p>{{ media.media_name }}</p>
    
 {% endif %}
+
+<p>{{ media }}</p>
 
 <div class="media-container">
     <!-- Display media items associated with the activity -->
     {% for media_item in activity.media_set.all %}
     <div class="media-item">
-        <img src="{% static 'images/' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
+        <img src="{% static 'administrator/images/guitar.jpeg' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
     </div>
     <p>{{ media.media_name }}</p>
     {% endfor %}

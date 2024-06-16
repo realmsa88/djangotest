@@ -1,0 +1,374 @@
+{% extends "master_teacher.html" %}
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Attendance</h1>
+
+    <div id="navbar">
+        <a href="{% url 'attendance-list' %}" class="navbar-link">Attendance List</a>
+        <a href="{% url 'student-attendance' %}" class="navbar-link">Student Attendance</a>
+    </div>
+</div>
+
+<style>
+    button {
+        border-radius: 10px;
+    }
+    .green-background {
+        background-color: #5b7cfa;
+        width: 100%;
+        height: 50px;
+        position: relative;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    #calendar-container {
+        width: 300px;
+    }
+
+    #student-list {
+        max-width: 300px;
+        margin: 20px;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #students li {
+        padding: 5px 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .highlighted {
+        background-color: #5b7cfa !important;
+        border-color: #5b7cfa;
+        color: #fff;
+    }
+
+    .highlighted li {
+        color: white;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .book-detail-container {
+        display: none;
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .calendar-class {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    #calendar-container {
+        margin-right: 20px;
+    }
+
+    #student-list {
+        max-width: 600px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .close-detail-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 1010;
+    }
+
+    .calendar {
+        font-family: Arial, sans-serif;
+        border-collapse: collapse;
+        width: 300px !important;
+    }
+
+    .calendar th,
+    .calendar td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .calendar th {
+        background-color: #f2f2f2;
+    }
+</style>
+
+<hr>
+
+<!-- <div class="green-background">
+    <p style="text-align: center;color:#fff;">Class Calendar</p>
+</div> -->
+
+<p>Calendar</p>
+
+<div id="warning-message" style="background-color: rgb(193, 81, 81); display: none; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 20px;">
+    <p id="ongoing-class-label" style="color: white;">Ongoing class:</p>
+    <p id="ongoing-class-details" style="color: white; display: inline;"></p>
+    <form id="attendForm" method="POST" action="/attend-student/">
+        <input type="hidden" name="studentId" id="studentIdInput" value="">
+        <input type="hidden" name="attendanceId" id="attendanceIdInput" value="">
+        <input type="hidden" name="status" value="Approved">
+        <button type="submit" id="buttonAttend">Attend</button>
+    </form>
+    
+</div>
+
+
+<div id="teacher-id" data-teacher-id="{{ teacher_id }}"></div>
+
+
+
+<div class="calendar-class slide-in" style="margin-left: -500px;">
+    <div id="calendar-container"></div>
+    
+    <div id="student-list" style="width: 600px;">
+        <p style="font-size: 16px;">Students for Selected Day</p>
+        <ul id="students">
+            {% for attendance in ongoing_classes %}
+            <li data-attendance-id="{{ attendance.id }}" data-teacher-id="{{ teacher_id }}">
+                Name: {{ attendance.student.user.studentName }}, Time: {{ attendance.start_time }} - {{ attendance.end_time }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
+<hr>
+
+<div class="filter-buttons-container slide-in" style="visibility: hidden; top: 50px; margin-top: -1000px;">
+    <div class="button-wrapper">
+        {% for instrument_major in instrument_majors %}
+        <button onclick="filterInstruments(this, '{{ instrument_major }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
+            {{ instrument_major }}
+        </button>
+        {% endfor %}
+    </div>
+    <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
+</div>
+
+{% for instrument in instruments %}
+    {% if instrument.instrument_major_name %}
+        {% if instrument.instrument_minor_name %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}" data-minor="{{ instrument.instrument_minor_name }}" style="height: 80px;">
+                <p>
+                    <i class="fa fa-chevron-right" aria-hidden="true" style="color: rgba(23, 23, 117, 0.526);"></i>
+                    {{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}
+                </p>
+
+                <div class="student-details-container slide-in-left">
+                    {% for bookinstrument in instrument.bookinstrument_set.all %}
+                    {% with book=bookinstrument.bookID %}
+                    <div class="book-container" style="background-color: white;" onclick="navigateToStudents('{{ instrument.instrument_minor_name }}', '{{ instrument.instrument_major_name }}', '{{ book.id }}')">
+                        <ul>
+                            <li style="margin-left: 10px;">{{ book.book }}</li>
+                        </ul>
+                        <div class="book-detail-container">
+                            <div class="book-detail-content">
+                                <!-- Book details will be populated here -->
+                            </div>
+                            <button class="close-detail-button">Close</button>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}">
+                <p>{{ instrument.instrument_major_name }}</p>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendar = flatpickr("#calendar-container", {
+            inline: true,
+            dateFormat: "Y-m-d",
+            onChange: function(selectedDates, dateStr, instance) {
+                fetchStudentsForDate(dateStr);
+            }
+        });
+    
+        const currentDate = dayjs().format("YYYY-MM-DD");
+        fetchStudentsForDate(currentDate);
+    
+        function fetchStudentsForDate(date) {
+            const teacherId = document.getElementById('teacher-id').dataset.teacherId;
+            fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
+                .then(response => response.json())
+                .then(data => {
+                    var studentsUl = document.getElementById('students');
+                    studentsUl.innerHTML = '';
+                    var warningMessage = document.getElementById('warning-message');
+                    var ongoingClassFound = false;
+    
+                    if (data.students.length > 0) {
+                        data.students.forEach(student => {
+                            var li = document.createElement('li');
+                            var startTime = formatTime(student.start_time);
+                            var endTime = formatTime(student.end_time);
+                            li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
+                            
+                            if (student.is_ongoing) {
+                                li.innerHTML += '<span style="color: red;">(Ongoing)</span>';
+                                ongoingClassFound = true;
+                                document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}, Instrument: ${student.instrument_minor}, ${student.instrument_major}`;
+                                document.getElementById('studentIdInput').value = student.id;
+                                document.getElementById('attendanceIdInput').value = student.attendance_id;
+                            }
+    
+                            studentsUl.appendChild(li);
+                        });
+                    } else {
+                        var li = document.createElement('li');
+                        li.textContent = 'No students scheduled for this date.';
+                        studentsUl.appendChild(li);
+                    }
+    
+                    if (ongoingClassFound) {
+                        warningMessage.style.display = 'block';
+                        document.getElementById('ongoing-class-label').style.display = 'block';
+                    } else {
+                        warningMessage.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching student data:', error);
+                });
+        }
+    
+        function formatTime(time) {
+            var hours = time.split(':')[0];
+            var minutes = time.split(':')[1];
+            var amOrPm = hours < 12 ? 'AM' : 'PM';
+            hours = hours % 12 || 12;
+            return `${hours}:${minutes} ${amOrPm}`;
+        }
+    
+        window.addEventListener('load', function() {
+            filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
+            var firstButton = document.querySelector('.filter-buttons-container button');
+            if (firstButton) {
+                firstButton.classList.add('actives');
+            }
+        });
+    
+        function filterInstruments(button, major) {
+            var buttons = document.querySelectorAll('.filter-buttons-container button');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('actives');
+            });
+    
+            if (button) {
+                button.classList.add('actives');
+            }
+    
+            var items = document.querySelectorAll('.student-box');
+            items.forEach(function(item) {
+                var itemMajor = item.getAttribute('data-major');
+                if (itemMajor === major) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    
+        // Ensure navigateToStudents is defined
+        window.navigateToStudents = function(instrumentMinor, instrumentMajor, bookId) {
+            window.location.href = `/teacher/students-by-book/${instrumentMinor}/${instrumentMajor}/${bookId}/`;
+        };
+    });
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    function attendStudent(studentId, attendanceId) {
+        fetch('/attend-student/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                studentId: studentId,
+                attendanceId: attendanceId,
+                status: 'Approved'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                var li = document.querySelector(`li[data-attendance-id='${attendanceId}']`);
+                if (li) {
+                    li.innerHTML = `Name: ${data.student_name}, Time: ${data.start_time} - ${data.end_time}, Status: ${data.status} <button onclick="attendStudent('${studentId}', '${attendanceId}')">Attend</button>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    </script>
+    
+
+
+
+<script src="{% static 'js/learning_modules.js' %}"></script>
+<script src="{% static 'js/accounts.js' %}"></script>
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,259 @@
+<!-- attendance_list.html -->
+{% extends 'master_teacher.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+
+<style>
+.attendance-list {
+    margin-top: 20px;
+}
+
+.pencil-container {
+    float: right; /* Ensure the container is floated to the right */
+    margin-left: 10px; /* Adjust the margin if needed */
+}
+
+.attendance-record {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-record div {
+    margin-bottom: 5px;
+}
+
+.attendance-record strong {
+    display: inline-block;
+    font-weight: 600;
+}
+
+.attendance-title-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.attendance-title-date .attendance-date {
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.attendance-status.pending {
+    color: orange;
+    font-weight: bold;
+}
+
+.attendance-status.approved {
+    color: green;
+    font-weight: bold;
+}
+
+.attendance-attendance.absent {
+    color: red;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.attendance-attendance.attend {
+    color: green;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.icon-container:hover {
+    background-color: white;
+}
+
+#updateIcon:hover {
+    background-color: white;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Styling for the pencil icon */
+.pencil-container {
+    float: right;
+    margin-left: 10px;
+}
+
+.filter-buttons {
+    border-radius: 10px;
+}
+
+button {
+    border-radius: 10px;
+    border-color: black;
+    height: 50px;
+    width: 100px;
+    margin-left: 10px;
+    background-color: white;
+}
+
+button:hover {
+    border: none;
+    background-color: #5b7cfa;
+    color: white;
+}
+
+button:active {
+    background-color: green;
+    color: white;
+    border: none;
+}
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Attendance List</h1>
+    <div id="navbar">
+        <a href="{% url 'attendance-list' %}" class="navbar-link">Attendance List</a>
+        <a href="{% url 'student-attendance' %}" class="navbar-link">Student Attendance</a>
+    </div>
+</div>
+
+
+<!-- Add these buttons above the attendance list -->
+<!-- <div class="filter-buttons">
+    <button onclick="filterAttendance('Pending')">Pending</button>
+    <button onclick="filterAttendance('Approved')">Approved</button>
+</div> -->
+
+<hr>
+
+<!-- Attendance list -->
+<div class="attendance-list slide-in">
+    {% for attendance in attendance_list %}
+        <div class="attendance-record {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
+            <div class="attendance-title-date">
+                <strong style="color: black;">{{ attendance.title }}</strong> 
+                <span class="attendance-date">{{ attendance.date }} {{ attendance.start_time }} - {{ attendance.end_time }}</span>
+            </div>
+            <div class="attendance-student">
+                {{ attendance.student }}
+            </div>
+            <div class="attendance-description">
+                {{ attendance.description }}
+            </div>
+            <div class="attendance-attendance">
+                <span class="attendance-attendance {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %}">
+                    {{ attendance.attendance }}
+                </span>
+                {% if attendance.status == 'Pending Verification' %}
+                <div class="icon-container pencil-container" onclick="openModal('{{ attendance.id }}')" style="border-color: black ;"
+                     data-username="{{ account.username }}">
+                     <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                 </div>
+                 {% endif %}
+                <span class="attendance-status {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}" style="float: right;">{{ attendance.status }}</span>
+                
+             </div>
+         </div>
+         <hr>
+         <!-- Optional: Add a horizontal rule between records for better separation -->
+     {% empty %}
+         <p>No attendance records found.</p>
+     {% endfor %}
+     
+ </div>
+ 
+ <!-- The Modal -->
+ <div id="verifyModal" class="modal">
+     <div class="modal-content">
+         <span class="close" onclick="closeModal()">&times;</span>
+         <h2>Verify Absence</h2>
+         <p>Verify Attendance?</p>
+         <form id="verifyForm" method="post" action="{% url 'verify-attendance' %}">
+             {% csrf_token %}
+             <input type="hidden" name="attendance_id" id="attendanceId">
+             <button type="submit">Verify</button>
+        </form>
+            </div>
+        </div>
+        
+        <script>
+        // Get the modal
+        var modal = document.getElementById("verifyModal");
+        
+        // Function to open the modal
+        function openModal(attendanceId) {
+            modal.style.display = "block";
+            document.getElementById("attendanceId").value = attendanceId;
+        }
+        
+        // Function to close the modal
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        // Function to filter attendance records based on status
+        function filterAttendance(status) {
+    var records = document.getElementsByClassName("attendance-record");
+    for (var i = 0; i < records.length; i++) {
+        var record = records[i];
+        if (status === 'All' || record.classList.contains(status.toLowerCase())) {
+            record.style.display = "block";
+        } else {
+            record.style.display = "none";
+        }
+    }
+}
+
+event.target.classList.add('active');
+        </script>
+       
+       {% endblock %}
+       

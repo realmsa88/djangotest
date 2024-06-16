@@ -57,7 +57,7 @@ class UserDetailsForm(forms.ModelForm):
         # Add more country codes and labels as needed
     ]
 
-    country_code = forms.ChoiceField(choices=COUNTRY_CODES, required=True)
+    country_code = forms.ChoiceField(choices=COUNTRY_CODES, required=False)
     phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'placeholder': 'Enter user phone number', 'style': 'width: 210px;height:40px; margin-left : 10px'}))
     address = forms.CharField(max_length=255, required=False, widget=forms.Textarea(attrs={'placeholder': 'Enter user address', 'style': 'width: 300px;height:40px'}))
     birthdate = forms.DateField(
@@ -107,16 +107,18 @@ class StudentDetailsForm(forms.ModelForm):
     learningmode = forms.ChoiceField(
         choices=learning_mode_choices,
         widget=forms.RadioSelect(attrs={'class': 'radio-inline'}),
+        required=False
     )
 
     gender = forms.ChoiceField(choices=GENDER_CHOICES, required=True)
     race = forms.ChoiceField(choices=RACE, required=True)
     book = forms.ModelChoiceField(queryset=Book.objects.none(), empty_label="Select Book")
+    picture = forms.ImageField(required=False)
 
     class Meta:
         model = Student
         fields = ['studentName', 'age', 'identification_number', 'birthdate', 'assigned_parent', 'gender', 'race',
-                  'assigned_teacher', 'instrument', 'learningmode', 'book']
+                  'assigned_teacher', 'instrument', 'learningmode', 'book', 'picture']
 
     def __init__(self, *args, **kwargs):
         super(StudentDetailsForm, self).__init__(*args, **kwargs)
@@ -126,6 +128,16 @@ class StudentDetailsForm(forms.ModelForm):
 
         teacher_group = Group.objects.get(name='Teacher')
         teacher_users = teacher_group.user_set.all()
+        if 'instrument' in self.data:
+            try:
+                instrument_id = int(self.data.get('instrument'))
+                self.fields['book'].queryset = Book.objects.filter(bookinstrument__instrumentID=instrument_id)
+            except (ValueError, TypeError):
+                self.fields['book'].queryset = Book.objects.none()
+        elif self.instance.pk:
+            self.fields['book'].queryset = self.instance.instrument.book_set.order_by('name')
+        else:
+            self.fields['book'].queryset = Book.objects.none()
 
         self.fields['assigned_parent'].queryset = parent_users
         self.fields['assigned_parent'].label_from_instance = lambda obj: f"{obj.first_name} {obj.last_name}"
@@ -186,3 +198,16 @@ class ModuleForm(forms.ModelForm):
     class Meta:
         model = ModuleDetails
         fields = ['module_type', 'module_name', 'description', 'bookInstrument']
+
+
+class RegisterInstrumentForm(forms.Form):
+    primary_instrument = forms.CharField(label='Primary Instrument', max_length=100, required=True,widget=forms.TextInput(attrs={'placeholder': 'Primary Instrument - e.g Guitar'}))
+    variation = forms.CharField(label='Variation', max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Variation - e.g. Electric'}))
+    
+    books = forms.ModelMultipleChoiceField(
+        queryset=Book.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    

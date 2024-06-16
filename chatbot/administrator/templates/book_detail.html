@@ -20,6 +20,16 @@
     width: 100%;
 }
 
+.button {
+    border : none;
+    border-radius: 5px;
+    background-color: #18ad3d;
+    color: white;
+    width: 80px;
+    height: 40px;
+    margin-top: 10px;
+}
+
 p {
     color: black;
 }
@@ -155,14 +165,18 @@ input[type="text"] {
 
 <hr>
 
-<p style="color: black; " class="slide-in-left"> Module - {{ instrument_minor }} {{ instrument_major }} - {{book.book}} </p>
+<p style="color: black;" class="slide-in-left"> Module - {{ instrument_minor }} {{ instrument_major }} - {{ book.book }} </p>
 
 <br>
 
-<div id="successMessage" >Module deleted successfully.</div>
+<!-- Add these success messages in your HTML -->
+<div id="successMessageDelete" style="display: none;">Module deleted successfully.</div>
+<div id="successMessageAdd" style="display: none;">Modules added successfully.</div>
 
+
+<!-- Adjusted for all practice and repertoire modules -->
 <div class="form-container-wrapper slide-in">
-    <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill in module details for {{ instrument_minor }} {{ instrument_major }} - {{book.book}}. </p>
+    <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill in module details for {{ instrument_minor }} {{ instrument_major }} - {{ book.book }}.</p>
     <hr>
 
     <div class="flex-container">
@@ -170,12 +184,11 @@ input[type="text"] {
         <p style="margin-right: 500px;">Description</p>
     </div>
 
-    <div>
+    <div class="module-inputs">
         {% for module in modules %}
-            {% if module.module_type == "Practice"%}
+            {% if module.module_type == "Practice" %}
             <div class="module-container" data-module-id="{{ module.id }}" data-module-name="{{ module.module_name }}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                 <input type="text" readonly value="{{ module.module_name }}" style="color: black;">
-
                 <div style="display: flex; align-items: center; justify-content: flex-end; flex-grow: 1;">
                     <input type="text" readonly value="{{ module.description }}" style="color: black; margin-left: 10px;width: 80%;">
                     <div class="icon-container" style="margin-left: 12px; margin-top: 10px;">
@@ -186,28 +199,31 @@ input[type="text"] {
             {% endif %}
         {% endfor %}
     </div>
-    
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-        <input type="text" placeholder="Add practice module" style="color: black;" data-module-type="Practice">
-        <div style="display: flex; align-items: center; flex-grow: 1; justify-content: flex-end;">
-            <input type="text" placeholder="Write module description" style="color: black; margin-left: 10px; width: 80%;">
-            <div style="margin-left: 10px;">
-                <button class="floating-button" style="margin-top: 10px;">+</button>
+
+    <div class="module-inputs" id="practiceModulesContainer">
+        <!-- Initial practice module input fields -->
+         
+        <div class="practice-module-input">
+            <div class="flex-container">
+                <input type="text" class="practice-module-name" placeholder="Add practice module" style="color: black;" data-module-type="Practice" >
+                <input type="text" class="practice-module-description" placeholder="Write practice module description" style="color: black; margin-left: 95px; width: 50%;">
+                <button class="add-module-button" style="margin-left: 15px; border-radius: 20px;">+</button>
             </div>
         </div>
     </div>
-    
-    <div class="flex-container" style="margin-top: 60px;">
+
+    <hr style="margin-top: 40px;">
+
+    <div class="flex-container">
         <p>Repertoire</p>
         <p style="margin-right: 500px;">Description</p>
     </div>
 
-    <div>
+    <div class="module-inputs">
         {% for module in modules %}
-            {% if module.module_type == "Repertoire"%}
+            {% if module.module_type == "Repertoire" %}
             <div class="module-container" data-module-id="{{ module.id }}" data-module-name="{{ module.module_name }}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                 <input type="text" readonly value="{{ module.module_name }}" style="color: black;">
-
                 <div style="display: flex; align-items: center; justify-content: flex-end; flex-grow: 1;">
                     <input type="text" readonly value="{{ module.description }}" style="color: black; margin-left: 10px;width: 80%;">
                     <div class="icon-container" style="margin-left: 12px; margin-top: 10px;">
@@ -218,36 +234,39 @@ input[type="text"] {
             {% endif %}
         {% endfor %}
     </div>
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-        <input type="text" placeholder="Add repertoire module" style="color: black;" data-module-type="Repertoire">
-       
-        <div style="display: flex; align-items: center; flex-grow: 1; justify-content: flex-end;">
-            <input type="text" placeholder="Write module description" style="color: black; margin-left: 10px; width: 80%;">
-            <div style="margin-left: 10px;">
-                <button class="floating-button" style="margin-top: 10px;">+</button>
+
+    <div class="module-inputs" id="repertoireModulesContainer">
+        <!-- Initial repertoire module input fields -->
+         
+        <div class="repertoire-module-input">
+            <div class="flex-container">
+                <input type="text" class="repertoire-module-name" placeholder="Add repertoire module" style="color: black;" data-module-type="Repertoire">
+                <input type="text" class="repertoire-module-description" placeholder="Write repertoire module description" style="color: black; margin-left: 95px; width: 50%;">
+                <button class="add-module-button" style="margin-left: 15px; border-radius: 20px;">+</button>
             </div>
         </div>
     </div>
+
+    <button class="button" id="saveButton">Save</button>
 </div>
 
 <button class="back slide-in" onclick="window.history.back()">Back</button>
 
-
 <!-- Modal HTML structure for delete -->
-<div id="deleteConfirmationModal" class="modal" >
+<div id="deleteConfirmationModal" class="modal">
     <div class="modal-content" style="margin-bottom: 310px;">
         <div class="close-container">
             <span class="close">&times;</span>
-            <div class="close-background" style="margin-bottom: ;"></div>
+            <div class="close-background"></div>
         </div>
         <!-- Add the topic background div with the topic title -->
         <div class="topic-background" style="margin-top: -48px;">
-            <p style="color: white;  padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Delete Confirmation</p>
+            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Delete Confirmation</p>
         </div>
         <!-- End of topic background div -->
         <p style="color: black; text-align: center; margin-top: 30px;">Are you sure you want to remove <span id="deleteModule" style="font-weight: bold; color: red;"></span> ?</p>
         <div style="margin-top: 20px;">
-            <button class="confirm-delete" style="border-radius: 80px;width: 100px;" >Yes</button>
+            <button class="confirm-delete" style="border-radius: 80px;width: 100px;">Yes</button>
             <button class="cancel" style="margin-right: 10px; border-radius: 80px; width: 100px;">Cancel</button>
         </div>
     </div>
@@ -255,75 +274,179 @@ input[type="text"] {
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        var successMessage = document.getElementById("successMessage");
+    var successMessageDelete = document.getElementById("successMessageDelete");
+    var successMessageAdd = document.getElementById("successMessageAdd");
+    var saveButton = document.getElementById("saveButton");
 
-        document.querySelectorAll(".floating-button").forEach(function(button) {
-            button.addEventListener("click", function() {
-                var container = this.closest("div").previousElementSibling.closest("div");
-                var moduleTypeElement = container.querySelector(".flex-container p");
-                var moduleType = moduleTypeElement.textContent.trim(); // Get the module type text
+    // Function to handle delete confirmation
+    function confirmDelete(moduleId) {
+        var confirmationModal = document.getElementById("deleteConfirmationModal");
+        var deleteModuleSpan = document.getElementById("deleteModule");
+        deleteModuleSpan.textContent = "module"; // Modify this line if you want to display the module name
 
-                // Select the input elements based on the module type
-                var moduleNameInput = container.querySelector("input[placeholder='Add module'][data-module-type='" + moduleType + "']");
-                var descriptionInput = container.querySelector("input[placeholder='Write module description'][data-module-type='" + moduleType + "']");
+        // Display the delete confirmation modal
+        confirmationModal.style.display = "block";
 
-                // Checking if both inputs are found
-                if (!moduleNameInput || !descriptionInput) {
-                    alert("Please ensure both input fields are available.");
-                    return;
+        // Event listener for cancel button
+        var cancelButton = document.querySelector(".cancel");
+        cancelButton.addEventListener("click", function() {
+            // Close the confirmation modal
+            confirmationModal.style.display = "none";
+        });
+
+        // Event listener for confirm delete button
+        var confirmButton = document.querySelector(".confirm-delete");
+        confirmButton.addEventListener("click", function() {
+            // Perform the delete action
+            fetch("/administrator/modules/delete_module/" + moduleId + "/", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
                 }
-
-                // Accessing the value property only if inputs are found
-                var moduleName = moduleNameInput.value;
-                var description = descriptionInput.value;
-
-                // Checking the module type based on container attributes
-                var bookInstrumentId = "{{ bookInstrument.id }}";
-
-                var formData = new FormData();
-                formData.append('module_type', moduleType);
-                formData.append('module_name', moduleName);
-                formData.append('description', description);
-                formData.append('bookInstrument', bookInstrumentId);
-
-                fetch("{% url 'add_module' %}", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Show success message and reset input fields
-                        successMessage.style.display = "block";
-                        moduleNameInput.value = "";
-                        descriptionInput.value = "";
-
-                        // Hide success message after 3 seconds
-                        setTimeout(function() {
-                            successMessage.style.display = "none";
-                        }, 3000);
-
-                        // Optionally, you can perform other actions like appending the new module to the DOM
-                    } else {
-                        // Show error message
-                        alert("Failed to add module.");
-                    }
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                    alert("Failed to add module.");
-                });
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Module deleted successfully
+                    // Hide the delete confirmation modal
+                    confirmationModal.style.display = "none";
+                    // Show delete success message
+                    successMessageDelete.style.display = "block";
+                    // Hide success message after 3 seconds
+                    setTimeout(function() {
+                        successMessageDelete.style.display = "none";
+                    }, 3000);
+                } else {
+                    // Error occurred while deleting module
+                    alert("Failed to delete module.");
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                alert("Failed to delete module.");
             });
         });
+    }
+
+    // Event listener for trash icon click
+    var deleteIcons = document.querySelectorAll(".delete-icon");
+    deleteIcons.forEach(icon => {
+        icon.addEventListener("click", function() {
+            // Get the module ID associated with the trash icon
+            var moduleId = icon.closest(".module-container").getAttribute("data-module-id");
+            // Call the confirmDelete function to handle delete confirmation
+            confirmDelete(moduleId);
+        });
     });
+
+    // Function to add new practice or repertoire module input fields
+    function addModuleInput(containerId, moduleType) {
+        var container = document.getElementById(containerId);
+
+        // Create new input field elements
+        var moduleInputDiv = document.createElement("div");
+        moduleInputDiv.classList.add(moduleType.toLowerCase() + "-module-input");
+        moduleInputDiv.innerHTML = `
+            <div class="flex-container">
+                <input type="text" class="${moduleType.toLowerCase()}-module-name" placeholder="Add ${moduleType.toLowerCase()} module" style="color: black;" data-module-type="${moduleType}">
+                <input type="text" class="${moduleType.toLowerCase()}-module-description" placeholder="Write ${moduleType.toLowerCase()} module description" style="color: black; margin-left: 95px; width: 50%;">
+                <button class="add-module-button" style="margin-left: 15px; border-radius: 20px;">+</button>
+            </div>
+        `;
+
+        // Append new input fields to the container
+        container.appendChild(moduleInputDiv);
+
+        // Add event listener for new button added dynamically
+        var addButton = moduleInputDiv.querySelector(".add-module-button");
+        addButton.addEventListener("click", function() {
+            addModuleInput(containerId, moduleType); // Recursively add more input fields
+        });
+    }
+
+    // Event listener for adding practice module input fields
+    var addPracticeButton = document.querySelector("#practiceModulesContainer .add-module-button");
+    addPracticeButton.addEventListener("click", function() {
+        addModuleInput("practiceModulesContainer", "Practice");
+    });
+
+    // Event listener for adding repertoire module input fields
+    var addRepertoireButton = document.querySelector("#repertoireModulesContainer .add-module-button");
+    addRepertoireButton.addEventListener("click", function() {
+        addModuleInput("repertoireModulesContainer", "Repertoire");
+    });
+
+    // Save button event listener remains unchanged
+    saveButton.addEventListener("click", function() {
+        var practiceModules = document.querySelectorAll(".practice-module-name");
+        var practiceDescriptions = document.querySelectorAll(".practice-module-description");
+        var repertoireModules = document.querySelectorAll(".repertoire-module-name");
+        var repertoireDescriptions = document.querySelectorAll(".repertoire-module-description");
+
+        var modules = [];
+        var bookInstrumentId = "{{ bookInstrument.id }}";
+
+        practiceModules.forEach((moduleInput, index) => {
+            if (moduleInput.value.trim() && practiceDescriptions[index].value.trim()) {
+                modules.push({
+                    module_type: 'Practice',
+                    module_name: moduleInput.value.trim(),
+                    description: practiceDescriptions[index].value.trim(),
+                    bookInstrument: bookInstrumentId
+                });
+            }
+        });
+
+        repertoireModules.forEach((moduleInput, index) => {
+            if (moduleInput.value.trim() && repertoireDescriptions[index].value.trim()) {
+                modules.push({
+                    module_type: 'Repertoire',
+                    module_name: moduleInput.value.trim(),
+                    description: repertoireDescriptions[index].value.trim(),
+                    bookInstrument: bookInstrumentId
+                });
+            }
+        });
+
+        if (modules.length === 0) {
+            alert("Please add at least one module.");
+            return;
+        }
+
+        fetch("{% url 'add_module' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ modules: modules })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show add success message
+                successMessageAdd.style.display = "block";
+                // Clear input fields
+                practiceModules.forEach(input => input.value = "");
+                practiceDescriptions.forEach(input => input.value = "");
+                repertoireModules.forEach(input => input.value = "");
+                repertoireDescriptions.forEach(input => input.value = "");
+
+                setTimeout(function() {
+                    successMessageAdd.style.display = "none";
+                }, 3000);
+            } else {
+                alert("Failed to add module(s).");
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+            alert("Failed to add module(s).");
+        });
+    });
+});
+
 </script>
 
+
 {% endblock %}
+

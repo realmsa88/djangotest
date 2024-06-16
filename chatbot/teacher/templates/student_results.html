@@ -56,25 +56,26 @@
 <div class="main-container progress-main-container slide-in" style="margin-top: 50px; margin-bottom: 20px;">
     <div class="progress-background-title">Student Academic Progress</div>
     <div class="progress-container">
-        <progress id="progress1" value="{{ practice_completion_percentage }}" max="100" style="width: 95%;"></progress>
+        <progress id="progress1" value="{{ practice_completion_percentage }}" max="100" style="width: 50%;"></progress>
         <p style="margin-left: 20px; color: black;">Practice : {{ practice_completion_percentage }}% Completed</p>
     </div>
     <div class="progress-container">
-        <progress max="100" value="{{ repertoire_completion_percentage }}" style="width: 95%;">{{ repertoire_completion_percentage }}%</progress>
+        <progress max="100" value="{{ repertoire_completion_percentage }}" style="width: 50%;">{{ repertoire_completion_percentage }}%</progress>
         <p style="margin-left: 20px; color: black;">Repertoire : {{ repertoire_completion_percentage }}% Completed</p>
     </div>
-   
 </div>
+
+
 
 <div class="main-container slide-in-left" style="margin-top: 60px;">
 
     <p class="background-title">Student Progress</p>
     <div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative; margin-top: 20px;">
         <div class="button-wrapper">
-            <button onclick="filterInstruments(this, 'All')" class="active"
+            <!-- <button onclick="filterInstruments(this, 'All')" class="active"
                     style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
                 All
-            </button>
+            </button> -->
             {% for module_type in module_types %}
                 <button onclick="filterInstruments(this, '{{ module_type }}')"
                         style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
@@ -89,55 +90,56 @@
     {% for module, results in results_by_module.items %}
     <div class="module-header-container module-header-{{ forloop.counter }}">
         <div class="module-header">Module {{ forloop.counter }}</div>
-        <div class="module-header" style="margin-right: 630px;">Description</div>
+        <div class="module-header" style="margin-right: 630px;"></div>
     </div>
-        <div class="module-input-container">
-            <input type="text" class="module-name" value="{{ module.module_name }}" readonly>
-            <input class="module-description" value="{{ module.description }}" readonly>
-            <input type="text" value="{{ module.module_type }}" readonly style="visibility:hidden; width: 0;">
-            <div class="module-result" style="margin-right: 40px;">
-                {% if results %}
-                    {% for result in results %}
-                        {% if result|add:0 == 3 %}
-                            <div class="star-rating">
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                               
-                                <p style="font-size: 14px;">Satisfactory</p>
-                            </div>
-                        {% elif result|add:0 == 4 %}
-                            <div class="star-rating">
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <p style="font-size: 14px;">Good</p>
-                            </div>
-                        {% elif result|add:0 == 5 %}
-                            <div class="star-rating">
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <span class="fa fa-star checked-yellow"></span>
-                                <p style="font-size: 14px;">Excellent</p>
-                            </div>
-                        {% else %}
-                            <p style="color: green; margin-top: 20px;"> {{ result }} </p>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <p style="margin-bottom: -100px; display: inline;">No result available</p>
-                    <div class="icon-container"
-                         onclick="confirmUpdate(this, '{{ module.module_name }}', '{{ module.description }}', '{{ module.id }}')"
-                         data-username="{{ account.username }}" style="margin-left: 30px; border-color: #5b7cfa; display: inline; margin-top: 80px;">
-                        <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
-                    </div>
-                {% endif %}
-            </div>
-            
+    <div class="module-input-container">
+        <div style="color: black; font-weight: bold;">{{ module.module_name }}</div>
+        <div>{{ module.description }}</div>
+        <input type="text" value="{{ module.module_type }}" readonly style="visibility:hidden; width: 0;">
+        <div class="module-result" style="margin-right: 40px;">
+            {% if results %}
+                {% for result in results %}
+                    {% if result|add:0 == 3 %}
+                        <div class="star-rating">
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <p style="font-size: 14px;">Satisfactory</p>
+                        </div>
+                    {% elif result|add:0 == 4 %}
+                        <div class="star-rating">
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <p style="font-size: 14px;">Good</p>
+                        </div>
+                    {% elif result|add:0 == 5 %}
+                        <div class="star-rating">
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <span class="fa fa-star checked-yellow"></span>
+                            <p style="font-size: 14px;">Excellent</p>
+                        </div>
+                    {% else %}
+                        <p style="color: green; margin-top: 20px;"> {{ result }} </p>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p style="margin-bottom: -100px; display: inline;">No result available</p>
+                <div class="icon-container"
+                     onclick="confirmUpdate(this, '{{ module.module_name }}', '{{ module.description }}', '{{ module.id }}')"
+                     data-username="{{ account.username }}" style="margin-left: 30px; border-color: #5b7cfa; display: inline; margin-top: 80px;">
+                    <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                </div>
+            {% endif %}
         </div>
+    </div>
+    
+    
+        <hr>
     {% endfor %}  
     <button style="background-color: red; color: white; border-radius: 5px; border: none; height: 40px;width:100px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">Print Report </button>  
 </div>

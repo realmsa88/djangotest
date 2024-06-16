@@ -1,0 +1,189 @@
+.student-box:hover {
+    background-color: #5b7cfa;
+    border-color: #5b7cfa;
+    color: white !important;
+}
+
+.student-box:hover p {
+    color: white !important;
+}
+
+.student-box:hover i {
+    color: white !important;
+}
+
+/* Currently selected box */
+.selected {
+    background-color: #5b7cfa;
+    border-color: #5b7cfa !important;
+}
+
+.selected p {
+    color: white !important;
+    border-color: #5b7cfa;
+}
+
+.selected i.fa-chevron-down {
+    color: white !important;
+}
+
+.selected i.fa-chevron-right {
+    color: white !important;
+}
+
+
+.student-box p {
+    display: flex;
+    align-items: center;
+}
+
+.student-box p i {
+    margin-right: 10px; /* Adjust spacing between the icon and text */
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0; /* Optional: to remove the default padding */
+}
+
+li {
+    color: black;
+}
+
+.student-box {
+    border: 2px solid rgb(255, 255, 255);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 10px;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    height: 12%;
+}
+
+p {
+    color: black;
+}
+
+.actives {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.filter-buttons-container {
+    position: relative;
+    overflow-x: auto; /* Ensure horizontal scrollbar appears when needed */
+    max-width: 100%; /* Adjust maximum width to make sure the scrollbar is visible */
+    white-space: nowrap;
+}
+
+.button-wrapper {
+    display: inline-block;
+}
+
+.scrollbar {
+    bottom: 0;
+    left: 0;
+    width: 90%; /* Set a fixed width less than 100% */
+    height: 10px; /* Define height for the scrollbar */
+    background-color: transparent;
+    border-radius: 5px;
+    z-index: 999;
+    cursor: pointer;
+}
+
+.scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    cursor: pointer;
+    /* Adjust the width to be proportional to the container's width */
+    width: calc(90% / 10); /* 90% is the width of the scrollbar, adjust the denominator as needed */
+}
+
+.scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.student-details-container {
+    display: none; /* Hide by default */
+    position: absolute;
+    top: 100%; /* Position below the student box */
+    right: 0;
+    margin-top: 8px;
+    width: 90%;
+    
+}
+
+.book-container {
+    top: 100%; /* Position below the student box */
+    left: 0;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #000000;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    transition: background-color 0.3s, border-color 0.3s;
+    z-index: 999;
+}
+
+.book-container:hover {
+    background-color: #5b7cfa !important; /* Highlight color on hover */
+    border-color: #5b7cfa; /* Change border color on hover */
+    
+}
+
+.book-container:hover li {
+    color: white; /* Change text color on hover */
+}
+
+.empty-message:hover {
+        color: #000000 !important;
+}
+
+.empty-message {
+    background-color: white; /* Ensure it's the same as the book container */
+}
+
+
+.student-box:hover .empty-message {
+    color: #000000;
+}
+
+#book-detail-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+#book-detail-content {
+    margin-bottom: 10px;
+}
+
+#close-detail-button {
+    display: block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.highlighted {
+    background-color: #5b7cfa !important; /* Highlight color on hover */
+    border-color: #5b7cfa; /* Change border color on hover */
+    color: #fff;
+}
+
+.highlighted li {
+    color: white;
+}

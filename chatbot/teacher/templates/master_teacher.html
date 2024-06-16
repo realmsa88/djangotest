@@ -21,6 +21,10 @@
             border-color: #32373d;
         }
 
+        .img.bg-wrap.text-center.py-4::after {
+            background-color: transparent;
+        }
+
     </style>
 </head>
 <body>
@@ -29,12 +33,12 @@
 
 
     <div class="wrapper d-flex align-items-stretch " style="font-size: small; ">
-        <nav id="sidebar" class="collapsed" style="position: fixed;" >
+        <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #43207a" >
             <div class="custom-menu">
                 <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;">
                 </button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-color: #32373d !important;">
+            <div class="img bg-wrap text-center py-4" style="background-color: #43207a !important;">
                 <div class="user-logo">
                     <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
                     <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
@@ -47,19 +51,19 @@
             </div>
 
 
-            <ul class="list-unstyled components mb-5" style="padding-left: 0; " >
+            <ul class="list-unstyled components mb-5" style="padding-left: 0;background-color: #43207a " >
                 <li class="{% if request.path == '/teacher' %}active{% endif %}">
                     <a href="{% url 'teacher' %}"  style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-home mr-3" ></span><span class="text"> Home</span></a>
                 </li>
                 
                 <li class = "{% if request.path == '/teacher/teaching-modules' %}active{% endif %} ">
-                    <a href="{% url 'teaching_modules' %}" style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
+                    <a href="{% url 'teaching_modules' %}" style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-trophy mr-3"></span><span class="text"> Student Performance</span></a>
+                </li>
+                <li class="{% if request.path == '/teacher/student-attendance/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                    <a href="{% url 'student-attendance' %}" style="margin-left: 1px;" ><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Attendance</span></a>
                 </li>
                 <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
-                    <a href="" style="margin-left: 1px;" ><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Attendance</span></a>
-                </li>
-                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
-                    <a href="" style="margin-left: 1px;" ><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
+                    <a href="{% url 'activity-list' %}" style="margin-left: 1px;" ><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
                 </li>
                 <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
                     <a href="" style="margin-left: 1px;">

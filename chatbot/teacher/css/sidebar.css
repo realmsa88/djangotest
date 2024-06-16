@@ -1,0 +1,38 @@
+
+#sidebar {
+    height: 100vh; /* Set the height to 100% of the viewport height */
+
+
+    z-index: 4; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+ 
+
+
+}
+
+
+#content {
+    z-index: 2; /* Higher z-index for the content */
+    margin-left: 10px; /* Increase the left margin to push content to the right */
+    padding: 0px 20px; /* Add padding to maintain spacing */
+    transition: margin-left 1.0s; /* Add smooth transition */
+}
+
+/* Adjust content margin when sidebar is collapsed */
+#sidebar.collapsed ~ #content {
+    margin-left: 310px; /* Adjusted margin when sidebar is collapsed */
+}
+
+        /* Reduce sidebar width and font size */
+        #sidebar .list-unstyled.components li a {
+            font-size: 13px; /* Adjust the font size as needed */
+        }
+
+        /* Highlight only the text of the active navigation item */
+        #sidebar .list-unstyled.components li.active a .text {
+            color: #fff; /* Change the text color */
+        } 
+
+        
+       

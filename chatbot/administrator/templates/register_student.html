@@ -1,7 +1,7 @@
-{%extends "master_admin.html"%}
-{%load static%}
+{% extends "master_admin.html" %}
+{% load static %}
 
-{%block content%}
+{% block content %}
 
 <script src="{% static 'js/navbar.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
@@ -9,20 +9,130 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script>
+
+function preventZero(event) {
+    const input = event.target;
+    let value = input.value.trim(); // Trim any whitespace
+
+    // Check if the value is empty or not a number
+    if (value === '' || isNaN(value)) {
+        input.value = ''; // Reset to empty if not a valid number
+    } else {
+        // Convert value to a number
+        let num = parseInt(value);
+
+        // Check if the number is less than or equal to 0
+        if (num <= 0) {
+            input.value = ''; // Reset to empty if it's 0 or negative
+        } else {
+            // Set the input value as the parsed number
+            input.value = num;
+        }
+    }
+}
+
+
+    
+function calculateAge() {
+    const birthdateInput = document.getElementById("id_birthdate");
+    const ageInput = document.getElementById("id_age");
+
+    birthdateInput.addEventListener('change', function() {
+        const birthdate = new Date(birthdateInput.value);
+        const today = new Date();
+        let age = today.getFullYear() - birthdate.getFullYear();
+        const monthDiff = today.getMonth() - birthdate.getMonth();
+
+        // if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
+        //     age--;
+        // }
+
+        ageInput.value = age;
+    });
+
+    // Trigger age calculation on initial load if birthdate is already set
+    if (birthdateInput.value) {
+        birthdateInput.dispatchEvent(new Event('change'));
+    }
+}
+
+</script>
 
 <style>
 
-.form-container-wrapper {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-        padding: 30px;
-        border-radius: 10px ;
-        width: 100%;
-    }
-p {
-    color: black;
+.table-wrapper {
+    display: table;
+    border-collapse: collapse;
+    width: 100%;
 }
 
-input[type="text"],
+.table-row {
+    display: table-row;
+}
+
+.time-slot {
+    display: table-cell;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.time-slot-container {
+    height: 300px; /* Set the fixed height of the container */
+    overflow-y: scroll; /* Enable vertical scrolling */
+}
+
+
+
+    .selected {
+        background-color: #f0f0f0; /* Change background color or any other style to indicate selection */
+        /* Add any other styles for selected slot */
+    }
+
+    .form-control.input {
+        background-color: white;
+    }
+
+    .form-container-wrapper {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        padding: 30px;
+        border-radius: 10px;
+        width: 100%;
+    }
+
+    .calendar-and-list-container {
+        display: flex;
+    }
+
+    .calendar {
+        flex: 1;
+        margin-right: -770px; /* Adjust margin as needed */
+    }
+
+    .student-list {
+        flex: 1;
+        margin-left: 10px; /* Adjust margin as needed */
+        font-weight: normal;
+    }
+
+    .time-slot {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+
+    .time-slot div {
+        flex-basis: 45%;
+    }
+
+    p {
+        color: black;
+    }
+
+    input[type="text"],
     input[type="email"],
     input[type="password"],
     input[type="number"],
@@ -30,42 +140,74 @@ input[type="text"],
     textarea,
     select {
         padding-left: 7px;
-        /* Adjust the padding to create space for the caret */
     }
 
     @media screen and (max-width: 768px) {
         .form-container-wrapper {
-            padding: 10px; /* Adjust padding for smaller screens */
+            padding: 10px;
         }
 
         .header-container h1 {
-            font-size: 18px; /* Adjust font size for smaller screens */
+            font-size: 18px;
         }
 
-        /* Adjust the margins and positions of form elements for smaller screens */
         .form-container div {
             display: block;
             margin: 10px 0;
         }
 
-        /* Adjust the width of input fields for smaller screens */
         input[type="number"],
         input[type="date"] {
             width: calc(100% - 14px);
         }
 
-        /* Adjust the width of the instrument field for smaller screens */
         #instrument-div {
             margin-left: 0;
         }
     }
 
     .radio-inline {
-    display: inline-block;
-    margin-right: 10px; /* Adjust as needed to add space between the buttons */
-}
+        display: inline-block;
+        margin-right: 10px;
+    }
 
-    
+    /* Modal styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    }
+
+    /* Modal content */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        border-radius: 10px;
+    }
+
+    /* Close button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
 </style>
 
 <div class="header-container">
@@ -79,57 +221,45 @@ input[type="text"],
 
 <hr>
 
-<div class="form-container-wrapper slide-in">
+<div class="form-container-wrapper slide-in" style="margin-top: 20px;">
     <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill all student information below.</p>
     <hr>
 
     <div class="form-container slide-in-left">
-        <form method="POST" action="">
+        <form id="registerStudentForm" method="POST" action="{% url 'register-student' %}">
             {% csrf_token %}
 
             <div style="display: inline-block;">
                 <p>Student Name</p>
                 {{ student_form.studentName }} <br>
-                
             </div>
-            
-            <!-- <div style="display: inline-block; margin-left: 10px;">
-                <p>IC Number</p>
-                {{ student_form.identification_number}}
-            </div> -->
 
             <div style="display: inline-block; margin-left: 20px;">
                 <p>Parent</p>
                 {{ student_form.assigned_parent }}
             </div>
-            
+
             <div style="display: inline-block; margin-left: 20px;">
                 <p>Teacher</p>
-                {{ student_form.assigned_teacher }}
+                {{student_form.assigned_teacher }}
             </div>
 
             <div style="display: inline-block; margin-left: 0px;">
-
                 <p>IC Number</p>
-                {{student_form.identification_number}}
-
+                {{ student_form.identification_number }}
             </div>
 
-
-            <div style="margin-top: 20px; display: inline-block; margin-left: 11px; ">
+            <div style="margin-top: 20px; display: inline-block; margin-left: 11px;">
                 <p>Gender</p>
-                {{student_form.gender}}
-
+                {{ student_form.gender }}
             </div>
-            <div style="display: inline-block; margin-left: 11px;">
-
+            <div  style="display: inline-block; margin-left: 11px;">
                 <p>Race</p>
-                {{student_form.race}}
-
+                {{ student_form.race }}
             </div>
             <div style="display: inline-block; margin-left: 20px;">
                 <p>Instrument</p>
-                {{student_form.instrument}}
+                {{ student_form.instrument }}
             </div>
 
             <div style="display: inline-block; margin-left: 20px;">
@@ -138,90 +268,210 @@ input[type="text"],
             </div>
 
             <div style="margin-top: 15px;">
-              
-            
                 <div style="display: inline-block; margin-left: 0px;">
                     <p>Age</p>
-                    <input type="number" name="age" id="id_age" oninput="preventZero(event)" min="1" value="{{ student_form.age.value }}" style="width: 70px; height: 40px; ">
+                    <input type="number" name="age" id="id_age" oninput="preventZero(event)" min="1" value="{{ student_form.age.value }}" style="width: 70px; height: 40px;">
                 </div>
 
                 <div style="display: inline-block; margin-left: 10px;">
-                <p >Birth Date</p>
-                <input type="date" name="birthdate" id="id_birthdate" value="{{ student_form.birthdate.value }}" style="width: 315px;  height: 40px;">
-                
+                    <p>Birth Date</p>
+                    <input type="date" name="birthdate" id="id_birthdate" onchange="calculateAge()" value="{{ student_form.birthdate.value }}" style="width: 315px; height: 40px;">
                 </div>
+                
 
                 <div style="display: inline-block; margin-left: 10px;">
                     <p>Book</p>
-                {{student_form.book}}
-                    
-                    </div>
-                
-                
-                <div style="display: inline-block; margin-left: 20px;">
-                    <p>Learning Mode</p>
-                    {% for value, label in student_form.learningmode.field.choices %}
-                        <input type="radio" id="learning_mode_{{ value }}" name="learningmode" value="{{ value }}" {% if value == student_form.learningmode.value %} checked {% endif %}>
-                        <label for="learning_mode_{{ value }}">{{ label }}</label><br>
-                    {% endfor %}
+                    {{ student_form.book }}
                 </div>
-                <input class="btn btn-primary slide-in" type="submit" value="Register Student" style="font-size: 14px; float: right; border-radius: 2px;  margin-top: 60px; "> 
+
+                
+
+               
             </div>
-
-
-            <!-- <div style="display: inline-block; margin-left: 0px;">
-
-                <p>IC Number</p>
-                {{student_form.identification_number}}
-
-            </div>
-
-
-            <div style="margin-top: 20px; display: inline-block; margin-left: 11px; ">
-                <p>Gender</p>
-                {{student_form.gender}}
-
-            </div>
-            <div style="display: inline-block; margin-left: 11px;">
-
-                <p>Race</p>
-                {{student_form.race}}
-
-            </div> -->
-           
-              
         </form>
-        
     </div>
-    
+</div>
+
+<div class="form-container-wrapper slide-in" style="margin-top: 20px;">
+    <p>Register Student Class</p>
+    <div id="calendar-and-list" class="calendar-and-list-container">
+        <div id="flatpickr-calendar" class="calendar"></div>
+        <div id="student-list" class="student-list">
+            <div class="time-slot-container">
+                <!-- Rows will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-container-wrapper slide-in" style="margin-top: 20px;">
+    <label for="recurring-weeks" style="color: black;">Recurring Weeks:</label>
+    <select id="recurring-weeks" name="recurring_weeks">
+        <option value="1">1 Week</option>
+        <option value="2">2 Weeks</option>
+        <option value="3">3 Weeks</option>
+        <option value="4">4 Weeks</option>
+        <option value="5">5 Weeks</option>
+        <!-- Add more options as needed -->
+    </select>
+</div>
+
+
+<div class="form-container-wrapper slide-in" style="margin-top: 20px;">
+    <button id="openModalBtn" style="border-radius: 5px; color: white; border: none;background-color: #28a745;height: 40px;padding: 10px;">Confirm Student</button>
+</div>
+
+<!-- Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content" style="margin-left: 600px;width: 40%;">
+        <span class="close">&times;</span>
+        <div id="modalContent">
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="registerBtn" style="padding: 10px 20px; font-size: 16px;">Register</button>
+        </div>
+    </div>
 </div>
 
 {% if messages %}
-        {% for message in messages %}
-            <h3 class="messages" style="font-size: 18px; color: black;">{{ message }}</h3>
-        {% endfor %}
-    {% endif %}
+    {% for message in messages %}
+        <h3 class="messages" style="font-size: 18px; color: black;">{{ message }}</h3>
+    {% endfor %}
+{% endif %}
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    // Function to prevent age from going to 0
-    function preventZero(event) {
-        if (event.target.value <= 0) {
-            event.target.value = '';
+
+    let selectedSlots = [];
+    
+    // Function to handle toggling the selection of a time slot
+    // Function to handle toggling the selection of a time slot
+function toggleSlotSelection(slot) {
+    console.log('Clicked slot:', slot);
+    // Rest of the function code...
+
+    // Toggle the selection state of the slot
+    slot.classList.toggle('selected');
+
+    // Check if the slot is selected
+    if (slot.classList.contains('selected')) {
+        // Add the slot to the selectedSlots array if it's not already included
+        if (!selectedSlots.includes(slot.textContent.trim())) {
+            selectedSlots.push(slot.textContent.trim());
+        }
+    } else {
+        // Remove the slot from the selectedSlots array
+        const index = selectedSlots.indexOf(slot.textContent.trim());
+        if (index !== -1) {
+            selectedSlots.splice(index, 1);
         }
     }
 
-    function updateBooks() {
+    // Log the selected time slots (for debugging)
+    console.log('Selected time slots:', selectedSlots);
+}
+
+    
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event listener to each table row
+    const timeSlots = document.querySelectorAll('.time-slot');
+    timeSlots.forEach(slot => {
+        slot.addEventListener('click', () => {
+            // Toggle the selection state of the slot
+            toggleSlotSelection(slot);
+        });
+    });
+});
+
+document.getElementById("openModalBtn").addEventListener("click", function() {
+    // Collect student details
+    const studentName = document.getElementById("id_studentName").value;
+    const age = document.getElementById("id_age").value;
+    const identification_number = document.getElementById("id_identification_number").value;
+    const birthdate = document.getElementById("id_birthdate").value;
+    const gender = document.getElementById("id_gender").value;
+    const race = document.getElementById("id_race").value;
+    const assigned_teacher= document.getElementById("id_assigned_teacher").value;
+    const assigned_parent = document.getElementById("id_assigned_parent").value;
+    const book = document.getElementById("id_book").value;
+    const instrument = document.getElementById("id_instrument").value;
+
+    // Collect selected class times
+    const selectedTimes = selectedSlots.join(", ");
+    const selectedDate = document.querySelector('.flatpickr-input').value;
+    const recurringWeeks = document.getElementById("recurring-weeks").value;
+
+    // Log collected details for debugging
+    console.log("Student Details:", {
+        studentName, age, identification_number, birthdate, gender, race, assigned_teacher, assigned_parent, book, instrument, selectedTimes, selectedDate, recurringWeeks
+    });
+
+    // Populate modal content with student details and selected class times
+    const modalContent = `
+        <p>Student Name: ${studentName}</p>
+        <p>Age: ${age}</p>
+        <p>Identification Number: ${identification_number}</p>
+        <p>Birth Date: ${birthdate}</p>
+        <p>Gender: ${gender}</p>
+        <p>Teacher: ${assigned_teacher}</p>
+        <p>Parent: ${assigned_parent}</p>
+        <p>Book: ${book}</p>    
+        <p>Instrument: ${instrument}</p>
+        <p>Selected Class Times: ${selectedTimes}</p>
+        <p>Selected Date: ${selectedDate}</p>
+        <p>Race: ${race}</p>
+        <p>Recurring Weeks: ${recurringWeeks}</p>
+    `;
+
+    // Set the modal content
+    document.getElementById("modalContent").innerHTML = modalContent;
+
+    // Show the modal
+    modal.style.display = "block";
+});
+
+
+
+
+
+    
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        let selectedDate = '';
+
+flatpickr("#flatpickr-calendar", {
+    enableTime: false,
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "F j, Y",
+    inline: true,
+    onChange: function(selectedDates, dateStr, instance) {
+        selectedDate = dateStr; // Store the selected date
+        console.log('Selected date:', dateStr); // Debugging
+        fetchTeacherClassesByDate(dateStr);
+    }
+});
+
+    
+        document.getElementById("id_instrument").addEventListener("change", updateBooks);
+        document.getElementById("id_assigned_teacher").addEventListener("change", function() {
+            const teacherId = this.value;
+            console.log('Selected teacher ID:', teacherId); // Debugging
+            fetchTeacherClasses(teacherId);
+        });
+    
+        
+        function updateBooks() {
     const instrumentId = document.getElementById("id_instrument").value;
     fetch(`/get-books/${instrumentId}/`)
         .then(response => response.json())
         .then(data => {
             const bookField = document.getElementById("id_book");
-            bookField.innerHTML = "";  // Clear existing options
+            bookField.innerHTML = "";
             data.books.forEach(book => {
                 const option = document.createElement("option");
                 option.value = book.id;
-                option.textContent = book.book;  // Ensure the property name matches the book name field in your Book model
-                console.log(book)
+                option.textContent = book.book;
                 bookField.appendChild(option);
             });
         })
@@ -230,5 +480,316 @@ input[type="text"],
         });
 }
 
+    
+        function fetchTeacherClasses(teacherId, selectedDate) {
+            let url = `/get-teacher-classes/${teacherId}/`;
+            if (selectedDate) {
+                url += `?date=${selectedDate}`;
+            }
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Classes fetched:', data.classes); // Log the fetched classes array
+                    if (data.classes && data.classes.length > 0) {
+                        updateCalendar(data.classes);
+                        updateStudentList(data.classes);
+                    } else {
+                        console.log('No classes found for the selected teacher.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching teacher classes:', error);
+                });
+        }
+    
+        function fetchTeacherClassesByDate(dateStr) {
+            const teacherId = document.getElementById("id_assigned_teacher").value;
+            if (teacherId) {
+                fetch(`/get-teacher-classes/${teacherId}/?date=${dateStr}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Classes fetched by date:', data.classes); // Log the fetched classes array
+                        if (data.classes && data.classes.length > 0) {
+                            updateCalendar(data.classes);
+                            updateStudentList(data.classes);
+                        } else {
+                            // If no classes are found, clear the student list
+                            updateCalendar(data.classes);
+                            updateStudentList(data.classes);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching teacher classes:', error);
+                    });
+            }
+        }
+    
+        function updateCalendar(classes) {
+            const calendar = document.getElementById("flatpickr-calendar");
+            calendar.innerHTML = ""; // Clear previous content
+    
+            classes.forEach(classData => {
+                const entry = document.createElement("div");
+                // entry.innerHTML = `
+                //     <p>Date: ${classData.date}</p>
+                //     <p>Time: ${classData.start_time} - ${classData.end_time}</p>
+                //     <p>Title: ${classData.title}</p>
+                //     <p>Description: ${classData.description}</p>
+                //     <p>Student: ${classData.student_name}</p>
+                // `;
+                calendar.appendChild(entry);
+            });
+        }
+
+       
+
+    
+      // Update the updateStudentList function to generate divs instead of table rows
+      function updateStudentList(classes) {
+    const studentList = document.getElementById("student-list");
+    studentList.innerHTML = "<p>Class Slots:</p>";
+
+    // Create a wrapper div for the table-like structure
+    const tableWrapper = document.createElement("div");
+    tableWrapper.classList.add("table-wrapper");
+
+    // Generate time slots every 30 minutes from 9 am to 9 pm
+    for (let hour = 9; hour <= 21; hour++) {
+        // Create a row div for each hour
+        const rowDiv = document.createElement("div");
+        rowDiv.classList.add("table-row");
+
+        for (let minute = 0; minute < 60; minute += 30) {
+            const timeSlotDiv = document.createElement("div"); // Create a div for each time slot
+            timeSlotDiv.classList.add("time-slot"); // Add class to identify time slots
+            const formattedHour = hour < 10 ? `0${hour}` : hour;
+            const formattedMinute = minute === 0 ? "00" : minute;
+            timeSlotDiv.textContent = `${formattedHour}:${formattedMinute}`; // Format time
+
+            // Search for classes at this time slot
+            const classAtTimeSlot = classes.find(classData => {
+                // Split the time strings to extract only the hour and minute components
+                const startTimeParts = classData.start_time.split(":");
+                const startHour = parseInt(startTimeParts[0]);
+                const startMinute = parseInt(startTimeParts[1]);
+
+                const endTimeParts = classData.end_time.split(":");
+                const endHour = parseInt(endTimeParts[0]);
+                const endMinute = parseInt(endTimeParts[1]);
+
+                // Compare class start time and end time with current time slot
+                return (startHour < hour || (startHour === hour && startMinute <= minute)) &&
+                    (endHour > hour || (endHour === hour && endMinute > minute));
+            });
+
+            if (classAtTimeSlot) {
+                // If there's a class, add it to the div
+                const studentDiv = document.createElement("div");
+                studentDiv.innerHTML = `${classAtTimeSlot.student_name} `;
+                studentDiv.style.color = "black"; // Set text color to black
+                timeSlotDiv.appendChild(studentDiv);
+            }
+
+            // Add event listener to the time slot div
+            timeSlotDiv.addEventListener('click', () => {
+                // Toggle the selection state of the slot
+                toggleSlotSelection(timeSlotDiv);
+            });
+
+            // Append the time slot div to the row div
+            rowDiv.appendChild(timeSlotDiv);
+        }
+
+        // Append the row div to the table wrapper
+        tableWrapper.appendChild(rowDiv);
+    }
+
+    // Append the table wrapper to the student list container
+    studentList.appendChild(tableWrapper);
+}
+
+
+
+    document.getElementById("id_assigned_teacher").addEventListener("change", function() {
+        const teacherId = this.value;
+        const selectedDate = document.getElementById("flatpickr-calendar").value; // Get the selected date
+        console.log('Selected teacher ID:', teacherId); // Debugging
+        fetchTeacherClasses(teacherId, selectedDate); // Pass the selected date to the fetch function
+    });
+
+});
+let modal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    modal = document.getElementById("myModal");
+
+    // Add event listener for opening modal
+    document.getElementById("openModalBtn").addEventListener("click", function() {
+        modal.style.display = "block";
+    });
+
+    // Add event listener for closing modal
+    document.getElementsByClassName("close")[0].addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeModalBtn = document.getElementsByClassName("close")[0];
+    const modal = document.getElementById("myModal");
+    const registerBtn = document.getElementById("registerBtn");
+
+    openModalBtn.addEventListener("click", function() {
+        // Collect student details
+        const studentName = document.getElementById("id_studentName").value;
+        const age = document.getElementById("id_age").value;
+        const identification_number = document.getElementById("id_identification_number").value;
+        const birthdate = document.getElementById("id_birthdate").value;
+        const gender = document.getElementById("id_gender").value;
+        const race = document.getElementById("id_race").value;
+        const assigned_teacher = document.getElementById("id_assigned_teacher").value;
+        const assigned_parent = document.getElementById("id_assigned_parent").value;
+        const book = document.getElementById("id_book").value;
+        const instrument = document.getElementById("id_instrument").value;
+        const selectedTimes = selectedSlots.join(", ");
+        const selectedDate = document.querySelector('.flatpickr-input').value;
+        const recurringWeeks = document.getElementById("recurring-weeks").value;
+
+        // Populate modal content with student details
+        const modalContent = `
+            <p>Student Name: ${studentName}</p>
+            <p>Age: ${age}</p>
+            <p>Identification Number: ${identification_number}</p>
+            <p>Birth Date: ${birthdate}</p>
+            <p>Gender: ${gender}</p>
+            <p>Race: ${race}</p>
+            <p>Teacher: ${assigned_teacher}</p>
+            <p>Parent: ${assigned_parent}</p>
+            <p>Book: ${book}</p>
+            <p>Instrument: ${instrument}</p>
+            <p>Selected Class Times: ${selectedTimes}</p>
+            <p>Selected Date: ${selectedDate}</p>
+            <p>Recurring Weeks : ${recurringWeeks}</p>
+        `;
+
+        document.getElementById("modalContent").innerHTML = modalContent;
+        modal.style.display = "block";
+    });
+
+    closeModalBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Add event listener to the register button
+registerBtn.addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    // Collect student details from form fields
+    const studentName = document.getElementById("id_studentName").value;
+    const age = document.getElementById("id_age").value;
+    const identification_number = document.getElementById("id_identification_number").value;
+    const birthdate = document.getElementById("id_birthdate").value;
+    const gender = document.getElementById("id_gender").value;
+    const race = document.getElementById("id_race").value;
+    const assigned_teacher = document.getElementById("id_assigned_teacher").value;
+    const assigned_parent = document.getElementById("id_assigned_parent").value;
+    const book = document.getElementById("id_book").value;
+    const instrument = document.getElementById("id_instrument").value;
+    const selectedTimes = selectedSlots.join(", ");
+    const selectedDate = document.querySelector('.flatpickr-input').value;
+    const recurringWeeks = document.getElementById("recurring-weeks").value;
+    // Create an object with the collected data
+    const formData = {
+    studentName: document.getElementById("id_studentName").value,
+    age: document.getElementById("id_age").value,
+    identification_number: document.getElementById("id_identification_number").value,
+    birthdate: document.getElementById("id_birthdate").value,
+    gender: document.getElementById("id_gender").value,
+    race: document.getElementById("id_race").value,
+    assigned_teacher: document.getElementById("id_assigned_teacher").value,
+    assigned_parent: document.getElementById("id_assigned_parent").value,
+    book: document.getElementById("id_book").value,
+    instrument: document.getElementById("id_instrument").value,
+    assigned_teacher: document.getElementById("id_assigned_teacher").value,
+    assigned_parent: document.getElementById("id_assigned_parent").value,
+    selectedTimes: selectedSlots.join(", "),
+    selectedDate: document.querySelector('.flatpickr-input').value,
+    recurringWeeks: document.getElementById("recurring-weeks").value
+};
+
+    console.log("Student Modal Details:", {
+        studentName, age, identification_number, birthdate, gender, race, assigned_teacher, assigned_parent, book, instrument, selectedTimes, selectedDate, assigned_parent, assigned_teacher, recurringWeeks
+    });
+
+    // Send data to the server using fetch API
+    fetch("/register-student/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCookie('csrftoken')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error("Error registering student");
+        }
+    })
+    .then(data => {
+        console.log("Student registered successfully:", formData);
+        modal.style.display = "none"; // Close modal on success
+        // Optionally, perform additional actions after successful registration
+    })
+    .catch(error => {
+        console.error("Error registering student:", error);
+        // Handle registration error, e.g., display error message to user
+    });
+});
+
+// Function to retrieve CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+
+});
+
+
+
 </script>
-{%endblock%}
+    
+</div>
+{% endblock %}
+
+
+

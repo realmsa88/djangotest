@@ -49,7 +49,11 @@
     #navbar a.navbar-link:hover {
         background-color: #ddd !important;
     }
-    
+
+    #navbar a.navbar-link.active {
+        background-color: #32373d !important;
+        color: white;
+    }
         .confirm-delete,
         .cancel {
             background-color: white;
@@ -78,7 +82,7 @@
         <h1 style="font-size: 20px;" class="slide-in-left">Accounts List</h1>
 
         <div id="navbar">
-            <a href="{% url 'accounts' %}" class="navbar-link" style="background-color: white;">Accounts List</a>
+            <a href="{% url 'accounts' %}" class="navbar-link active" style="background-color: red;">Accounts List</a>
             <a href="{% url 'register' %}" class="navbar-link">Register Account</a>
         </div>
     </div>

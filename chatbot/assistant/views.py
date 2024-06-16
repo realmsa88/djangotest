@@ -13,7 +13,7 @@ from fuzzywuzzy import fuzz
 from django.views.decorators.csrf import csrf_exempt
 
 # Set your OpenAI API key
-openai.api_key = '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'  # Replace with your actual API key
+openai.api_key = 'sk-proj-PnvMYwyLnRUHMR4JFudMT3BlbkFJMJMdlpcNI2pNz5ZTU1H0'  # Replace with your actual API key
 
 # Get the directory of the current file
 current_directory = os.path.dirname(os.path.abspath(__file__))

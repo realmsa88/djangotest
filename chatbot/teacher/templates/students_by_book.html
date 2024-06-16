@@ -1,0 +1,232 @@
+{% extends 'master_teacher.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/student_results.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Student Attendance</h1>
+</div>
+
+<style>
+    .attendance-list {
+    margin-top: 50px;
+}
+
+.pencil-container {
+    float: right; /* Ensure the container is floated to the right */
+    margin-left: 10px; /* Adjust the margin if needed */
+}
+
+.attendance-record {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-record div {
+    margin-bottom: 5px;
+}
+
+.attendance-record strong {
+    display: inline-block;
+    font-weight: 600;
+}
+
+.attendance-title-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.attendance-title-date .attendance-date {
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.attendance-status.pending {
+    color: orange;
+    font-weight: bold;
+}
+
+.attendance-status.approved {
+    color: green;
+    font-weight: bold;
+}
+
+.attendance-attendance.absent {
+    color: red;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.attendance-attendance.attend {
+    color: green;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.icon-container:hover {
+    background-color: white;
+}
+
+#updateIcon:hover {
+    background-color: white;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Styling for the pencil icon */
+.pencil-container {
+    float: right;
+    margin-left: 10px;
+}
+
+.filter-buttons {
+    border-radius: 10px;
+}
+
+button {
+    border-radius: 10px;
+    border-color: black;
+    height: 50px;
+    width: 100px;
+    margin-left: 10px;
+    background-color: white;
+}
+
+button:hover {
+    border: none;
+    background-color: #5b7cfa;
+    color: white;
+}
+
+button:active {
+    background-color: green;
+    color: white;
+    border: none;
+}
+
+p{ 
+    color: black;
+}
+</style>
+
+<hr>
+{% for student in students %}
+  {% if forloop.first %}
+    <p class="slide-in">{{ student.instrument }} / {{ student.book }}</p>
+  {% endif %}
+{% endfor %}
+
+<p style="color: black;" class="slide-in">Registered students: {{ students|length}}</p>
+
+<hr>
+
+<p style="color: black;" class="slide-in-left">Student Name</p>
+
+{% if messages %}
+    <div class="alert alert-success slide-in-left" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% for student in students %}
+<div class="student-box slide-in-left">
+    <p style="color: black; font-weight:" class="try" onclick="toggleAttendance('{{ student.id }}')">{{ student.studentName }}</p>
+    <div id="attendance-{{ student.id }}" class="attendance-details" style="display: none;">
+        <!-- Render the list of attendance for this student -->
+        <div class="attendance-list slide-in-left">
+            {% for attendance in student.attendance %}
+                <div class="attendance-record {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
+                    <div class="attendance-title-date">
+                        <strong style="color: black;">{{ attendance.title }}</strong> 
+                        <span class="attendance-date" style="color: black;">{{ attendance.date }} {{ attendance.start_time }} - {{ attendance.end_time }}</span>
+                    </div>
+                    <div class="attendance-description" style="color: black;">
+                        {{ attendance.description }}
+                    </div>
+                    <div class="attendance-attendance">
+                        <span class="attendance-attendance {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %}">
+                            {{ attendance.attendance }}
+                        </span>
+                        {% if attendance.status == 'Pending Verification' %}
+                            <div class="icon-container pencil-container" onclick="openModal('{{ attendance.id }}')" style="border-color: black ;" data-username="{{ account.username }}">
+                                <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                            </div>
+                        {% endif %}
+                        <span class="attendance-status {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}" style="float: right;">{{ attendance.status }}</span>
+                    </div>
+                   
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% empty %}
+    <p>No attendance records found.</p>
+{% endfor %}
+
+<script>
+  function toggleAttendance(studentId) {
+    var attendanceDiv = document.getElementById(`attendance-${studentId}`);
+    if (attendanceDiv.style.display === "none") {
+        attendanceDiv.style.display = 'block';
+    } else {
+        attendanceDiv.style.display = "none";
+    }
+}
+</script>
+
+{% endblock %}

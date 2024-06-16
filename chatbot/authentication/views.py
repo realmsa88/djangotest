@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from administrator.decorators import admin_required
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import Group
+from administrator.models import ParentLogin, TeacherLogin
 
 
 # Create your views here.
@@ -48,6 +49,10 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
+            if user.groups.filter(name='Parent').exists():
+                ParentLogin.objects.create(parent=user)
+            if user.groups.filter(name='Teacher').exists():
+                TeacherLogin.objects.create(teacher=user)
             # Pass the username to the template
             return redirect('dashboard')
             # return render(request, 'master_admin.html', {'username': username, 'first_name' : first_name })

@@ -64,7 +64,7 @@
             </td>
             <td>{{student.assigned_teacher.first_name}} {{student.assigned_teacher.last_name}}</td>
             <td style="text-align: center;"> 
-                <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ account.username }}" style="margin-left: 0px;">
+                <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ student.studentName }}" style="margin-left: 0px;">
                     <i class="fa fa-trash" id="deleteIcon"></i>
                 </div>
             </td>
@@ -75,4 +75,45 @@
     </tbody>
 
 </table>
+
+<script>
+
+function confirmDelete(element) {
+    const username = element.getAttribute('data-username');
+    const studentName = element.closest('tr').querySelector('td').innerText;
+    
+    if (confirm(`Are you sure you want to delete ${studentName}?`)) {
+        fetch(`/delete-student/${username}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                element.closest('tr').remove();  // Remove the row from the table
+                alert('Student deleted successfully.');
+            } else {
+                alert('Failed to delete student.');
+            }
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {%endblock%}

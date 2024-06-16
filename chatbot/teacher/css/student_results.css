@@ -1,0 +1,230 @@
+.icon-container:hover {
+    background-color: white;
+    color: white;
+}
+.fa.fa-pencil:hover {
+background-color: white;
+}
+
+
+.button-wrapper button.active {
+background-color: #5b7cfa;
+color: white;
+}
+
+/* Updated CSS rule */
+.green-progress progress::-webkit-progress-value {
+background-color: green !important; /* Set color of progress bar to green */
+}
+
+
+
+
+
+.background-title {
+background-color: #5b7cfa; /* Background color */
+color: white; /* Text color */
+padding: 10px 20px; /* Padding */
+border-top-left-radius: 10px; /* Rounded corners for top left */
+border-top-right-radius: 10px; /* Rounded corners for top right */
+margin-bottom: 20px; /* Spacing from the content */
+width: 100%; /* Set width to 100% */
+box-sizing: border-box; /* Include padding and border in the width calculation */
+margin-top: -50px; /* Reduce top margin to push it closer to the top */
+position: absolute; /* Position absolute */
+left: 0; /* Align to the left edge of the nearest positioned ancestor */
+font-size:small;
+}
+.progress-main-container {
+position: relative;
+}
+
+.progress-background-title {
+position: absolute;
+top: -30px; /* Adjust the top position */
+left: 0;
+width: 100%;
+background-color: #5b7cfa;
+color: white;
+padding: 10px 20px;
+border-top-left-radius: 10px;
+border-top-right-radius: 10px;
+font-size: small;
+}
+
+
+.progress-container {
+margin-bottom: 20px;
+margin-top: 20px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+.main-container {
+    border-radius: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    margin-top: 20px;
+   
+}
+
+
+
+.main-container:hover input {
+    color: black ;
+    background-color: white;
+}
+
+.button-wrapper button.active {
+    background-color: #5b7cfa;
+    color: white;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+}
+
+.student-info p {
+    margin: 0;
+}
+
+input {
+    border: 1px solid #ccc; /* Add visible border */
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 13px;
+    padding: 5px; /* Add padding for better visibility */
+}
+
+input[readonly] {
+    color: black;
+}
+
+.module-input-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.module-input-container input, .module-input-container textarea {
+    margin: 5px 0;
+}
+
+.module-header-container {
+display: flex;
+justify-content: space-between;
+margin-bottom: 10px;
+margin-top: 0px;
+}
+
+.module-header {
+width: 20%; /* Adjust width if needed */
+}
+
+.module-input-container {
+display: flex;
+justify-content: space-between;
+margin-bottom: 10px;
+}
+
+
+.module-name {
+    width: 20%; /* Reduced width for module name input */
+    margin-right: 20px; /* Add margin to the right */
+    height: 50px;
+    border: 1px solid black; /* Set border with black color */
+    border-width: 1px; /* Adjusted border width */
+    border-radius: 3px;
+}
+
+.module-description {
+width: 40%; /* Adjusted width for module description */
+margin-right: 145px !important; /* Reduce margin-right to move it to the left */
+padding-left: 10px;
+border: 1px solid black; /* Set border with black color */
+border-width: 1px; /* Adjusted border width */
+border-radius: 3px;
+}
+
+
+.module-result {
+    width: 20%; /* Set the width for module result */
+    height: 60px;
+}
+
+.progress-container {
+margin-bottom: 20px; /* Adjust the spacing between progress bars */
+margin-top: 20px;
+}
+
+progress[value] {
+--w: 200px; /* the width*/
+--color:  /* the progress color */
+linear-gradient(#fff8,#fff0),
+repeating-linear-gradient(135deg,#0003 0 10px,#0000 0 20px),
+/* if < 30% "red" */
+linear-gradient(red    0 0) 0 /calc(var(--w)*.8 - 100%) 1px,
+/* if < 60% "orange" */
+linear-gradient(orange 0 0) 0 /calc(var(--w)*.15 - 100%) 1px,
+/* else "green" */
+green;
+--background: rgb(234, 234, 234); /* the background color */
+
+-webkit-appearance: none;
+-moz-appearance: none;
+appearance: none;
+border: none;
+width: var(--w);
+margin: 0 10px;
+border-radius: 10em;
+background: var(--background);
+}
+progress[value]::-webkit-progress-bar {
+border-radius: 10em;
+background: var(--background);
+}
+progress[value]::-webkit-progress-value {
+border-radius: 10em;
+background: var(--color);
+}
+progress[value]::-moz-progress-bar {
+border-radius: 10em;
+background: var(--color);
+}
+
+label {
+font-size: 20px;
+font-weight: bold;
+display: block;
+margin: 20px 0;
+}
+
+
+/* Add any additional styles here */
+.star-rating {
+    display: inline-block;
+    font-size: 20px;
+}
+.star-rating input[type="radio"] {
+    display: none;
+}
+.star-rating label {
+    float: right;
+    color: #ccc;
+    padding: 0;
+    cursor: pointer;
+}
+.star-rating label:before {
+    content: '\2606'; /* empty star */
+    padding: 5px;
+}
+.star-rating input[type="radio"]:checked ~ label:before {
+    content: '\2605'; /* filled star */
+    color: #ffc107; /* change color of filled star */
+}
+

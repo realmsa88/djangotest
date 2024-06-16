@@ -1,10 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .decorators import parent_required
-from administrator.models import Student, BookInstrument, ModuleDetails, Instrument
-from teacher.models import ProgressBar
+from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity
+from teacher.models import ProgressBar, Attendance
 from django.template import loader
+from django.contrib import messages
+from django.http import JsonResponse
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 # @csrf_exempt
@@ -80,7 +85,7 @@ def student_modules(request):
 
     for student in students:
         student_instrument = student.instrument
-        student_book = student.current_book
+        student_book = student.book
 
         # Get the related BookInstrument entries for the student's book and instrument
         book_instruments = BookInstrument.objects.filter(bookID=student_book, instrumentID=student_instrument)
@@ -124,6 +129,121 @@ def student_modules(request):
 
     return render(request, 'student_learning.html', context)
 
-
+@parent_required
 def attendance(request):
-    return render(request,'attendance.html')
+    # Get the logged-in parent
+    parent = request.user
+
+    # Get the students related to this parent
+    students = Student.objects.filter(assigned_parent=parent)
+
+    # Prepare a dictionary to store attendance details for each student
+   # Simplified view logic
+    attendance_data = {}
+    for student in students:
+        attendance_data[student.id] = Attendance.objects.filter(student=student)
+
+    context = {
+        'students': students,
+        'attendance_data': attendance_data,
+    }
+
+    return render(request, 'attendance.html', context)
+
+def verify_attendance(request, student_id, attendance_id):
+    try:
+        attendance = Attendance.objects.get(id=attendance_id)
+        data = {
+            'student_name': attendance.student.studentName,
+            'attendance_title': attendance.title,
+            'attendance_date': attendance.date,
+            'attendance_start_time': attendance.start_time,
+            'attendance_end_time': attendance.end_time,
+        }
+        return JsonResponse(data)
+    except Attendance.DoesNotExist:
+        return JsonResponse({'error': 'Attendance record not found'}, status=404)
+    
+@require_POST
+def submit_absence(request):
+    if request.method == 'POST':
+        print(request.POST)  # Print POST data for debugging
+        student_id = request.POST.get('student_id')
+        attendance_id = request.POST.get('attendance_id')
+        absence_reason = request.POST.get('absence_reason')
+
+        if not student_id or not attendance_id:
+            return HttpResponse("Error: Missing student_id or attendance_id.")
+
+        try:
+            attendance = Attendance.objects.get(id=attendance_id, student_id=student_id)
+            attendance.absence_reason = absence_reason
+            attendance.attendance = 'Absent' 
+            attendance.save()
+            messages.success(request, "Absence reason submitted successfully!")
+            return redirect(reverse('attendance'))
+        except Attendance.DoesNotExist:
+            return HttpResponse("Attendance record not found.")
+        except ValueError:
+            return HttpResponse("Invalid attendance_id format.")
+
+    return HttpResponse("Only POST requests are allowed.")
+
+
+
+@parent_required
+def leave(request):
+    user = request.user
+    students = Student.objects.filter(assigned_parent=user)
+
+    if request.method == 'POST':
+        student_id = request.POST.get('student')
+        title = request.POST.get('primary_instrument')
+        attendance = request.POST.get('attendance')
+        date = request.POST.get('activity_date')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        description = request.POST.get('description')
+
+        student = Student.objects.get(id=student_id)
+        auth_user = auth_user_details.objects.get(user=student.assigned_teacher)
+        teachers = Teacher.objects.filter(teacher=auth_user)
+
+        if teachers.exists():
+            teacher = teachers.first()  # Get the first teacher associated with the student
+
+            Attendance.objects.create(
+                student=student,
+                teacher=teacher,
+                title=title,
+                attendance='Absent',
+                description=description,
+                date=date,
+                start_time=start_time,
+                end_time=end_time,
+                status='Pending Verification'
+            )
+
+            messages.success(request, 'Leave request submitted successfully.')
+        else:
+            messages.error(request, 'No teacher found for the selected student.')
+
+        return redirect('leave')
+
+    return render(request, 'leave.html', {'students': students})
+
+@parent_required
+def activity_list(request) :
+
+    category = request.GET.get('category')
+    if category:
+        activities = Activity.objects.filter(activity_type=category)
+    else:
+        activities = Activity.objects.all()
+
+    activity_types = Activity.objects.values_list('activity_type', flat=True).distinct()
+   
+    return render(request,'activities_list.html',{
+        'activities': activities,
+        'activity_types': activity_types,
+    })

@@ -7,39 +7,97 @@ from .decorators import admin_required
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm
+from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm
 from django.core.paginator import Paginator
 from django.db import transaction 
-from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media # Import your model
+from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin # Import your model
 from django.views.decorators.csrf import csrf_exempt
+from teacher.models import Attendance, Teacher
 import json
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+from django.db.models import Q
+from django.views.decorators.http import require_POST
+from datetime import timedelta
+from django.contrib.auth.decorators import user_passes_test
+import logging
+
 
 @admin_required
 def administrator(request):
-    # Ensure that the user is authenticated
     if request.user.is_authenticated:
-        # Access the first name and last name of the authenticated user
         first_name = request.user.first_name
         last_name = request.user.last_name
-        
-        # You can also access other user attributes if needed
-        # username = request.user.username
-        # email = request.user.email
-        
-        # Pass the user data to the template
-        context = {
-            'first_name': first_name,
-            'last_name': last_name
-        }
-        
-        # Load the template and render it with the context
-        template = loader.get_template('master_admin.html')
-        return HttpResponse(template.render(context, request))
-    else:
-        # Redirect or handle unauthenticated users as needed
-        # For example, you might want to redirect them to the login page
-        return HttpResponse("")
 
+        # Count totals
+        total_teachers = User.objects.filter(groups__name="Teacher").count()
+        total_students = Student.objects.count()
+        total_instruments = Instrument.objects.count()
+
+        # Fetch parent and teacher groups
+        try:
+            parent_group = Group.objects.get(name="Parent")
+            teacher_group = Group.objects.get(name="Teacher")
+        except Group.DoesNotExist:
+            parent_group = None
+            teacher_group = None
+
+        # Query parent and teacher users
+        parent_users = User.objects.filter(groups=parent_group) if parent_group else []
+        teacher_users = User.objects.filter(groups=teacher_group) if teacher_group else []
+
+        # Query parent logins by month
+        parent_logins_by_month = (ParentLogin.objects
+            .filter(parent__in=parent_users)
+            .annotate(month=TruncMonth('login_time'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month'))
+
+        # Query teacher logins by month
+        teacher_logins_by_month = (TeacherLogin.objects
+            .filter(teacher__in=teacher_users)
+            .annotate(month=TruncMonth('login_time'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month'))
+
+        # Combine months from both queries
+        months_set = set([entry['month'] for entry in parent_logins_by_month] + [entry['month'] for entry in teacher_logins_by_month])
+        months = sorted(list(months_set))
+
+        # Initialize dictionaries for login counts
+        parent_login_counts = {month: 0 for month in months}
+        teacher_login_counts = {month: 0 for month in months}
+
+        # Populate login counts dictionaries
+        for entry in parent_logins_by_month:
+            parent_login_counts[entry['month']] = entry['count']
+
+        for entry in teacher_logins_by_month:
+            teacher_login_counts[entry['month']] = entry['count']
+
+        # Format months for display in the template
+        months_str = [month.strftime('%B %Y') for month in months]
+
+        # Prepare context dictionary for rendering the template
+        context = {
+            'total_teachers': total_teachers,
+            'total_students': total_students,
+            'total_instruments': total_instruments,
+            'first_name': first_name,
+            'last_name': last_name,
+            'months': months_str,
+            'parent_login_values': [parent_login_counts[month] for month in months],
+            'teacher_login_values': [teacher_login_counts[month] for month in months],
+        }
+
+        # Render the template with the context
+        return render(request, 'master_admin.html', context)
+    
+    else:
+        return HttpResponse("")
+    
 @admin_required
 def delete_account(request, username):
     if request.method == 'POST':
@@ -113,21 +171,26 @@ def register(request):
     if request.method == 'POST':
         user_form = CreateUserForm(request.POST)
         details_form = UserDetailsForm(request.POST)
+        
         if user_form.is_valid() and details_form.is_valid():
             try:
                 # Save the user instance
                 user = user_form.save()
-
+                print("User created: ", user)
+                
                 # Save the user details instance
                 details = details_form.save(commit=False)
                 details.user = user
                 details.save()
+                print("User details saved: ", details)
 
                 # Get the selected group from the user form
                 group = user_form.cleaned_data['group']
+                print("Selected group: ", group)
                 
                 # Add the user to the group
                 user.groups.add(group)
+                print("User added to group: ", group)
 
                 # Add a success message
                 messages.success(request, 'User account created successfully!')
@@ -136,12 +199,20 @@ def register(request):
                 return redirect('register')  # Assuming you have a named URL for success page
             except Exception as e:
                 print("Error occurred during user registration:", e)
-                messages.error(request, 'Error occurred during user registration')
+                messages.error(request, f'Error occurred during user registration: {e}')
+        else:
+            print("Form errors: ", user_form.errors, details_form.errors)
+            messages.error(request, 'Invalid form submission.')
     else:
         user_form = CreateUserForm()
         details_form = UserDetailsForm()
     
     return render(request, 'register.html', {'user_form': user_form, 'details_form': details_form})
+
+
+
+
+
 
 
 @admin_required
@@ -165,36 +236,127 @@ def student(request) :
     }
     return render(request, 'student.html', context)
 
+logger = logging.getLogger(__name__)
 
-@admin_required
+@csrf_exempt
 def registerStudent(request):
     if request.method == 'POST':
-        student_form = StudentDetailsForm(request.POST)
-        if student_form.is_valid():
-            try:
-                with transaction.atomic():  # Start a database transaction
-                    student = student_form.save(commit=False)  # Create student object but don't save to database yet
+        try:
+            data = json.loads(request.body)
+            student_form = StudentDetailsForm(data)
+            if student_form.is_valid():
+                with transaction.atomic():
+                    student = student_form.save()
 
-                    # Process the learning mode
-                    learning_mode_id = student_form.cleaned_data['learningmode']
-                    learning_mode = TeachingMode.objects.get(pk=learning_mode_id)
-                    student.teaching_mode = learning_mode
+                    selected_times = data.get('selectedTimes', '').split(',')
+                    selected_date = data.get('selectedDate', '')
+                    recurring_weeks = int(data.get('recurringWeeks', 1))  # Default to 1 week if not provided or invalid
 
-                    # Now save the student instance with the learning mode included
-                    student.save()
-                    messages.success(request, 'Student registered successfully!')
+                    # Retrieve teacher_id from JSON data
+                    teacher_id = data.get('assigned_teacher', None)
 
-                # Redirect the user to the success page after successful registration
-                return redirect('register-student')
-            except Exception as e:
-                print("Error occurred during student registration:", e)
-                messages.error(request, 'Error occurred during student registration')
-    else:
+                    if teacher_id is not None:
+                        # Fetch the corresponding User object directly
+                        try:
+                            teacher_user = User.objects.get(id=teacher_id)
+                        except User.DoesNotExist:
+                            logger.error(f"User with id {teacher_id} does not exist")
+                            return JsonResponse({'success': False, 'message': 'User does not exist'})
+
+                        # Create Attendance instances for each selected time and recurring weeks
+                        for time in selected_times:
+                            try:
+                                start_time = datetime.strptime(time.strip(), '%H:%M')
+                                end_time = start_time + timedelta(minutes=30)
+
+                                for week in range(recurring_weeks):
+                                    new_attendance = Attendance.objects.create(
+                                        student=student,
+                                        teacher_email=teacher_user,
+                                        title='Class',
+                                        description='Regular Class',
+                                        date=(datetime.strptime(selected_date, '%Y-%m-%d') + timedelta(weeks=week)).date(),
+                                        start_time=start_time.time(),
+                                        end_time=end_time.time(),
+                                        attendance='Attend',
+                                        status='Pending Verification'
+                                    )
+                                    logger.info(f"Created Attendance: {new_attendance}")
+
+                            except Exception as e:
+                                logger.error(f"Error creating attendance: {str(e)}")
+                                return JsonResponse({'success': False, 'message': 'Error creating attendance'})
+
+                        return JsonResponse({'success': True, 'message': 'Student registered successfully!'})
+                    else:
+                        logger.error("assigned_teacher is missing in JSON data")
+                        return JsonResponse({'success': False, 'message': 'assigned_teacher is missing in JSON data'})
+            else:
+                errors = dict(student_form.errors.items())
+                logger.error(f"Invalid form data: {errors}")
+                return JsonResponse({'success': False, 'message': 'Invalid form data', 'errors': errors})
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON: {str(e)}")
+            return JsonResponse({'success': False, 'message': 'Invalid JSON data received'})
+        except Exception as e:
+            logger.error(f"Error registering student: {str(e)}")
+            return JsonResponse({'success': False, 'message': str(e)})
+    elif request.method == 'GET':
         student_form = StudentDetailsForm()
+        return render(request, 'register_student.html', {'student_form': student_form})
+    else:
+        logger.error("Method not allowed")
+        return JsonResponse({'success': False, 'message': 'Method not allowed'})
 
-    return render(request, 'register_student.html', {
-        'student_form': student_form
-    })
+
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+from django.db.models import Q
+
+def get_teacher_classes(request, teacher_id):
+    date = request.GET.get('date')
+    
+    if date is None:
+        date = str(date.today())  # Set date to current date if None
+
+    try:
+        # Filter Attendance objects based on the provided teacher_id, date, attendance, and status
+        classes = Attendance.objects.filter(
+            teacher_email__id=teacher_id,
+            date=date,
+          
+        ).select_related('student')
+
+        print(f"Fetched classes for teacher_id={teacher_id}, date={date}: {classes}")
+
+        classes_data = []
+        for class_instance in classes:
+            classes_data.append({
+                'date': class_instance.date,
+                'start_time': class_instance.start_time,
+                'end_time': class_instance.end_time,
+                'title': class_instance.title,
+                'description': class_instance.description,
+                'student_name': class_instance.student.studentName
+            })
+
+        return JsonResponse({'classes': classes_data})
+    
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Teacher or classes not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    
+
+@admin_required
+def get_books(request, instrument_id):
+    books = Book.objects.filter(bookinstrument__instrumentID=instrument_id)
+    books_list = [{"id": book.id, "book": book.book} for book in books]
+    return JsonResponse({"books": books_list})
+
 
 
 
@@ -279,7 +441,7 @@ def book_detail(request, book_id, instrument_major, instrument_minor):
 
 @admin_required
 @csrf_exempt
-def delete_book_detail(request, module_id):
+def delete_module(request, module_id):
     if request.method == "POST":
         try:
             module = ModuleDetails.objects.get(id=module_id)
@@ -294,18 +456,27 @@ def delete_book_detail(request, module_id):
 @csrf_exempt
 @admin_required
 def add_module(request):
-    if request.method == 'POST':
-        form = ModuleForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('book_detail')  # Redirect to the appropriate page after successful submission
-        else:
-            error_message = "Failed to add module. Please check your inputs."
-            # Pass the form and error message to the template
-            return render(request, 'book_detail.html', {'form': form, 'error_message': error_message})
-    else:
-        form = ModuleForm()
-        return render(request, 'book_detail.html', {'form': form})
+    if request.method == "POST":
+        data = json.loads(request.body)
+        modules = data.get('modules', [])
+        for module_data in modules:
+            module_type = module_data.get('module_type')
+            module_name = module_data.get('module_name')
+            description = module_data.get('description')
+            bookInstrument_id = module_data.get('bookInstrument')
+
+            bookInstrument = BookInstrument.objects.get(id=bookInstrument_id)
+            ModuleDetails.objects.create(
+                module_type=module_type,
+                module_name=module_name,
+                description=description,
+                bookInstrument=bookInstrument
+            )
+        
+        # Return success response after creating modules
+        return JsonResponse({'success': True, 'message': 'Modules created successfully'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
 
 
 @admin_required
@@ -344,7 +515,7 @@ def registerActivity(request):
         activity_form = ActivityDetailsForm()
     return render(request, 'register_activity.html', {'activity_form': activity_form})
 
-
+@admin_required
 def activity_details(request, id):
     activity = get_object_or_404(Activity, id=id)
     # media = get_object_or_404(Media, id=id)
@@ -353,11 +524,39 @@ def activity_details(request, id):
 
 
 
-def get_books(request, instrument_id):
-    books = Book.objects.filter(bookinstrument__instrumentID=instrument_id)
-    books_list = [{"id": book.id, "book": book.book} for book in books]
-    return JsonResponse({"books": books_list})
+@admin_required
+def register_modules(request):
+    if request.method == 'POST':
+        form = RegisterInstrumentForm(request.POST)
+        if form.is_valid():
+            primary_instrument = form.cleaned_data['primary_instrument']
+            variation = form.cleaned_data['variation']
+            books = form.cleaned_data['books']
 
+            # Create the instrument with primary_instrument and variation
+            instrument = Instrument.objects.create(
+                instrument_major_name=primary_instrument,
+                instrument_minor_name=variation
+            )
+
+            # Associate selected books with the instrument
+            for book in books:
+                BookInstrument.objects.create(bookID=book, instrumentID=instrument)
+
+            messages.success(request, 'Instrument and associated books registered successfully.')
+            return redirect('register-modules')
+    else:
+        form = RegisterInstrumentForm()
+
+    return render(request, 'register_modules.html', {'form': form})
+
+
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["DELETE"])
+def delete_student(request, username):
+    student = get_object_or_404(Student, studentName=username)
+    student.delete()
+    return JsonResponse({'message': 'Student deleted successfully.'})
 
 
 def navbar(request):

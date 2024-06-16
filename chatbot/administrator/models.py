@@ -9,7 +9,7 @@ class auth_user_details(models.Model):
     birthdate = models.DateField(null=True)
 
     def __str__(self):
-        return self.user,self.phone_number, self.address, self.birthdate
+        return f"{self.user} - {self.phone_number} - {self.address} - {self.birthdate}"
 
 class TeachingMode(models.Model):
     name = models.CharField(max_length=50)
@@ -101,9 +101,28 @@ class Student(models.Model):
     assigned_parent = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='student_assigned_parent')
     teaching_mode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, null=True)
-    current_book = models.ForeignKey(Book, on_delete=models.CASCADE, null=True)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.studentName  # Return the student's name
 
     def clean(self):
         # if self.assigned_teacher.groups.filter(name='teacher').exists():
         #     raise ValidationError('The assigned teacher must be a member of the "teacher" group.')
         pass
+
+
+class ParentLogin(models.Model):
+    parent = models.ForeignKey(User, on_delete=models.CASCADE)
+    login_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.parent.username} - {self.login_time}"
+    
+
+class TeacherLogin(models.Model):
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    login_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.teacher.username} - {self.login_time}"

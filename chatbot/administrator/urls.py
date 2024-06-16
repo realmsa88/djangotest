@@ -1,6 +1,6 @@
 from . import views, student_views
 from django.urls import path
-from .views import delete_book_detail
+
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -10,12 +10,17 @@ urlpatterns = [
     path('administrator/', views.dashboard, name='administrator'),
     path('administrator/accounts/', views.accounts, name='accounts'),
     path('administrator/student/', views.student, name='student'),
-    path('administrator/student/register-student/', views.registerStudent, name='register-student'),
+    # path('administrator/student/register-student/', views.registerStudent, name='register-student'),
+    path('register-student/', views.registerStudent, name='register-student'),
+    path('delete-student/<str:username>/', views.delete_student, name='delete-student'),
     path('administrator/modules/', views.modules, name = 'modules'),
     path('administrator/modules/book_detail/<int:book_id>/<str:instrument_minor>/<str:instrument_major>/', views.book_detail, name='book_detail'),
-    path('administrator/modules/delete_module/<int:module_id>/', views.delete_book_detail, name='delete_book_detail'),
+    path('administrator/modules/delete_module/<int:module_id>/', views.delete_module, name='delete_module'),
     path('add_module/', views.add_module, name='add_module'),
+    path('get-teacher-classes/<int:teacher_id>/', views.get_teacher_classes, name='get_teacher_classes'),
+
     path('get-books/<int:instrument_id>/', views.get_books, name='get_books'),
+    path('administrator/modules/register-modules', views.register_modules, name = 'register-modules'),
     path('administrator/activity/', views.activity, name = 'activity'),
     path('administrator/activity/register-activity', views.registerActivity, name = 'register-activity'),
     path('administrator/activity/register-activity/<str:success_message>/', views.registerActivity, name='register-activity'),

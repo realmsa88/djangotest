@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Administrator Dashboard</title>
+    <title>Parent Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
@@ -31,6 +31,10 @@
     color: #fff; /* Change to your desired hover text color */
 }
 
+.img.bg-wrap.text-center.py-4::after {
+            background-color: transparent;
+        }
+
     </style>
 </head>
 <body>
@@ -39,11 +43,11 @@
 
 
     <div class="wrapper d-flex align-items-stretch" style="font-size: small;">
-        <nav id="sidebar" class="collapsed" style="position: fixed;">
+        <nav id="sidebar" class="collapsed" style="position: fixed;background-color: #43207a">
             <div class="custom-menu">
                 <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-image: url({% static 'images/bg_1.jpg' %})">
+            <div class="img bg-wrap text-center py-4" style="background-color: #43207a">
                 <div class="user-logo">
                     <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
                     <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
@@ -54,7 +58,7 @@
                     </h3>
                 </div>
             </div>
-            <ul class="list-unstyled components mb-5" style="padding-left: 0;">
+            <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #43207a">
                 <li class="{% if request.path == '/parent/' %}active{% endif %}">
                     <a href="{% url 'parent' %}">
                         <span class="fa fa-home mr-3"></span><span class="text"> Dashboard</span>
@@ -67,7 +71,7 @@
                 </li>
                 <li class="{% if request.path == '/parent/student-modules/' %}active{% endif %}">
                     <a href="{% url 'student-modules' %}" style="margin-left: 1px;">
-                        <span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span>
+                        <span class="fa fa-trophy mr-3"></span><span class="text"> Performance </span>
                     </a>
                 </li>
                 <li class="{% if request.path == '/parent/attendance' %}active{% endif %}">
@@ -81,7 +85,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{% url 'activities-list' %}">
                         <span class="fa fa-pencil mr-3"></span><span class="text"> Activities List</span>
                     </a>
                 </li>

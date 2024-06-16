@@ -114,7 +114,7 @@
             <p style="color: orange;">{{ student.assigned_parent.email }}</p>
         </div>
         <div class="date-progress">
-            <p style="margin-right: 200px;">{{ student.current_book.updated_at|date:"F j, Y" }}</p>
+            <p style="margin-right: 200px;">{{ student.book.updated_at|date:"F j, Y" }}</p>
             <div class="progress-container" style="margin-right: 200px;">
                 <div class="progress-circle" style="background: conic-gradient(rgb(56, 194, 79) {{ student.progress_percentage }}%, #adf {{ student.progress_percentage }}%);">
                     <div class="progress-text">{{ student.progress_percentage|floatformat:1 }}%</div>

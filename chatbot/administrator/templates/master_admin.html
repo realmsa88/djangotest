@@ -9,11 +9,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     <style>
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
         li, ul, nav{
             background-color:  ;
+        }
+        p {
+            color: black;
         }
 
         .a:hover {
@@ -28,50 +36,45 @@
             background-color: transparent;
         }
 
-        /* Dropdown styles */
-        .dropdown-container {
-    display: none;
-    padding-left: 20px;
-    background-color: #5b7cfa !important; /* Set background color here */
-}
-
-.dropdown-container a {
-    /* Remove background color from here */
-    color: #333;
-}
-
-.dropdown-container a:hover {
-    background-color: #ddd;
-}
-
-
-        .dropdown-btn {
-            cursor: pointer;
+        .details-container {
             display: flex;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
             justify-content: space-between;
+            margin-bottom: 20px;
         }
 
-      
-
-        /* Chevron rotation */
-        .chevron {
-            transition: transform 0.3s;
+        .details {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+            padding: 20px;
+            border-radius: 10px;
+            width: 55%;
         }
 
-        .dropdown-btn.active .chevron {
-            transform: rotate(90deg);
+        .card {
+            height: 200px;
+            width: calc(30% - 10px);
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            margin-left: 15px;
+        }
+
+        #parentLoginsChart {
+            width: 40%;
+            height: 400px;
+            padding: 16px;
         }
     </style>
 </head>
 <body>
     {% include 'loading_screen.html' %}
     <div class="wrapper d-flex align-items-stretch " style="font-size: small;">
-        <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #985bfa">
+        <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #43207a">
             <div class="custom-menu">
                 <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-color: #985bfa !important;">
+            <div class="img bg-wrap text-center py-4" style="background-color: #43207a !important;">
                 <div class="user-logo">
                     <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
                     <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
@@ -83,62 +86,32 @@
                 </div>
             </div>
 
-            <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #985bfa;">
+            <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #43207a;">
                 <li class="{% if request.path == '/administrator/dashboard' %}active{% endif %}">
                     <a href="{% url 'dashboard' %}" style="margin-left: 0px;" onclick="showLoadingScreen()">
                         <span class="fa fa-home mr-3"></span><span class="text"> Home</span>
                     </a>
                 </li>
 
-                <li class="{% if request.path == '/administrator/accounts/' %}active{% endif %} {% if request.path == '/administrator/accounts/register' %}active{% endif %}">
-                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 0px;">
-                        <span class="fa fa-list mr-3"></span><span class="text"> Accounts Management</span>
-                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
-                    </a>
-                    <div class="dropdown-container" style="background-color: #5b7cfa;">
-                        <a href="{% url 'accounts' %}" onclick="showLoadingScreen()" >View Accounts</a>
-                        <a href="{% url 'register' %}" onclick="showLoadingScreen()">Register Account</a>
-                    </div>
+                <li class="{% if request.path == '/administrator/accounts/' %}active{% endif %} {% if request.path == '/administrator/accounts/register/' %}active{% endif %}">
+                    <a href="{% url 'accounts' %}"><span class="fa fa-list mr-3"></span><span class="text"> Accounts Management</span></a>   
                 </li>
 
                 <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
-                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 1px;">
-                        <span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span>
-                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
-                    </a>
-                    <div class="dropdown-container">
-                        <a href="{% url 'student' %}" onclick="showLoadingScreen()">View Students</a>
-                        <a href="{% url 'register-student' %}" onclick="showLoadingScreen()">Register Student</a>
-                    </div>
+                        <a href="{% url 'student' %}"><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span></a>   
                 </li>
 
-                <li class="{% if request.path == '/administrator/modules/' %}active{% endif %}">
+                <li class="{% if request.path == '/administrator/modules/' %}active{% endif %} {% if request.path == '/administrator/modules/register-modules' %}active{% endif %}">
                     <a href="{% url 'modules' %}"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
                 </li>
-
-                <!-- <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
-                    <a href="javascript:void(0)" class="dropdown-btn" style="margin-left: 1px;">
-                        <span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span>
-                        <span class="fa fa-chevron-right chevron"></span>
-                    </a>
-                    <div class="dropdown-container">
-                        <a href="{% url 'modules' %}" onclick="showLoadingScreen()">View Modules</a>
-                        <a href="{% url 'add_module' %}" onclick="showLoadingScreen()">Add Module</a>
-                    </div>
-                </li> -->
 
                 <li>
                     <a href="#"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
                 </li>
 
                 <li class="{% if request.path == '/administrator/activity/' %}active{% endif %} {% if request.path == '/administrator/activity/register-activity' %}active{% endif %}">
-                    <a href="javascript:void(0)" class="dropdown-btn"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span>
-                        <span class="fa fa-chevron-right chevron" style="float: right;"></span>
+                    <a href="{% url 'activity' %}"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span>
                     </a>
-                    <div class="dropdown-container">
-                        <a href="{% url 'activity' %}" onclick="showLoadingScreen()">View Activities</a>
-                        <a href="{% url 'register-activity' %}" onclick="showLoadingScreen()">Register Activity</a>
-                    </div>
                 </li>
 
                 <li class="{% if request.path == '/administrator/media/' %}active{% endif %}">
@@ -151,11 +124,41 @@
             </ul>
         </nav>
 
-        <!-- Page Content -->
         <div id="content" class="p-4 p-md-5 pt-5">
             {% block content %}
             <h3 class="mb-4">Dashboard</h3><hr>
-            <p>All content will be displayed here.</p>
+
+            <div class="details-container">
+                <div class="details slide-in-left" style="display: inline-block;">
+                    <h5 style="font-weight: bold;">Academy Details</h5>
+                    <p>Summary</p>
+                
+                    <div class="card" style="background-color: #FFE2E5; display: inline-block;">
+                        <i class="fa fa-user" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_teachers }}</h4>
+                        <p>Total Teachers</p>
+                    </div>
+                
+                    <div class="card" style="background-color: #F3E8FF;display: inline-block;">
+                        <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_students }}</h4>
+                        <p>Total Students</p>
+                    </div>
+                
+                    <div class="card" style="background-color: #DCFCE7;display: inline-block;">
+                        <i class="fa fa-trophy" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_instruments }}</h4>
+                        <p>Total Instruments</p>
+                    </div>
+                </div>
+
+                <div class="details slide-in" style="display: inline-block; width: 43%; margin-left: -700px;">
+                    <h5 style="font-weight: bold;">User Logins</h5>
+                    <p>Summary</p>
+                    <canvas id="parentLoginsChart"></canvas>
+                </div>
+            </div>
+
             {% endblock %}
         </div>
     </div>
@@ -164,14 +167,80 @@
     <script src="{% static 'js/popper.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        // Toggle sidebar collapse
+        var ctx = document.getElementById('parentLoginsChart').getContext('2d');
+        var months = {{ months|safe }};
+    
+        // Function to shift array to start from the previous month
+        function shiftMonthsArray(arr) {
+            if (arr.length > 0) {
+                // Find index of current month
+                var currentMonthIndex = arr.findIndex(month => month === '{{ current_month_name }}');
+                
+                if (currentMonthIndex !== -1) {
+                    // Shift array to start from previous month
+                    var startIndex = (currentMonthIndex - 1 + arr.length) % arr.length;
+                    return arr.slice(startIndex).concat(arr.slice(0, startIndex));
+                }
+            }
+            return arr; // Return original array if no valid shift
+        }
+
+    
+        months = shiftMonthsArray(months);
+        var parentLoginCounts = {{ parent_login_values|safe }};
+        var teacherLoginCounts = {{ teacher_login_values|safe }};
+    
+        console.log(months); // Check if months array starts correctly
+        console.log(teacherLoginCounts); // Check teacher login counts
+        console.log(parentLoginCounts); // Check parent login counts
+    
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Parent Logins',
+                        data: parentLoginCounts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Teacher Logins',
+                        data: teacherLoginCounts,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            callback: function(value) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        // Rest of your JavaScript code
         document.getElementById('sidebarCollapse').addEventListener('click', function () {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         });
-
-        // Toggle dropdown menus
+    
         document.querySelectorAll('.dropdown-btn').forEach(button => {
             button.addEventListener('click', function () {
                 this.classList.toggle('active');
@@ -184,5 +253,6 @@
             });
         });
     </script>
+    
 </body>
 </html>

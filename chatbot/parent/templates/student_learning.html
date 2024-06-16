@@ -166,11 +166,11 @@
         <div class="main-container progress-main-container slide-in" style="margin-top: 25px; margin-bottom: 20px;">
             <div class="progress-background-title" style="background-color: green;">Student Academic Progress</div>
             <div class="progress-container">
-                <progress id="progress1" value="{{ data.practice_completion_percentage }}" max="100" style="width: 95%;"></progress>
+                <progress id="progress1" value="{{ data.practice_completion_percentage }}" max="100" style="width: 50%;"></progress>
                 <p style="margin-left: 20px; color: black;">Practice : {{ data.practice_completion_percentage }}% Completed</p>
             </div>
             <div class="progress-container">
-                <progress max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 95%;">{{ data.repertoire_completion_percentage }}%</progress>
+                <progress max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 50%;">{{ data.repertoire_completion_percentage }}%</progress>
                 <p style="margin-left: 20px; color: black;">Repertoire : {{ data.repertoire_completion_percentage }}% Completed</p>
             </div>
         </div>
