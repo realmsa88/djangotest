@@ -71,7 +71,7 @@ class Activity(models.Model) :
     end_time = models.TimeField(null=True)
 
     def __str__(self) :
-        return self.activity_name, self.activity_type, self.description, self.category, self.location, self.activity_date, self.start_time, self.end_time
+        return f"{self.activity_name} - {self.activity_type} - {self.activity_date}"
 
 class Album(models.Model):
 

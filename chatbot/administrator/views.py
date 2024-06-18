@@ -532,8 +532,9 @@ def registerActivity(request):
 @admin_required
 def activity_details(request, id):
     activity = get_object_or_404(Activity, id=id)
-    # media = get_object_or_404(Media, id=id)
-    return render(request, 'activity_details.html', {'activity': activity})
+    albums = activity.album_set.all()  # Fetch all albums related to this activity
+    
+    return render(request, 'activity_details.html', {'activity': activity, 'albums': albums})
 
 
 

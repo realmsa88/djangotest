@@ -2,33 +2,47 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .media-item {
+        display: inline-block;
+        width: calc(25% - 10px); /* 25% width for each item with 10px margin */
+        margin: 5px; /* Adjust margin as needed */
+        text-align: center; /* Center align images */
+    }
 
-<h1>{{ activity.activity_name }}</h1>
+    .media-item img {
+        max-width: 100%; /* Ensure images don't exceed container width */
+        height: auto; /* Maintain aspect ratio */
+    }
+</style>
+
+<p style="font-size: 18px;">Activity Details</p>
+<hr>
+
+<p style="font-size: 18px;">{{ activity.activity_name }}</p>
 <p>Date: {{ activity.activity_date }}</p>
 <p>Type: {{ activity.activity_type }}</p>
 
-<!-- Display individual media object -->
-{% if media %}
-    <p>Single Media:</p>
-    <div class="media-item">
-        <img src="{% static '/images/' %}{{ media.media_name }}" alt="{{ media.media_type }}">
-    </div>
-    <p>{{ media.media_name }}</p>
-   
-{% endif %}
-
-<p>{{ media }}</p>
-
-<div class="media-container">
-    <!-- Display media items associated with the activity -->
-    {% for media_item in activity.media_set.all %}
-    <div class="media-item">
-        <img src="{% static 'administrator/images/guitar.jpeg' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
-    </div>
-    <p>{{ media.media_name }}</p>
+{% if albums %}
+    <!-- <p>Albums and Media:</p> -->
+    {% for album in albums %}
+        <!-- <p>Album ID: {{ album.id }}</p> -->
+        <!-- <p>Album Activity: {{ album.activityID }}</p> Ensure this line makes sense based on your model structure -->
+        <div class="media-container">
+            <!-- Display media items associated with the album -->
+            {% for media_item in album.media_set.all %}
+                {% if forloop.counter0|divisibleby:4 %}
+                    </div><div class="media-container">
+                {% endif %}
+                <div class="media-item">
+                    <!-- Assuming media_name is the field storing the image filename -->
+                    <img src="{% static 'images/' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
+                </div>
+            {% endfor %}
+        </div>
     {% endfor %}
-</div>
-
-<p>Media Count: {{ activity.media_set.count }}</p>
+{% else %}
+    <p>No albums or media associated with this activity.</p>
+{% endif %}
 
 {% endblock %}

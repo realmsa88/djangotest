@@ -12,6 +12,25 @@
 
 <style>
 
+.actions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.attendance-card-actions {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.attendance-card-actions button {
+    margin-right: 10px;
+}
+
+
+
+
 .modal-header {
         background-color: #165227;
         color: white;
@@ -161,6 +180,41 @@ button:active {
     border: none;
 }
 
+.dropdown-container {
+    margin-bottom: 20px;
+}
+
+.dropdown-container select {
+    padding: 10px;
+    font-size: 14px;
+   
+    border: 1px solid #ccc;
+    width: 200px;
+    margin-right: 10px;
+}
+.search-bar-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    float: right;
+}
+
+#searchBar {
+    width: 50%; /* Adjust padding and icon width */
+    padding: 10px;
+    padding-right: 30px; /* Adjust as necessary */
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    right: 500px;
+    transform: translateY(-50%);
+    color: #aaa;
+}
 </style>
 
 <div class="header-container">
@@ -173,12 +227,31 @@ button:active {
 
 <hr>
 
+
+
+<!-- <div class="dropdown-container">
+    <select id="instrumentDropdown" onchange="filterByInstrument(this.value)">
+        <option value="">Select Instrument</option>
+        {% for instrument in instruments %}
+            <option value="{{ instrument }}">{{ instrument }}</option>
+        {% endfor %}
+    </select>
+</div> -->
+
 <!-- Attendance list grouped by student names -->
 <div class="attendance-list slide-in">
+    <div class="actions-container">
     <div class="attendance-card-actions">
         <button onclick="filterAttendance('Pending')" class="active">Pending</button>
         <button onclick="filterAttendance('Approved')">Approved</button>
     </div>
+
+    <div class="search-bar-container">
+        <input type="text" id="searchBar" onkeyup="searchStudent()" placeholder="Search for student name..." title="Type in a name" style="width: 50%; padding: 10px;">
+        <i class="fa fa-search search-icon"></i>
+    </div>
+    </div>
+    
     <br>
     {% if attendance_list %}
         {% regroup attendance_list by student as student_records %}
@@ -199,7 +272,7 @@ button:active {
                     {% for attendance in student_group.list %}
                         <div class="attendance-record" style="padding: 20px;">
                             <div class="record-info">
-                                <strong style="color: black;">{{ attendance.title }}</strong>
+                                <strong style="color: black;">{{ attendance.title }} - {{attendance.instrument_major_name}}</strong>
                                 <span class="record-status {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %} {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
                                     {% if attendance.status == 'Pending Verification' %}
                                         <span class="pending">Pending Verification</span>
@@ -270,14 +343,17 @@ button:active {
 </div>
 
 <!-- The Info Modal -->
-<div id="infoModal" class="modal slide-in">
-    <div class="modal-content">
+<div id="infoModal" class="modal">
+    <div class="modal-content slide-in">
         <div class="modal-header">
             <p class="modal-title" style="color: white;">Attendance Overview</p>
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
+
         <div id="infoModalContent">
+            
             <table id="attendanceTable" class="attendance-table" border="1">
+               
                 <thead>
                     <tr>
                         <th>Title</th>
@@ -449,7 +525,7 @@ function openInfoModal(studentName, attendanceList) {
 
     // Update totals in the modal table
     var totalAttendanceCount = attendApprovedCount + attendPendingCount + absentApprovedCount + absentPendingCount;
-    var tableContent = `
+    var tableContent = `        <p>Class</p>
         <tr>
             <td>Attend (Approved)</td>
             <td>${attendApprovedCount}</td>
@@ -506,6 +582,38 @@ window.onclick = function(event) {
     if (event.target == infoModal) {
         closeInfoModal();
     }
+}
+
+function filterByInstrument(instrument) {
+    var cards = document.getElementsByClassName("attendance-card");
+
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var studentName = card.querySelector(".attendance-card-title").textContent.trim();
+
+        // Check if the student's instrument matches the selected instrument
+        if (instrument === '' || studentInstruments[studentName] === instrument) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    }
+}
+
+// Search function
+function searchStudent() {
+    var input = document.getElementById("searchBar");
+    var filter = input.value.toUpperCase();
+    var attendanceCards = document.querySelectorAll('.attendance-card');
+
+    attendanceCards.forEach(function(card) {
+        var titleElement = card.querySelector('.attendance-card-title');
+        if (titleElement.textContent.toUpperCase().indexOf(filter) > -1) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    });
 }
 </script>
 

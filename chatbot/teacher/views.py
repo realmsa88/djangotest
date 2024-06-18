@@ -442,6 +442,8 @@ def attendance_list(request):
     # Retrieve all attendance records associated with the current user
     if user_details:
         all_attendance = Attendance.objects.filter(teacher_email=user_details.user)
+        for attendance in all_attendance:
+            attendance.instrument_major_name = attendance.student.instrument
     else:
         all_attendance = []
 
