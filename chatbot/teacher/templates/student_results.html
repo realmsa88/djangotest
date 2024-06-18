@@ -77,10 +77,10 @@
                 All
             </button> -->
             {% for module_type in module_types %}
-                <button onclick="filterInstruments(this, '{{ module_type }}')"
-                        style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
-                    {{ module_type }}
-                </button>
+            <button onclick="filterInstruments(this, '{{ module_type }}')" data-module-type="{{ module_type }}">
+                {{ module_type }}
+            </button>
+            
             {% endfor %}
         </div>
     </div>
@@ -172,63 +172,79 @@
             <button type="submit" style="border-radius: 5px;background-color: #5b7cfa;color: white; border: none; width: 20%; height: 50%;margin-left: 200px;">Update</button>
         </form>
     </div>
-    
-<script>
-
-function filterInstruments(button, moduleType) {
-    var containers = document.querySelectorAll('.module-input-container');
-    var headers = document.querySelectorAll('.module-header-container');
-
-    if (moduleType === 'All') {
-        containers.forEach(function (container) {
-            container.style.display = 'flex';
-        });
-        headers.forEach(function (header) {
-            header.style.display = 'flex';
-        });
-    } else {
-        containers.forEach(function (container, index) {
-            var moduleInput = container.querySelector('input[type="text"][value="' + moduleType + '"]');
-            if (moduleInput) {
-                container.style.display = 'flex';
-                headers[index].style.display = 'flex';
+    <script>
+        // Function to filter modules based on module type
+        function filterInstruments(button, moduleType) {
+            var containers = document.querySelectorAll('.module-input-container');
+            var headers = document.querySelectorAll('.module-header-container');
+        
+            if (moduleType === 'All') {
+                containers.forEach(function(container) {
+                    container.style.display = 'flex';
+                });
+                headers.forEach(function(header) {
+                    header.style.display = 'flex';
+                });
             } else {
-                container.style.display = 'none';
-                headers[index].style.display = 'none';
+                containers.forEach(function(container, index) {
+                    var moduleInput = container.querySelector('input[type="text"][value="' + moduleType + '"]');
+                    if (moduleInput) {
+                        container.style.display = 'flex';
+                        headers[index].style.display = 'flex';
+                    } else {
+                        container.style.display = 'none';
+                        headers[index].style.display = 'none';
+                    }
+                });
             }
+        
+            document.querySelectorAll('.button-wrapper button').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+        
+            button.classList.add('active');
+        }
+        
+        // Function to filter and show only Practice modules initially
+        function showPracticeModules() {
+            var practiceButton = document.querySelector('.button-wrapper button[data-module-type="Practice"]');
+            if (practiceButton) {
+                filterInstruments(practiceButton, 'Practice');
+            }
+        }
+        
+        // Event listener for DOMContentLoaded to initialize filter
+        document.addEventListener('DOMContentLoaded', function() {
+            showPracticeModules();
         });
-    }
-
-    document.querySelectorAll('.button-wrapper button').forEach(function (btn) {
-        btn.classList.remove('active');
-    });
-
-    button.classList.add('active');
-}
-
-document.querySelectorAll('.button-wrapper button').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        filterInstruments(this, this.textContent.trim());
-    });
-});
-
-function confirmUpdate(iconContainer, moduleName, moduleDescription, moduleId) {
-    var modal = document.getElementById("myModal");
-    var span = document.getElementsByClassName("close")[0];
-
-    document.getElementById("module-name-modal").textContent = moduleName;
-    document.getElementById("module-description-modal").textContent = moduleDescription;
-    document.getElementById("module-id-input").value = moduleId;
-
-    modal.style.display = "block";
-
-    span.onclick = function () {
-        modal.style.display = "none";
-    };
-}
+        
+        // Event listener for button clicks to filter modules
+        document.querySelectorAll('.button-wrapper button').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterInstruments(this, this.dataset.moduleType);
+            });
+        });
+        
+        // Function to handle modal display and update
+        function confirmUpdate(iconContainer, moduleName, moduleDescription, moduleId) {
+            var modal = document.getElementById("myModal");
+            var span = document.getElementsByClassName("close")[0];
+        
+            document.getElementById("module-name-modal").textContent = moduleName;
+            document.getElementById("module-description-modal").textContent = moduleDescription;
+            document.getElementById("module-id-input").value = moduleId;
+        
+            modal.style.display = "block";
+        
+            span.onclick = function() {
+                modal.style.display = "none";
+            };
+        }
+        </script>
+        
 
 
-</script>
+
 
 {% endblock %}
 

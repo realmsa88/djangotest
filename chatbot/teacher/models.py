@@ -27,7 +27,7 @@ class Attendance(models.Model):
     recurring_weeks = models.IntegerField(default=0) 
 
     def __str__(self):
-        return f"{self.student} - {self.attendance} - {self.title} - {self.date} - {self.start_time} - {self.end_time} - {self.status} - {self.description} - {self.teacher_email} - {self.recurring_weeks}"
+        return f"{self.student} - {self.attendance} - {self.title} - {self.date} - {self.start_time} - {self.end_time} - {self.status} - {self.description} - {self.teacher_email} - {self.recurring_weeks} - {self.absence_reason}"
 
 
  

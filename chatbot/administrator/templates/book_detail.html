@@ -13,6 +13,20 @@
 
 <style>
 /* Existing CSS */
+
+.add-module-button {
+    background-color: #5b7cfa;
+    color: white;
+    border: none;
+    width: 25px;
+    height: 25px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px; /* Ensure buttons have rounded corners */
+}
+
 .form-container-wrapper {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     padding: 30px;
@@ -165,7 +179,7 @@ input[type="text"] {
 
 <hr>
 
-<p style="color: black;" class="slide-in-left"> Module - {{ instrument_minor }} {{ instrument_major }} - {{ book.book }} </p>
+<p style="color: black;" class="slide-in-left"> Module > {{ instrument_minor }} {{ instrument_major }} > {{ book.book }} </p>
 
 <br>
 

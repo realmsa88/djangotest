@@ -25,6 +25,52 @@
             background-color: transparent;
         }
 
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        li, ul, nav{
+            background-color:  ;
+        }
+        p {
+            color: black;
+        }
+
+        .a:hover {
+            background-color: #5bca32 !important;
+        }
+
+        .bg-wrap {
+            background-color: #5b7cfa !important;
+        }
+
+        .img.bg-wrap.text-center.py-4::after {
+            background-color: transparent;
+        }
+
+        .details-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+            padding: 20px;
+            border-radius: 10px;
+            width: 55%;
+        }
+
+        .card {
+            height: 200px;
+            width: calc(30% - 10px);
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            margin-left: 15px;
+        }
+
     </style>
 </head>
 <body>
@@ -88,11 +134,39 @@
 
         <!-- Page Content  -->
       
-        <div id="content" class="p-4 p-md-5 pt-5">
 
+        <div id="content" class="p-4 p-md-5 pt-5">
             {% block content %}
-            <h3 class="mb-4">Dashboard</h3><hr>
-            <p>All content will be displayed here.</p>
+            <h3 class="mb-4 slide-in-left" style="font-size: 20px;">Teacher Dashboard</h3><hr>
+
+            <div class="details-container">
+                <div class="details slide-in-left" style="display: inline-block;">
+                    <h5 style="font-weight: bold;">Teaching Details</h5>
+                    <p>Summary</p>
+                
+                    <!-- <div class="card" style="background-color: #FFE2E5; display: inline-block;">
+                        <i class="fa fa-user" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_teachers }}</h4>
+                        <p>Total Teachers</p>
+                    </div> -->
+                
+                    <div class="card" style="background-color: #F3E8FF;display: inline-block;">
+                        <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_students }}</h4>
+                        <p>Students Taught</p>
+                    </div>
+                
+                    <div class="card" style="background-color: #DCFCE7;display: inline-block;">
+                        <i class="fa fa-trophy" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_instruments }}</h4>
+                        <p>Total Instruments</p>
+                    </div>
+                </div>
+
+              
+            </div>
+
+    
             
             {% endblock %}
         </div>

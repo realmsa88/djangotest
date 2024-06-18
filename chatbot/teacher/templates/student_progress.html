@@ -91,35 +91,35 @@
 </style>
 
 <h1 style="font-size: 20px;" class="slide-in-left">Student Progress</h1>
-<hr class="slide-in-left">
-<p style="color: black;" class="slide-in-left">Module - {{ instrument_minor }} {{ instrument_major }} - Book {{ book_id }}</p>
 <hr>
+<hr class="slide-in-left" style="background-color: black;">
+<p style="color: black;" class="slide-in-left">Module > {{ instrument_minor }} {{ instrument_major }} > Book {{ book_id }}</p>
+<hr class="slide-in-left"  style="background-color: black;">
 
 <div style="display: inline-block;" class="slide-in">
     <p style="display: inline;">Student Name</p>
-    <!-- <p style="display: inline; margin-left: 400px;">Updated On</p> -->
     <p style="display: inline; margin-left: 710px;">Progress Bar (Total)</p>
+    <!-- <p style="display: inline; margin-left: 20px;">Practice Completion %</p>
+    <p style="display: inline; margin-left: 20px;">Repertoire Completion %</p> -->
 </div>
 
 {% for student in students %}
-
- <!-- Debugging output inside the loop -->
- <!-- <p>Total Progress: {{ total_progress }}</p>
- <p>Pass Progress: {{ student.pass_progress_count }}</p>
- <p>Progress Percentage: {{ student.progress_percentage }}</p>
- <p>Remaining Progress Percentage: {{ student.remaining_progress_percentage }}</p> -->
     <div class="container slide-in-left" onclick="redirectToStudentResults('{{ student.studentName }}')">
+        <!-- Display student information and progress -->
         <div class="info">
             <p>{{ student.studentName }}</p>
             <p style="color: orange;">{{ student.assigned_parent.email }}</p>
         </div>
         <div class="date-progress">
-            <p style="margin-right: 200px;">{{ student.book.updated_at|date:"F j, Y" }}</p>
             <div class="progress-container" style="margin-right: 200px;">
                 <div class="progress-circle" style="background: conic-gradient(rgb(56, 194, 79) {{ student.progress_percentage }}%, #adf {{ student.progress_percentage }}%);">
                     <div class="progress-text">{{ student.progress_percentage|floatformat:1 }}%</div>
                 </div>
             </div>
+            <!-- Placeholder for practice and repertoire completion percentage -->
+            <!-- Replace with actual data when available -->
+            <!-- <p style="margin-left: 20px;">{{ student.practice_completion_percentage|floatformat:1 }}%</p>
+            <p style="margin-left: 20px;">{{ student.repertoire_completion_percentage|floatformat:1 }}%</p> -->
         </div>
     </div>
 {% endfor %}

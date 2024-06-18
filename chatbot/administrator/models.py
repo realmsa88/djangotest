@@ -28,7 +28,7 @@ class Instrument(models.Model):
 
 class Teacher (models.Model) :
     teacher = models.ForeignKey(auth_user_details, on_delete=models.CASCADE)
-    teachingmode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE)
+    teachingmode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, null=True)
 
     def __str__ (self) :

@@ -13,6 +13,7 @@ from django.db.models import Count, F, Q
 from django.views.decorators.http import require_POST
 import json, logging
 from pytz import timezone as pytz_timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 # Create your views here.
 
@@ -77,6 +78,7 @@ def teaching_modules(request):
 def student_progress(request, instrument_minor, instrument_major, book_id):
     teacher = request.user
 
+    # Fetch students assigned to the teacher with the specified instrument and book
     students = Student.objects.filter(
         assigned_teacher=teacher,
         instrument__instrument_major_name=instrument_major,
@@ -87,18 +89,21 @@ def student_progress(request, instrument_minor, instrument_major, book_id):
     )
 
     for student in students:
-        total_progress = ModuleDetails.objects.filter(bookInstrument_id=book_id).count()
-        pass_progress = student.pass_progress_count
+        # Calculate total modules for the specific book and instrument
+        total_modules = ModuleDetails.objects.filter(bookInstrument__bookID_id=book_id,
+                                                     bookInstrument__instrumentID_id=student.instrument_id).count()
+        # Calculate passed modules for the student
+        pass_modules = ProgressBar.objects.filter(student=student, result__in=['3', '4', '5']).count()
 
-        if total_progress > 0:
-            student.progress_percentage = (pass_progress / total_progress) * 100
+        if total_modules > 0:
+            student.progress_percentage = (pass_modules / total_modules) * 100
         else:
             student.progress_percentage = 0
 
         student.remaining_progress_percentage = 100 - student.progress_percentage
 
         # Additional debugging output
-        print(f"Student: {student.studentName}, Total Progress: {total_progress}, Pass Progress: {pass_progress}")
+        print(f"Student: {student.studentName}, Total Modules: {total_modules}, Passed Modules: {pass_modules}")
         print(f"Progress Percentage: {student.progress_percentage}")
         print(f"Remaining Progress Percentage: {student.remaining_progress_percentage}")
 
@@ -203,13 +208,13 @@ def update_student_result(request, student_name):
     # Calculate progress for Practice modules
     practice_modules = module_details.filter(module_type='Practice')
     total_practice_modules = practice_modules.count()
-    passed_practice_modules = progress_bar_objects.filter(module_in=practice_modules, result_in=['3','4', '5']).count()
+    passed_practice_modules = progress_bar_objects.filter(module__in=practice_modules, result__in=['3','4', '5']).count()
     practice_completion_percentage = (passed_practice_modules / total_practice_modules) * 100 if total_practice_modules > 0 else 0
 
     # Calculate progress for Repertoire modules
     repertoire_modules = module_details.filter(module_type='Repertoire')
     total_repertoire_modules = repertoire_modules.count()
-    passed_repertoire_modules = progress_bar_objects.filter(module_in=repertoire_modules, result_in=['3','4', '5']).count()
+    passed_repertoire_modules = progress_bar_objects.filter(module__in=repertoire_modules, result__in=['3','4', '5']).count()
     repertoire_completion_percentage = (passed_repertoire_modules / total_repertoire_modules) * 100 if total_repertoire_modules > 0 else 0
 
     if request.method == 'POST':
@@ -394,50 +399,68 @@ def students_for_date(request, date):
 
 from datetime import datetime, time
 
+
 def student_attendance_view(request):
     current_time = datetime.now().time()
-    ongoing_classes = Attendance.objects.filter(start_time_lte=current_time, end_time_gte=current_time)
-    context = {'ongoing_classes': ongoing_classes}
+    current_date = datetime.now().date()
+    ongoing_classes = Attendance.objects.filter(date=current_date, start_time__lte=current_time, end_time__gte=current_time)
+    context = {
+        'ongoing_classes': ongoing_classes,
+        'current_date': current_date,
+    }
     return render(request, 'student_attendance.html', context)
 
 
 
+@login_required
 def attendance_list(request):
-    # Get the current teacher's auth_user_details
-    current_teacher_details = request.user.auth_user_details
-    
-    print("Current Teacher Details:", current_teacher_details)  # Debug print
+    # Get the current user details
+    current_user = request.user
 
-    # Retrieve the corresponding Teacher instance(s)
+    # Retrieve the corresponding auth_user_details instance
     try:
-        teachers = Teacher.objects.filter(teacher=current_teacher_details)
-        teacher = teachers.first()  # Choose the first Teacher instance
-    except Teacher.DoesNotExist:
-        # Handle the case where no Teacher instance is found
-        all_attendance = []
-    except Teacher.MultipleObjectsReturned:
-        # Handle the case where multiple Teacher instances are found
-        # You may want to choose a specific Teacher instance here or handle the error differently
-        all_attendance = []
-    else:
-        # Retrieve all attendance records associated with the current teacher
-        all_attendance = Attendance.objects.filter(teacher=teacher)
+        user_details = auth_user_details.objects.get(user=current_user)
+    except auth_user_details.DoesNotExist:
+        # Handle the case where no auth_user_details instance is found
+        user_details = None
 
-    print("All Attendance:", all_attendance)  # Debug print
+    # Retrieve all attendance records associated with the current user
+    if user_details:
+        all_attendance = Attendance.objects.filter(teacher_email=user_details.user)
+    else:
+        all_attendance = []
+
+    # Debug prints for verification
+    print("Current User:", current_user)
+    print("All Attendance:", all_attendance)
 
     return render(request, 'attendance_list.html', {'attendance_list': all_attendance})
 
 
 
-
 @require_POST
 def verify_attendance(request):
+    # Get attendance_id from POST data
     attendance_id = request.POST.get('attendance_id')
-    attendance = Attendance.objects.get(id=attendance_id)
-    attendance.status = 'Approved'
-    attendance.save()
-    return redirect('attendance-list')
 
+    # Ensure attendance_id is valid and not empty
+    if attendance_id:
+        try:
+            # Attempt to retrieve Attendance object by id
+            attendance = Attendance.objects.get(id=int(attendance_id))
+            attendance.status = 'Approved'
+            attendance.save()
+            return redirect('attendance-list')
+        except (ValueError, ObjectDoesNotExist) as e:
+            # Handle errors when retrieving or updating attendance
+            print(f"Error verifying attendance: {e}")
+            # Redirect back to attendance-list with error message in query parameters
+            return redirect('attendance-list', error='Attendance record not found or could not be verified.')
+    else:
+        # Handle case where attendance_id is empty
+        print("Attendance ID is empty.")
+        # Redirect back to attendance-list with error message in query parameters
+        return redirect('attendance-list', error='Attendance ID is empty or invalid.')
 
 
 

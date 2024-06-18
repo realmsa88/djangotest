@@ -50,27 +50,38 @@ class CreateUserForm(UserCreationForm):
 # administrator/forms.py
 
 class UserDetailsForm(forms.ModelForm):
-
     COUNTRY_CODES = [
         ('+60', 'MY +60'),  # Example country code and label
-        ('+1', 'US +1'),   # Example country code and label
+        ('+1', 'US +1'),    # Example country code and label
         # Add more country codes and labels as needed
     ]
 
     country_code = forms.ChoiceField(choices=COUNTRY_CODES, required=False)
-    phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'placeholder': 'Enter user phone number', 'style': 'width: 210px;height:40px; margin-left : 10px'}))
+    phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'placeholder': 'Enter user phone number', 'style': 'width: 180px;height:40px; '}))
     address = forms.CharField(max_length=255, required=False, widget=forms.Textarea(attrs={'placeholder': 'Enter user address', 'style': 'width: 300px;height:40px'}))
     birthdate = forms.DateField(
-        widget=forms.SelectDateWidget(
-            years=range(1900, datetime.date.today().year + 1),
-            attrs={'style': 'width: 210px; height: 40px; margin-left: 10px;'}
-        )
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'style': 'width: 110px; height: 40px; margin-left: 10px;'
+        })
     )
-
+    books = forms.CharField(max_length=100, required=False)
+    
 
     class Meta:
         model = auth_user_details
-        fields = ['phone_number', 'address', 'country_code', 'birthdate']
+        fields = ['phone_number', 'address', 'country_code', 'birthdate', 'books']
+
+class TeacherInstrumentForm(forms.Form):
+    instruments = forms.ModelMultipleChoiceField(
+        queryset=Instrument.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True
+    )
+
+    class Meta : 
+        model= Teacher
+        fields = ['instruments']
 
 class ParentChoiceField(forms.ModelChoiceField):
     def __init__(self, *args, **kwargs):

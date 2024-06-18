@@ -17,160 +17,166 @@
 </div>
 
 <style>
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .student-card {
+        width: 100%;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        padding: 20px;
+        transition: transform 0.2s;
+    }
+
+    .student-card:hover {
+        transform: scale(1.02);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
     .attendance-list {
-    margin-top: 50px;
-}
+        margin-top: 10px;
+    }
 
-.pencil-container {
-    float: right; /* Ensure the container is floated to the right */
-    margin-left: 10px; /* Adjust the margin if needed */
-}
+    .attendance-record {
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
 
-.attendance-record {
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+    .attendance-title-date {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.attendance-record div {
-    margin-bottom: 5px;
-}
+    .attendance-status.pending {
+        color: orange;
+        font-weight: bold;
+    }
 
-.attendance-record strong {
-    display: inline-block;
-    font-weight: 600;
-}
+    .attendance-status.approved {
+        color: green;
+        font-weight: bold;
+    }
 
-.attendance-title-date {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    .attendance-attendance.absent {
+        color: red;
+        font-style: italic;
+        font-weight: bold;
+    }
 
-.attendance-title-date .attendance-date {
-    font-weight: normal;
-    margin-left: 10px;
-}
+    .attendance-attendance.attend {
+        color: green;
+        font-style: italic;
+        font-weight: bold;
+    }
 
-.attendance-status.pending {
-    color: orange;
-    font-weight: bold;
-}
+    .icon-container:hover {
+        background-color: white;
+    }
 
-.attendance-status.approved {
-    color: green;
-    font-weight: bold;
-}
+    #updateIcon:hover {
+        background-color: white;
+    }
 
-.attendance-attendance.absent {
-    color: red;
-    font-style: italic;
-    font-weight: bold;
-}
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+        padding-top: 60px;
+    }
 
-.attendance-attendance.attend {
-    color: green;
-    font-style: italic;
-    font-weight: bold;
-}
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+    }
 
-.icon-container:hover {
-    background-color: white;
-}
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
 
-#updateIcon:hover {
-    background-color: white;
-}
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
 
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
-    padding-top: 60px;
-}
+    .filter-buttons {
+        border-radius: 10px;
+    }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-}
+    button {
+        border-radius: 10px;
+        border-color: black;
+        height: 50px;
+        width: 100px;
+        margin-left: 10px;
+        background-color: white;
+    }
 
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
+    button:hover {
+        border: none;
+        background-color: #5b7cfa;
+        color: white;
+    }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
+    button:active {
+        background-color: green;
+        color: white;
+        border: none;
+    }
 
-/* Styling for the pencil icon */
-.pencil-container {
-    float: right;
-    margin-left: 10px;
-}
-
-.filter-buttons {
-    border-radius: 10px;
-}
-
-button {
-    border-radius: 10px;
-    border-color: black;
-    height: 50px;
-    width: 100px;
-    margin-left: 10px;
-    background-color: white;
-}
-
-button:hover {
-    border: none;
-    background-color: #5b7cfa;
-    color: white;
-}
-
-button:active {
-    background-color: green;
-    color: white;
-    border: none;
-}
-
-p{ 
-    color: black;
-}
+    p {
+        color: black;
+    }
 </style>
 
 <hr>
 {% for student in students %}
   {% if forloop.first %}
-    <p class="slide-in">{{ student.instrument }} / {{ student.book }}</p>
+    <p class="slide-in">{{ student.instrument }} > {{ student.book }}</p>
   {% endif %}
 {% endfor %}
 
-<p style="color: black;" class="slide-in">Registered students: {{ students|length}}</p>
-
 <hr>
+<div style="background-color: #5b7cfa; border-top-left-radius: 5px;border-top-right-radius: 5px;" class="slide-in-left">
+    <p style="color: white; padding: 16px;" >Student Name</p>
+</div>
 
-<p style="color: black;" class="slide-in-left">Student Name</p>
+<p style="color: black;" class="slide-in">Registered students: {{ students|length }}</p>
 
 {% if messages %}
     <div class="alert alert-success slide-in-left" role="alert">
@@ -180,51 +186,104 @@ p{
     </div>
 {% endif %}
 
-{% for student in students %}
-<div class="student-box slide-in-left">
-    <p style="color: black; font-weight:" class="try" onclick="toggleAttendance('{{ student.id }}')">{{ student.studentName }}</p>
-    <div id="attendance-{{ student.id }}" class="attendance-details" style="display: none;">
-        <!-- Render the list of attendance for this student -->
-        <div class="attendance-list slide-in-left">
-            {% for attendance in student.attendance %}
-                <div class="attendance-record {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
-                    <div class="attendance-title-date">
-                        <strong style="color: black;">{{ attendance.title }}</strong> 
-                        <span class="attendance-date" style="color: black;">{{ attendance.date }} {{ attendance.start_time }} - {{ attendance.end_time }}</span>
-                    </div>
-                    <div class="attendance-description" style="color: black;">
-                        {{ attendance.description }}
-                    </div>
-                    <div class="attendance-attendance">
-                        <span class="attendance-attendance {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %}">
-                            {{ attendance.attendance }}
-                        </span>
-                        {% if attendance.status == 'Pending Verification' %}
-                            <div class="icon-container pencil-container" onclick="openModal('{{ attendance.id }}')" style="border-color: black ;" data-username="{{ account.username }}">
-                                <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
-                            </div>
-                        {% endif %}
-                        <span class="attendance-status {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}" style="float: right;">{{ attendance.status }}</span>
-                    </div>
-                   
-                </div>
-                <hr>
-            {% endfor %}
+<div class="card-container">
+    {% for student in students %}
+    <div class="student-card slide-in-left">
+        <div class="card-header">
+            <span class="card-title" style="font-weight: normal; color: black; font-size: 14px;">{{ student.studentName }}</span>
+            <span class="pencil-container" onclick="toggleAttendance('{{ student.id }}')">
+                <i class="fa fa-chevron-down" id="toggleIcon-{{ student.id }}" style="color: #5b7cfa;"></i>
+            </span>
         </div>
-        
+        <div id="attendance-{{ student.id }}" class="attendance-details" style="display: none;">
+            <!-- Render the list of attendance for this student -->
+            <div class="attendance-list slide-in-left">
+                {% for attendance in student.attendance %}
+                    <div class="attendance-record {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
+                        <div class="attendance-title-date">
+                            <strong style="color: black;">{{ attendance.title }}</strong> 
+                            <span class="attendance-date" style="color: black;">{{ attendance.date }} {{ attendance.start_time }} - {{ attendance.end_time }}</span>
+                        </div>
+                        <div class="attendance-description" style="color: black;">
+                            {{ attendance.description }}
+                        </div>
+                        <div class="attendance-attendance">
+                            <span class="attendance-attendance {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %}">
+                                {{ attendance.attendance }}
+                            </span>
+                            {% if attendance.status == 'Pending Verification' %}
+                                <div class="icon-container pencil-container" onclick="openModal('{{ attendance.id }}')" style="border-color: black; margin-left: 800px;" data-username="{{ account.username }}">
+                                    <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <span class="attendance-status {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}" style="float: right;">{{ attendance.status }}</span>
+                            
+                        </div>
+                    </div>
+                    <hr>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+    {% empty %}
+        <p>No attendance records found.</p>
+    {% endfor %}
 </div>
-{% empty %}
-    <p>No attendance records found.</p>
-{% endfor %}
+
+<!-- Modal HTML -->
+<!-- <div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p>Modal Content</p>
+    </div>
+</div> -->
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Verify Absence</h2>
+        <p>Verify Attendance?</p>
+        <form id="verifyForm" method="post" action="{% url 'verify-attendance' %}">
+            {% csrf_token %}
+            <!-- Ensure attendance_id is correctly set in a hidden input field -->
+            <input type="hidden" name="attendance_id" id="attendanceId" value="{{ attendance.id }}">
+            <!-- Other form fields or buttons -->
+            <button type="submit">Verify</button>
+       </form>
+           </div>
+       </div>
 
 <script>
-  function toggleAttendance(studentId) {
+function toggleAttendance(studentId) {
     var attendanceDiv = document.getElementById(`attendance-${studentId}`);
+    var toggleIcon = document.getElementById(`toggleIcon-${studentId}`);
     if (attendanceDiv.style.display === "none") {
         attendanceDiv.style.display = 'block';
+        toggleIcon.className = 'fa fa-chevron-up';
     } else {
         attendanceDiv.style.display = "none";
+        toggleIcon.className = 'fa fa-chevron-down';
+    }
+}
+
+function openModal(attendanceId) {
+    var modal = document.getElementById("myModal");
+    modal.style.display = "block";
+    // Fetch data or perform actions based on attendanceId if needed
+}
+
+function closeModal() {
+    var modal = document.getElementById("myModal");
+    modal.style.display = "none";
+}
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    var modal = document.getElementById("myModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
     }
 }
 </script>

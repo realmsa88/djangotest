@@ -13,8 +13,6 @@
 <link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-
-
 <div class="header-container">
     <h1 style="font-size: 20px;" class="slide-in-left">Student Attendance</h1>
 
@@ -127,13 +125,13 @@
 
 <hr>
 
-<!-- <div class="green-background">
-    <p style="text-align: center;color:#fff;">Class Calendar</p>
-</div> -->
+<div class="slide-in-left">
+    <hr style="background-color: black;">
+    <p>Calendar</p>
+    <hr style="background-color: black;">
+</div>
 
-<p>Calendar</p>
-
-<div id="warning-message" style="background-color: rgb(193, 81, 81); display: none; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 20px;">
+<div id="warning-message" style="background-color: rgb(193, 81, 81); display: none; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 20px; border-radius: 5px;">
     <p id="ongoing-class-label" style="color: white;">Ongoing class:</p>
     <p id="ongoing-class-details" style="color: white; display: inline;"></p>
     <form id="attendForm" method="POST" action="/attend-student/">
@@ -142,18 +140,14 @@
         <input type="hidden" name="status" value="Approved">
         <button type="submit" id="buttonAttend">Attend</button>
     </form>
-    
 </div>
-
 
 <div id="teacher-id" data-teacher-id="{{ teacher_id }}"></div>
 
-
-
-<div class="calendar-class slide-in" style="margin-left: -500px;">
+<div class="calendar-class slide-in" style="margin-left: -600px;">
     <div id="calendar-container"></div>
     
-    <div id="student-list" style="width: 600px;">
+    <div id="student-list" style="width: 600px;margin-left: -300px;">
         <p style="font-size: 16px;">Students for Selected Day</p>
         <ul id="students">
             {% for attendance in ongoing_classes %}
@@ -165,59 +159,8 @@
     </div>
 </div>
 
-
-<hr>
-
-<div class="filter-buttons-container slide-in" style="visibility: hidden; top: 50px; margin-top: -1000px;">
-    <div class="button-wrapper">
-        {% for instrument_major in instrument_majors %}
-        <button onclick="filterInstruments(this, '{{ instrument_major }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
-            {{ instrument_major }}
-        </button>
-        {% endfor %}
-    </div>
-    <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
-</div>
-
-{% for instrument in instruments %}
-    {% if instrument.instrument_major_name %}
-        {% if instrument.instrument_minor_name %}
-            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}" data-minor="{{ instrument.instrument_minor_name }}" style="height: 80px;">
-                <p>
-                    <i class="fa fa-chevron-right" aria-hidden="true" style="color: rgba(23, 23, 117, 0.526);"></i>
-                    {{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}
-                </p>
-
-                <div class="student-details-container slide-in-left">
-                    {% for bookinstrument in instrument.bookinstrument_set.all %}
-                    {% with book=bookinstrument.bookID %}
-                    <div class="book-container" style="background-color: white;" onclick="navigateToStudents('{{ instrument.instrument_minor_name }}', '{{ instrument.instrument_major_name }}', '{{ book.id }}')">
-                        <ul>
-                            <li style="margin-left: 10px;">{{ book.book }}</li>
-                        </ul>
-                        <div class="book-detail-container">
-                            <div class="book-detail-content">
-                                <!-- Book details will be populated here -->
-                            </div>
-                            <button class="close-detail-button">Close</button>
-                        </div>
-                    </div>
-                    {% endwith %}
-                    {% endfor %}
-                </div>
-            </div>
-        {% else %}
-            <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}">
-                <p>{{ instrument.instrument_major_name }}</p>
-            </div>
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const calendar = flatpickr("#calendar-container", {
@@ -227,35 +170,51 @@
                 fetchStudentsForDate(dateStr);
             }
         });
-    
-        const currentDate = dayjs().format("YYYY-MM-DD");
+
+        const currentDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
         fetchStudentsForDate(currentDate);
-    
-        function fetchStudentsForDate(date) {
+
+        let selectedDateTime = null; // Variable to store selected date and time
+
+        function fetchStudentsForDate(dateTime) {
             const teacherId = document.getElementById('teacher-id').dataset.teacherId;
+            const date = dateTime.split(' ')[0]; // Extract date part from datetime string
             fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
                 .then(response => response.json())
                 .then(data => {
                     var studentsUl = document.getElementById('students');
                     studentsUl.innerHTML = '';
                     var warningMessage = document.getElementById('warning-message');
+                    var buttonAttend = document.getElementById('buttonAttend');
                     var ongoingClassFound = false;
-    
+                    var isSelectedDateTime = false; // Flag to check if selectedDateTime matches the current date and time
+
                     if (data.students.length > 0) {
                         data.students.forEach(student => {
                             var li = document.createElement('li');
                             var startTime = formatTime(student.start_time);
                             var endTime = formatTime(student.end_time);
                             li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
-                            
-                            if (student.is_ongoing) {
+
+                            // Check if the attendance is ongoing for the current date and time
+                            var attendanceDateTime = `${date} ${student.start_time}`;
+                            var attendanceEndDateTime = `${date} ${student.end_time}`;
+
+                            if (dateTime >= attendanceDateTime && dateTime <= attendanceEndDateTime) {
                                 li.innerHTML += '<span style="color: red;">(Ongoing)</span>';
+                                li.classList.add('highlighted'); // Highlight the ongoing class
                                 ongoingClassFound = true;
+                                isSelectedDateTime = true; // Set flag as true for selectedDateTime match
                                 document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}, Instrument: ${student.instrument_minor}, ${student.instrument_major}`;
                                 document.getElementById('studentIdInput').value = student.id;
                                 document.getElementById('attendanceIdInput').value = student.attendance_id;
                             }
-    
+
+                            li.addEventListener('click', function() {
+                                selectedDateTime = `${date} ${student.start_time}`;
+                                highlightSelectedClass(li); // Highlight the clicked class
+                            });
+
                             studentsUl.appendChild(li);
                         });
                     } else {
@@ -263,19 +222,29 @@
                         li.textContent = 'No students scheduled for this date.';
                         studentsUl.appendChild(li);
                     }
-    
+
+                    // Show or hide the ongoing class message based on current date and time
                     if (ongoingClassFound) {
                         warningMessage.style.display = 'block';
                         document.getElementById('ongoing-class-label').style.display = 'block';
                     } else {
-                        warningMessage.style.display = 'none';
+                        warningMessage.style.display = 'block';
+                        warningMessage.style.backgroundColor = '#5b7cfa'; 
+                        document.getElementById('ongoing-class-label').innerText = 'No ongoing classes at the moment';
+                        buttonAttend.style.display = 'none';
+                        document.getElementById('ongoing-class-details').innerText = '';
+                    }
+                  
+                    if (isSelectedDateTime) {
+                        warningMessage.style.display = 'block'; // Show warning message
+                        document.getElementById('ongoing-class-label').style.display = 'block';
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching student data:', error);
                 });
         }
-    
+
         function formatTime(time) {
             var hours = time.split(':')[0];
             var minutes = time.split(':')[1];
@@ -283,7 +252,21 @@
             hours = hours % 12 || 12;
             return `${hours}:${minutes} ${amOrPm}`;
         }
-    
+
+        function highlightSelectedClass(selectedLi) {
+            // Remove highlight from all list items
+            var lis = document.querySelectorAll('#students li');
+            lis.forEach(li => {
+                li.classList.remove('highlighted');
+            });
+
+            // Highlight the selected list item
+            selectedLi.classList.add('highlighted');
+
+            // Update selected date and time (if needed for further processing)
+            // selectedDateTime = ...; // Update selectedDateTime if necessary
+        }
+
         window.addEventListener('load', function() {
             filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
             var firstButton = document.querySelector('.filter-buttons-container button');
@@ -291,17 +274,17 @@
                 firstButton.classList.add('actives');
             }
         });
-    
+
         function filterInstruments(button, major) {
             var buttons = document.querySelectorAll('.filter-buttons-container button');
             buttons.forEach(function(btn) {
                 btn.classList.remove('actives');
             });
-    
+
             if (button) {
                 button.classList.add('actives');
             }
-    
+
             var items = document.querySelectorAll('.student-box');
             items.forEach(function(item) {
                 var itemMajor = item.getAttribute('data-major');
@@ -312,13 +295,12 @@
                 }
             });
         }
-    
-        // Ensure navigateToStudents is defined
+
         window.navigateToStudents = function(instrumentMinor, instrumentMajor, bookId) {
             window.location.href = `/teacher/students-by-book/${instrumentMinor}/${instrumentMajor}/${bookId}/`;
         };
     });
-    
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -333,9 +315,9 @@
         }
         return cookieValue;
     }
-    
+
     const csrftoken = getCookie('csrftoken');
-    
+
     function attendStudent(studentId, attendanceId) {
         fetch('/attend-student/', {
             method: 'POST',
@@ -363,11 +345,7 @@
             console.error('Error:', error);
         });
     }
-    </script>
-    
-
-
-
+</script>
 <script src="{% static 'js/learning_modules.js' %}"></script>
 <script src="{% static 'js/accounts.js' %}"></script>
 <script src="{% static 'js/search.js' %}"></script>

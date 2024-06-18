@@ -1,4 +1,3 @@
-<!-- attendance_list.html -->
 {% extends 'master_teacher.html' %}
 {% load static %}
 
@@ -12,64 +11,77 @@
 <link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
 
 <style>
+
+.modal-header {
+        background-color: #165227;
+        color: white;
+    }
 .attendance-list {
     margin-top: 20px;
 }
 
 .pencil-container {
-    float: right; /* Ensure the container is floated to the right */
-    margin-left: 10px; /* Adjust the margin if needed */
+    float: right;
+    margin-left: 10px;
 }
 
-.attendance-record {
+.attendance-card {
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 5px;
     margin-bottom: 10px;
-    background-color: #f9f9f9;
+    background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.attendance-record div {
-    margin-bottom: 5px;
+.attendance-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer; /* Cursor pointer to indicate expandable */
 }
 
-.attendance-record strong {
-    display: inline-block;
+.attendance-card-title {
+    font-size: 18px;
     font-weight: 600;
 }
 
-.attendance-title-date {
+.attendance-card-actions {
+    display: flex;
+    align-items: center;
+}
+
+.attendance-card-body {
+    margin-bottom: 10px;
+    display: none; /* Initially hide attendance card body */
+}
+
+.attendance-record {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-record .record-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.attendance-title-date .attendance-date {
-    font-weight: normal;
-    margin-left: 10px;
-}
-
-.attendance-status.pending {
-    color: orange;
-    font-weight: bold;
-}
-
-.attendance-status.approved {
-    color: green;
-    font-weight: bold;
-}
-
-.attendance-attendance.absent {
-    color: red;
+.attendance-record .record-status {
     font-style: italic;
     font-weight: bold;
 }
 
-.attendance-attendance.attend {
-    color: green;
-    font-style: italic;
-    font-weight: bold;
+.pending {
+    color: orange; /* Text color for Pending Verification */
+}
+
+.approved {
+    color: green; /* Text color for Approved */
 }
 
 .icon-container:hover {
@@ -90,8 +102,7 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     padding-top: 60px;
 }
 
@@ -102,6 +113,7 @@
     border: 1px solid #888;
     width: 80%;
     max-width: 500px;
+    margin-top: -20px;
 }
 
 .close {
@@ -148,6 +160,7 @@ button:active {
     color: white;
     border: none;
 }
+
 </style>
 
 <div class="header-container">
@@ -158,90 +171,138 @@ button:active {
     </div>
 </div>
 
-
-<!-- Add these buttons above the attendance list -->
-<!-- <div class="filter-buttons">
-    <button onclick="filterAttendance('Pending')">Pending</button>
-    <button onclick="filterAttendance('Approved')">Approved</button>
-</div> -->
-
 <hr>
 
-<!-- Attendance list -->
+<!-- Attendance list grouped by student names -->
 <div class="attendance-list slide-in">
-    {% for attendance in attendance_list %}
-        <div class="attendance-record {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
-            <div class="attendance-title-date">
-                <strong style="color: black;">{{ attendance.title }}</strong> 
-                <span class="attendance-date">{{ attendance.date }} {{ attendance.start_time }} - {{ attendance.end_time }}</span>
+    <div class="attendance-card-actions">
+        <button onclick="filterAttendance('Pending')" class="active">Pending</button>
+        <button onclick="filterAttendance('Approved')">Approved</button>
+    </div>
+    <br>
+    {% if attendance_list %}
+        {% regroup attendance_list by student as student_records %}
+        {% for student_group in student_records %}
+        
+            <div class="attendance-card">
+                <div class=" fa fa-info" style="display: inline-block; float: right;border-color: #165227; color: #5b7cfa;cursor: pointer;"
+                         onclick="openInfoModal('{{ student_group.grouper }}', '{{ student_group.list|safe }}')">
+                    </div>
+                <div class="attendance-card-header" onclick="toggleAttendanceCard(this)">
+                    <div class="attendance-card-title" style="color: black; font-size: 14px; font-weight: normal;display: inline-block;">
+                        {{ student_group.grouper }}
+                        
+                    </div>
+                    
+                </div>
+                <div class="attendance-card-body" style="margin-top: 10px;">
+                    {% for attendance in student_group.list %}
+                        <div class="attendance-record" style="padding: 20px;">
+                            <div class="record-info">
+                                <strong style="color: black;">{{ attendance.title }}</strong>
+                                <span class="record-status {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %} {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}">
+                                    {% if attendance.status == 'Pending Verification' %}
+                                        <span class="pending">Pending Verification</span>
+                                    {% elif attendance.status == 'Approved' %}
+                                        <span class="approved">Approved</span>
+                                    {% else %}
+                                        {{ attendance.status }}
+                                    {% endif %}
+                                </span>
+                                <div>
+                                    <span>{{ attendance.date }}</span>
+                                    <div style="display: block;">
+                                        <span>{{ attendance.start_time|date:"g:i A" }}</span>
+                                        <span>{{ attendance.end_time|date:"g:i A" }}</span>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="attendance-description">{{ attendance.description }}</div>
+                            {%if attendance.absence_reason %}
+                                <div class="" style="color: black;">{{ attendance.absence_reason }}</div>
+                            {% else %}
+                                <p></p>
+                            {% endif %}
+                            <div class="attendance-description">
+                                {% if attendance.attendance == 'Absent' %}
+                                    <p style="color: red; font-weight: bold;">Absent</p>
+                                {% elif attendance.attendance == 'Attend' %}
+                                    <p style="color: green; font-weight: bold;">Attend</p>
+                                {% else %}
+                                    {{ attendance.status }}
+                                {% endif %}
+                            </div>
+                            {% if attendance.status != 'Approved' %}
+                            <div class="icon-container pencil-container" 
+                                onclick="openModal('{{ student_group.grouper }}', '{{ attendance.id }}', '{{ attendance.date }}', '{{ attendance.start_time|date:"g:i A" }}', '{{ attendance.end_time|date:"g:i A" }}', '{{ attendance.title }}', '{{ attendance.description }}', '{{ attendance.absence_reason }}')" 
+                                style="border-color: black; margin-top: -40px;" 
+                                data-username="{{ account.username }}">
+                                <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
+                            </div>
+
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="attendance-student">
-                {{ attendance.student }}
-            </div>
-            <div class="attendance-description">
-                {{ attendance.description }}
-            </div>
-            <div class="attendance-attendance">
-                <span class="attendance-attendance {% if attendance.attendance == 'Absent' %}absent{% elif attendance.attendance == 'Attend' %}attend{% endif %}">
-                    {{ attendance.attendance }}
-                </span>
-                {% if attendance.status == 'Pending Verification' %}
-                <div class="icon-container pencil-container" onclick="openModal('{{ attendance.id }}')" style="border-color: black ;"
-                     data-username="{{ account.username }}">
-                     <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
-                 </div>
-                 {% endif %}
-                <span class="attendance-status {% if attendance.status == 'Pending Verification' %}pending{% elif attendance.status == 'Approved' %}approved{% endif %}" style="float: right;">{{ attendance.status }}</span>
-                
-             </div>
-         </div>
-         <hr>
-         <!-- Optional: Add a horizontal rule between records for better separation -->
-     {% empty %}
-         <p>No attendance records found.</p>
-     {% endfor %}
-     
- </div>
- 
- <!-- The Modal -->
- <div id="verifyModal" class="modal">
-     <div class="modal-content">
-         <span class="close" onclick="closeModal()">&times;</span>
-         <h2>Verify Absence</h2>
-         <p>Verify Attendance?</p>
-         <form id="verifyForm" method="post" action="{% url 'verify-attendance' %}">
-             {% csrf_token %}
-             <input type="hidden" name="attendance_id" id="attendanceId">
-             <button type="submit">Verify</button>
-        </form>
-            </div>
+        {% endfor %}
+    {% else %}
+        <p>No attendance records found.</p>
+    {% endif %}
+</div>
+
+<!-- The Info Modal -->
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" style="margin-top: -20px; width: 110%; margin-left: -20px;">
+            <p class="modal-title" id="infoModalLabel" style="color: white; margin-left: 180px;">Attendance Details</p>
+            <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
-        
-        <script>
-        // Get the modal
-        var modal = document.getElementById("verifyModal");
-        
-        // Function to open the modal
-        function openModal(attendanceId) {
-            modal.style.display = "block";
-            document.getElementById("attendanceId").value = attendanceId;
-        }
-        
-        // Function to close the modal
-        function closeModal() {
-            modal.style.display = "none";
-        }
-        
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-        
-        // Function to filter attendance records based on status
-        function filterAttendance(status) {
+        <br>
+        <div id="infoModalContent"></div>
+    </div>
+</div>
+
+<!-- The Verify Modal -->
+<div id="verifyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" style="margin-top: -20px; width: 110%; margin-left: -20px;">
+            <p class="modal-title" id="verificationModalLabel" style="color: white; margin-left: 200px;">Verify Absence</p>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <br>
+        <p id="attendanceName"></p>
+        <p id="attendanceTitle"></p>
+        <p id="attendanceDescription"></p>
+        <p id="attendanceDate"></p>
+        <p id="attendanceStartTime"></p>
+        <p id="attendanceEndTime"></p>
+        <hr style="background-color: black;">
+        <label for="attendanceReason"><strong>Absence Reason :</strong></label>
+        <textarea id="attendanceReason" readonly style="resize: none;padding-left: 10px;"></textarea>
+        <br>
+        <form id="verifyForm" method="post" action="{% url 'verify-attendance' %}">
+            {% csrf_token %}
+            <input type="hidden" name="attendance_id" id="attendanceId">
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function filterAttendance(status) {
     var records = document.getElementsByClassName("attendance-record");
+    var buttons = document.querySelectorAll(".attendance-card-actions button");
+
+    // Remove active class from all buttons
+    buttons.forEach(function(button) {
+        button.classList.remove("active");
+    });
+
+    // Highlight the clicked button
+    event.target.classList.add("active");
+
     for (var i = 0; i < records.length; i++) {
         var record = records[i];
         if (status === 'All' || record.classList.contains(status.toLowerCase())) {
@@ -252,8 +313,68 @@ button:active {
     }
 }
 
-event.target.classList.add('active');
-        </script>
-       
-       {% endblock %}
-       
+function toggleAttendanceCard(element) {
+    var cardBody = element.nextElementSibling; // Get the next sibling which is the attendance-card-body
+    cardBody.style.display = (cardBody.style.display === 'none' || cardBody.style.display === '') ? 'block' : 'none';
+}
+
+// Get the modal
+var verifyModal = document.getElementById("verifyModal");
+var infoModal = document.getElementById("infoModal");
+
+// Function to open the verify modal
+function openModal(studentName, attendanceId, date, startTime, endTime, title, description, absence_reason) {
+    verifyModal.style.display = "block";
+    document.getElementById("attendanceName").innerHTML = "<strong>Student Name:</strong> " + studentName;
+    document.getElementById("attendanceId").value = attendanceId;
+    document.getElementById("attendanceDate").innerHTML = "<strong>Date:</strong> " + date;
+    document.getElementById("attendanceStartTime").innerHTML = "<strong>Start Time:</strong> " + startTime;
+    document.getElementById("attendanceEndTime").innerHTML = "<strong>End Time:</strong> " + endTime;
+    document.getElementById("attendanceTitle").innerHTML = "<strong>Title:</strong> " + title;
+    document.getElementById("attendanceDescription").innerHTML = "<strong>Description:</strong> " + description;
+    document.getElementById("attendanceReason").value = absence_reason || "Not provided";
+}
+
+// Function to open the info modal
+function openInfoModal(studentName, attendanceList) {
+    infoModal.style.display = "block";
+    var modalContent = "<p><strong>Student Name:</strong> " + studentName + "</p>";
+    var records = JSON.parse(attendanceList);
+    records.forEach(function(record) {
+        modalContent += `
+            <div class="attendance-record">
+                <p><strong>Title:</strong> ${record.title}</p>
+                <p><strong>Description:</strong> ${record.description}</p>
+                <p><strong>Date:</strong> ${record.date}</p>
+                <p><strong>Start Time:</strong> ${record.start_time}</p>
+                <p><strong>End Time:</strong> ${record.end_time}</p>
+                <p><strong>Attendance:</strong> ${record.attendance}</p>
+                <p><strong>Status:</strong> ${record.status}</p>
+                <p><strong>Absence Reason:</strong> ${record.absence_reason || "Not provided"}</p>
+            </div>
+            <hr>`;
+    });
+    document.getElementById("infoModalContent").innerHTML = modalContent;
+}
+
+// Function to close the verify modal
+function closeModal() {
+    verifyModal.style.display = "none";
+}
+
+// Function to close the info modal
+function closeInfoModal() {
+    infoModal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modals, close them
+window.onclick = function(event) {
+    if (event.target == verifyModal) {
+        verifyModal.style.display = "none";
+    } else if (event.target == infoModal) {
+        infoModal.style.display = "none";
+    }
+}
+</script>
+
+{% endblock %}

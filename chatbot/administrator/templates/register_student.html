@@ -63,6 +63,11 @@ function calculateAge() {
 
 <style>
 
+    .warning {
+            color: red;
+            display: none;
+        }
+
 .table-wrapper {
     display: table;
     border-collapse: collapse;
@@ -208,6 +213,20 @@ function calculateAge() {
         text-decoration: none;
         cursor: pointer;
     }
+
+    .progress-background-title {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    width: 100%;
+    background-color: #5b7cfa;
+    color: white;
+    padding: 10px 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-size: small;
+    text-align: center;
+}
 </style>
 
 <div class="header-container">
@@ -222,8 +241,11 @@ function calculateAge() {
 <hr>
 
 <div class="form-container-wrapper slide-in" style="margin-top: 20px;">
-    <p style="color: rgb(65, 62, 62); font-weight: bold; font-size: larger;">Fill all student information below.</p>
+    <div class="progress-background-title" style="margin-top: 30px;height: 60px;">
+        <p style="color: white; margin-top: 10px;">Fill all student information below</p>
+    </div>
     <hr>
+    <br>
 
     <div class="form-container slide-in-left">
         <form id="registerStudentForm" method="POST" action="{% url 'register-student' %}">
@@ -293,7 +315,11 @@ function calculateAge() {
 </div>
 
 <div class="form-container-wrapper slide-in" style="margin-top: 20px;">
-    <p>Register Student Class</p>
+    <div class="progress-background-title" style="margin-top: 30px;height: 60px;">
+        <p style="color: white; margin-top: 10px;">Register Student Class</p>
+    </div>
+    <br>
+    <br>
     <div id="calendar-and-list" class="calendar-and-list-container">
         <div id="flatpickr-calendar" class="calendar"></div>
         <div id="student-list" class="student-list">
@@ -547,7 +573,14 @@ flatpickr("#flatpickr-calendar", {
       // Update the updateStudentList function to generate divs instead of table rows
       function updateStudentList(classes) {
     const studentList = document.getElementById("student-list");
-    studentList.innerHTML = "<p>Class Slots:</p>";
+    const teacherSelect = document.getElementById("id_assigned_teacher");
+    const selectedTeacher = teacherSelect.options[teacherSelect.selectedIndex].text;
+
+    // Clear previous content
+    studentList.innerHTML = "<p>Class Slots for Teacher :</p>";
+
+    // Add the selected teacher's name
+    studentList.innerHTML += `<p>${selectedTeacher}</p>`;
 
     // Create a wrapper div for the table-like structure
     const tableWrapper = document.createElement("div");

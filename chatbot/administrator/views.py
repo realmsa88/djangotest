@@ -7,7 +7,7 @@ from .decorators import admin_required
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm
+from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm
 from django.core.paginator import Paginator
 from django.db import transaction 
 from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin # Import your model
@@ -171,8 +171,9 @@ def register(request):
     if request.method == 'POST':
         user_form = CreateUserForm(request.POST)
         details_form = UserDetailsForm(request.POST)
+        teacher_form = TeacherInstrumentForm(request.POST)
         
-        if user_form.is_valid() and details_form.is_valid():
+        if user_form.is_valid() and details_form.is_valid() and teacher_form.is_valid():
             try:
                 # Save the user instance
                 user = user_form.save()
@@ -184,8 +185,13 @@ def register(request):
                 details.save()
                 print("User details saved: ", details)
 
+                # Save the teacher instance with the user details
+                teacher, created = Teacher.objects.get_or_create(teacher=details)
+                teacher.instruments.set(teacher_form.cleaned_data['instruments'])
+                teacher.save()
+
                 # Get the selected group from the user form
-                group = user_form.cleaned_data['group']
+                group = user_form.cleaned_data['groups']
                 print("Selected group: ", group)
                 
                 # Add the user to the group
@@ -201,17 +207,14 @@ def register(request):
                 print("Error occurred during user registration:", e)
                 messages.error(request, f'Error occurred during user registration: {e}')
         else:
-            print("Form errors: ", user_form.errors, details_form.errors)
+            print("Form errors: ", user_form.errors, details_form.errors, teacher_form.errors)
             messages.error(request, 'Invalid form submission.')
     else:
         user_form = CreateUserForm()
         details_form = UserDetailsForm()
+        teacher_form = TeacherInstrumentForm()
     
-    return render(request, 'register.html', {'user_form': user_form, 'details_form': details_form})
-
-
-
-
+    return render(request, 'register.html', {'user_form': user_form, 'details_form': details_form, 'teacher_form': teacher_form})
 
 
 
