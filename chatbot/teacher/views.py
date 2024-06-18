@@ -434,7 +434,33 @@ def attendance_list(request):
     print("Current User:", current_user)
     print("All Attendance:", all_attendance)
 
-    return render(request, 'attendance_list.html', {'attendance_list': all_attendance})
+    # Initialize counters
+    total_attend_approved = 0
+    total_attend_pending = 0
+    total_absent_approved = 0
+    total_absent_pending = 0
+
+    # Calculate totals
+    for attendance in all_attendance:
+        if attendance.attendance == 'Attend':
+            if attendance.status == 'Approved':
+                total_attend_approved += 1
+            elif attendance.status == 'Pending Verification':
+                total_attend_pending += 1
+        elif attendance.attendance == 'Absent':
+            if attendance.status == 'Approved':
+                total_absent_approved += 1
+            elif attendance.status == 'Pending Verification':
+                total_absent_pending += 1
+
+    # Render the template with context data
+    return render(request, 'attendance_list.html', {
+        'attendance_list': all_attendance,
+        'total_attend_approved': total_attend_approved,
+        'total_attend_pending': total_attend_pending,
+        'total_absent_approved': total_absent_approved,
+        'total_absent_pending': total_absent_pending,
+    })
 
 
 

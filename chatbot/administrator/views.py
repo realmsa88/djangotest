@@ -184,23 +184,25 @@ def register(request):
                 details.user = user
                 details.save()
                 print("User details saved: ", details)
-
-                # Save the teacher instance with the user details
-                teacher, created = Teacher.objects.get_or_create(teacher=details)
-                teacher.instruments.set(teacher_form.cleaned_data['instruments'])
-                teacher.save()
-
+                
+                # Get the instruments from the teacher form
+                instruments = teacher_form.cleaned_data['instruments']
+                
+                # Create a Teacher instance for each instrument
+                for instrument in instruments:
+                    Teacher.objects.create(teacher=details, instrument=instrument)
+                
                 # Get the selected group from the user form
-                group = user_form.cleaned_data['groups']
+                group = user_form.cleaned_data['group']
                 print("Selected group: ", group)
                 
                 # Add the user to the group
                 user.groups.add(group)
                 print("User added to group: ", group)
-
+                
                 # Add a success message
                 messages.success(request, 'User account created successfully!')
-
+                
                 # Redirect the user to the success page after successful registration
                 return redirect('register')  # Assuming you have a named URL for success page
             except Exception as e:
@@ -215,6 +217,7 @@ def register(request):
         teacher_form = TeacherInstrumentForm()
     
     return render(request, 'register.html', {'user_form': user_form, 'details_form': details_form, 'teacher_form': teacher_form})
+
 
 
 

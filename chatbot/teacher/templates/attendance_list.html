@@ -244,6 +244,23 @@ button:active {
                             {% endif %}
                         </div>
                     {% endfor %}
+                    <div class="attendance-card-body" style="margin-top: 10px;">
+                        {% for attendance in student_group.list %}
+                            <!-- Display individual attendance records -->
+                            <div class="attendance-record">
+                                <p><strong>Title:</strong> {{ attendance.title }}</p>
+                                <p><strong>Description:</strong> {{ attendance.description }}</p>
+                                <p><strong>Date:</strong> {{ attendance.date }}</p>
+                                <p><strong>Start Time:</strong> {{ attendance.start_time|date:"g:i A" }}</p>
+                                <p><strong>End Time:</strong> {{ attendance.end_time|date:"g:i A" }}</p>
+                                <p><strong>Attendance:</strong> {{ attendance.attendance }}</p>
+                                <p><strong>Status:</strong> {{ attendance.status }}</p>
+                                {% if attendance.absence_reason %}
+                                    <p><strong>Absence Reason:</strong> {{ attendance.absence_reason }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -253,14 +270,45 @@ button:active {
 </div>
 
 <!-- The Info Modal -->
-<div id="infoModal" class="modal">
+<div id="infoModal" class="modal slide-in">
     <div class="modal-content">
-        <div class="modal-header" style="margin-top: -20px; width: 110%; margin-left: -20px;">
-            <p class="modal-title" id="infoModalLabel" style="color: white; margin-left: 180px;">Attendance Details</p>
+        <div class="modal-header">
+            <p class="modal-title" style="color: white;">Attendance Overview</p>
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
-        <br>
-        <div id="infoModalContent"></div>
+        <div id="infoModalContent">
+            <table id="attendanceTable" class="attendance-table" border="1">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be dynamically added here by JavaScript -->
+                    <tr>
+                        <td>Attend (Approved)</td>
+                        <td id="attendApprovedCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Attend (Pending Verification)</td>
+                        <td id="attendPendingCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Absent (Approved)</td>
+                        <td id="absentApprovedCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Absent (Pending Verification)</td>
+                        <td id="absentPendingCount"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Total</td>
+                        <td id="totalAttendanceCount"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -335,46 +383,131 @@ function openModal(studentName, attendanceId, date, startTime, endTime, title, d
     document.getElementById("attendanceReason").value = absence_reason || "Not provided";
 }
 
-// Function to open the info modal
+
 function openInfoModal(studentName, attendanceList) {
-    infoModal.style.display = "block";
-    var modalContent = "<p><strong>Student Name:</strong> " + studentName + "</p>";
-    var records = JSON.parse(attendanceList);
+    var infoModal = document.getElementById("infoModal");
+    infoModal.style.display = "block"; // Show the modal
+
+    console.log('Student Name:', studentName);
+    console.log('Attendance List:', attendanceList);
+
+    var modalContent = ''; // Initialize modal content variable
+
+    // Split the attendance list string into individual records
+    var records = attendanceList.slice(1, -1).split('>, <');
+
+    // Initialize counts
+    var attendApprovedCount = 0;
+    var attendPendingCount = 0;
+    var absentApprovedCount = 0;
+    var absentPendingCount = 0;
+
+    // Iterate through each attendance record
     records.forEach(function(record) {
-        modalContent += `
-            <div class="attendance-record">
-                <p><strong>Title:</strong> ${record.title}</p>
-                <p><strong>Description:</strong> ${record.description}</p>
-                <p><strong>Date:</strong> ${record.date}</p>
-                <p><strong>Start Time:</strong> ${record.start_time}</p>
-                <p><strong>End Time:</strong> ${record.end_time}</p>
-                <p><strong>Attendance:</strong> ${record.attendance}</p>
-                <p><strong>Status:</strong> ${record.status}</p>
-                <p><strong>Absence Reason:</strong> ${record.absence_reason || "Not provided"}</p>
-            </div>
-            <hr>`;
+        // Clean up each record by removing leading/trailing spaces and angle brackets
+        var cleanedRecord = record.replace(/[<>]/g, '').trim();
+
+        // Split the cleaned record into its components
+        var components = cleanedRecord.split(' - ');
+
+        // Extract attendance details
+        var studentName = components[0].trim();
+        var attendanceStatus = components[1].trim();
+        var attendanceType = components[2].trim();
+        var statusStatus = components[6].trim();
+
+        // Debugging output
+        console.log('Components:', components);
+        console.log('Attendance Type:', attendanceType);
+        console.log('Attendance Status:', attendanceStatus);
+        console.log('Status Status:', statusStatus);
+
+        if (attendanceType === 'Class') {
+            if (attendanceStatus === 'Attend') {
+                if (statusStatus === 'Approved') {
+                    attendApprovedCount++;
+                } else if (statusStatus === 'Pending Verification') {
+                    attendPendingCount++;
+                }
+            } else if (attendanceStatus === 'Absent') {
+                if (statusStatus === 'Approved') {
+                    absentApprovedCount++;
+                } else if (statusStatus === 'Pending Verification') {
+                    absentPendingCount++;
+                }
+            }
+
+            // Append record details to modalContent only if it's a Class attendance
+            
+        }
     });
-    document.getElementById("infoModalContent").innerHTML = modalContent;
+
+    console.log("Attend Pending Verification:", attendPendingCount);
+    console.log("Attend Approved:", attendApprovedCount);
+    console.log("Absent Pending Verification:", absentPendingCount);
+    console.log("Absent Approved:", absentApprovedCount);
+
+    // Update totals in the modal table
+    var totalAttendanceCount = attendApprovedCount + attendPendingCount + absentApprovedCount + absentPendingCount;
+    var tableContent = `
+        <tr>
+            <td>Attend (Approved)</td>
+            <td>${attendApprovedCount}</td>
+        </tr>
+        <tr>
+            <td>Attend (Pending Verification)</td>
+            <td>${attendPendingCount}</td>
+        </tr>
+        <tr>
+            <td>Absent (Approved)</td>
+            <td>${absentApprovedCount}</td>
+        </tr>
+        <tr>
+            <td>Absent (Pending Verification)</td>
+            <td>${absentPendingCount}</td>
+        </tr>
+        <tr>
+            <td style="font-weight: bold;">Total</td>
+            <td>${totalAttendanceCount}</td>
+        </tr>
+    `;
+
+    // Update the modal's content and table
+    document.getElementById("infoModalContent").innerHTML = `
+        <table id="attendanceTable" class="attendance-table" border="1">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${modalContent}
+                ${tableContent}
+            </tbody>
+        </table>
+    `;
 }
 
-// Function to close the verify modal
-function closeModal() {
-    verifyModal.style.display = "none";
-}
+
+
+
+
 
 // Function to close the info modal
 function closeInfoModal() {
-    infoModal.style.display = "none";
+    var infoModal = document.getElementById("infoModal");
+    infoModal.style.display = "none"; // Hide the modal
 }
 
-// When the user clicks anywhere outside of the modals, close them
+// When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-    if (event.target == verifyModal) {
-        verifyModal.style.display = "none";
-    } else if (event.target == infoModal) {
-        infoModal.style.display = "none";
+    var infoModal = document.getElementById("infoModal");
+    if (event.target == infoModal) {
+        closeInfoModal();
     }
 }
 </script>
+
 
 {% endblock %}
