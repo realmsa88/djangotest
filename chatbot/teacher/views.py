@@ -248,34 +248,6 @@ def pass_values(request):
     pass_values = [...]  # Retrieve pass values from your database or any other source
     return JsonResponse({'pass_values': pass_values})
 
-def attendance(request):
-    user = request.user
-
-    # Get all teacher objects associated with the logged-in user
-    teachers = Teacher.objects.filter(teacher__user=user)
-
-    # Collect all instruments associated with these teachers
-    instruments = Instrument.objects.filter(id__in=teachers.values_list('instrument_id', flat=True))
-
-    # Get all unique major names
-    instrument_majors = instruments.values_list('instrument_major_name', flat=True).distinct()
-
-    # Get all book IDs associated with these instruments
-    book_ids = BookInstrument.objects.filter(instrumentID__in=instruments).values_list('bookID', flat=True)
-
-    # Get all books corresponding to the retrieved book IDs
-    books = Book.objects.filter(id__in=book_ids)
-
-    # Pass the instruments, books, and instrument majors to the template
-    context = {
-        'instruments': instruments,
-        'books': books,
-        'instrument_majors': instrument_majors,
-    }
-    # Render the 'student_attendance.html' template
-    return render(request, 'student_attendance.html', context)
-
-
 
 from .models import Teacher
 from django.template.loader import render_to_string
@@ -372,11 +344,47 @@ def attend_student(request):
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
+
+
+@login_required
+def attendance(request):
+    try:
+        teacher_instance = Teacher.objects.get(teacher=request.user.auth_user_details)
+    except Teacher.DoesNotExist:
+        return render(request, 'student_attendance.html', {'error': 'Teacher does not exist for the logged-in user'})
     
+    instruments = Instrument.objects.filter(teacher=teacher_instance)
+    instrument_majors = instruments.values_list('instrument_major_name', flat=True).distinct()
+    book_ids = BookInstrument.objects.filter(instrumentID__in=instruments).values_list('bookID', flat=True)
+    books = Book.objects.filter(id__in=book_ids)
+    
+    context = {
+        'instruments': instruments,
+        'books': books,
+        'instrument_majors': instrument_majors,
+    }
+    return render(request, 'student_attendance.html', context)
+
+
+@login_required
 def students_for_date(request, date):
-    selected_date = datetime.strptime(date, "%Y-%m-%d").date()
+    try:
+        selected_date = datetime.strptime(date, "%Y-%m-%d").date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format. Please use YYYY-MM-DD.'}, status=400)
+    
     current_time = datetime.now().time()
-    students = Attendance.objects.filter(date=selected_date).select_related('student')
+    
+    # Retrieve the logged-in user
+    user = request.user
+    
+    # Ensure the user is a teacher (if using groups or another method)
+    # Example: Check if user belongs to a specific group named 'teachers'
+    if not user.groups.filter(name='Teacher').exists():
+        return JsonResponse({'error': 'User is not authorized as a teacher'}, status=403)
+    
+    # Fetch attendance records for the selected date and teacher (logged-in user)
+    students = Attendance.objects.filter(date=selected_date, teacher_email=user).select_related('student')
     
     student_data = []
     for attendance in students:
@@ -390,7 +398,7 @@ def students_for_date(request, date):
             'end_time': end_time.strftime("%H:%M:%S"),
             'is_ongoing': is_ongoing
         })
-
+    
     return JsonResponse({'students': student_data})
 
 
@@ -400,16 +408,23 @@ def students_for_date(request, date):
 from datetime import datetime, time
 
 
+@login_required
 def student_attendance_view(request):
     current_time = datetime.now().time()
     current_date = datetime.now().date()
-    ongoing_classes = Attendance.objects.filter(date=current_date, start_time__lte=current_time, end_time__gte=current_time)
+    
+    try:
+        teacher_instance = auth_user_details.objects.get(user=request.user).teacher
+    except auth_user_details.DoesNotExist:
+        return render(request, 'student_attendance.html', {'error': 'Teacher does not exist for the logged-in user'})
+    
+    ongoing_classes = Attendance.objects.filter(date=current_date, start_time__lte=current_time, end_time__gte=current_time, teacher=teacher_instance)
+    
     context = {
         'ongoing_classes': ongoing_classes,
         'current_date': current_date,
     }
     return render(request, 'student_attendance.html', context)
-
 
 
 @login_required

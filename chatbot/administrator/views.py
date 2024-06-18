@@ -510,6 +510,14 @@ def activity(request):
     })
 
 @admin_required
+def delete_activity(request, activity_id):
+    if request.method == 'POST':
+        activity = get_object_or_404(Activity, id=activity_id)
+        activity.delete()
+        messages.success(request, 'Activity deleted successfully.')
+    return redirect('activity')
+
+@admin_required
 def registerActivity(request):
     if request.method == 'POST':
         activity_form = ActivityDetailsForm(request.POST)

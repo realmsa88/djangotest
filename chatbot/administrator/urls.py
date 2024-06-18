@@ -22,6 +22,7 @@ urlpatterns = [
     path('get-books/<int:instrument_id>/', views.get_books, name='get_books'),
     path('administrator/modules/register-modules', views.register_modules, name = 'register-modules'),
     path('administrator/activity/', views.activity, name = 'activity'),
+    path('delete-activity/<int:activity_id>/', views.delete_activity, name='delete-activity'),
     path('administrator/activity/register-activity', views.registerActivity, name = 'register-activity'),
     path('administrator/activity/register-activity/<str:success_message>/', views.registerActivity, name='register-activity'),
     path('administrator/media/activity-details/<int:id>/', views.activity_details, name='activity-details'),
