@@ -18,8 +18,9 @@ urlpatterns = [
     path('administrator/modules/delete_module/<int:module_id>/', views.delete_module, name='delete_module'),
     path('add_module/', views.add_module, name='add_module'),
     path('get-teacher-classes/<int:teacher_id>/', views.get_teacher_classes, name='get_teacher_classes'),
-
+    path('students/', views.student_list, name='student_list'),
     path('get-books/<int:instrument_id>/', views.get_books, name='get_books'),
+    path('get-teachers/<int:instrument_id>/', views.get_teachers, name='get_teachers'),
     path('administrator/modules/register-modules', views.register_modules, name = 'register-modules'),
     path('administrator/activity/', views.activity, name = 'activity'),
     path('delete-activity/<int:activity_id>/', views.delete_activity, name='delete-activity'),
@@ -32,6 +33,7 @@ urlpatterns = [
     path('administrator/accounts/navbar', views.navbar,name='navbar'),
     path('administrator/accounts/navbartest', views.navbartest,name='navbartest'),
     path('success/',views.success, name='success'),
+    path('administrator/modules/delete_book/<int:book_id>/', views.delete_book, name='delete_book'),
   
 
 ]+ static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

@@ -1,6 +1,6 @@
 {% include 'chatbot.html' %}
 
-{%load static%}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,29 +10,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- Update the link tag to point to your CSS file -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        .list-unstyled.components li.active a {
+            color: #fff;
+        }
 
-        /* Add this CSS to your existing styles or create a new section for it */
+        .list-unstyled.components li.active a:hover {
+            color: #fff;
+        }
 
-/* Style for the active menu item */
-.list-unstyled.components li.active a {
- /* Change to your desired background color */
-    color: #fff; /* Change to your desired text color */
-}
-
-/* Hover effect for the active menu item */
-.list-unstyled.components li.active a:hover {
-  /* Change to your desired hover background color */
-    color: #fff; /* Change to your desired hover text color */
-}
-
-.img.bg-wrap.text-center.py-4::after {
+        .img.bg-wrap.text-center.py-4::after {
             background-color: transparent;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        p {
+            color: black;
+        }
+
+        .a:hover {
+            background-color: #5bca32 !important;
+        }
+
+        .details-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+            padding: 20px;
+            border-radius: 10px;
+            width: 55%;
+        }
+
+        .card-info {
+            height: 200px;
+            width: calc(30% - 10px);
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            margin-left: 15px;
         }
 
     </style>
@@ -40,7 +68,6 @@
 <body>
 
     {% include 'loading_screen.html' %}
-
 
     <div class="wrapper d-flex align-items-stretch" style="font-size: small;">
         <nav id="sidebar" class="collapsed" style="position: fixed;background-color: #43207a">
@@ -104,13 +131,53 @@
         <!-- Page Content  -->
         <div id="content" class="p-4 p-md-5 pt-5">
             {% block content %}
-            <h3 class="mb-4">Dashboard</h3><hr>
-            <p>All content will be displayed here.</p>
+        
+            <h3 class="mb-4 slide-in" style="font-size: 20px;">Parent Dashboard</h3><hr>
+            <div class="details-container">
+                <div class="details slide-in-left" style="display: block; float: left; width: 50%;">
+                    <h5 style="font-weight: bold;">Details</h5>
+                    <p>Summary</p>
+                
+                    <div class="card-info" style="background-color: #FFE2E5; display: inline-block;">
+                        <i class="fa fa-user" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_students }}</h4>
+                        <p>Total Children </p>
+                    </div>
+                
+                    <div class="card-info" style="background-color: #F3E8FF;display: inline-block;">
+                        <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{total_modules_all_children}}</h4>
+                        <p>Modules Taken</p>
+                    </div>
+                
+                    <div class="card-info" style="background-color: #DCFCE7;display: inline-block;">
+                        <i class="fa fa-trophy" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_instruments }}</h4>
+                        <p>Total Instruments</p>
+                    </div>
+                </div>
+        
+                <div class="details slide-in" style="display: block; float: left; width: 43%; margin-left: 10px;">
+                    <h5 style="font-weight: bold;">Logins</h5>
+                    <p>Login Summary</p>
+                    <canvas id="parentLoginsChart"></canvas>
+                </div>
+        
+                <div class="clearfix" style="clear: both;"></div>
+                
+                <!-- New div added below the existing divs -->
+                <div class="details new-div slide-in" style="display: block; margin-top: 20px; width: 97%;">
+                    <h5 style="font-weight: bold;">Child Performance</h5>
+                    <p>Progress of each registered student under the parent</p>
+                    
+                    <canvas id="studentProgressChart"></canvas>
+                </div>
+            </div>
+            
             {% endblock %}
         </div>
+        
     </div>
-    
-
 
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/popper.js' %}"></script>
@@ -118,12 +185,107 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <script>
-        // Toggle sidebar collapse
         document.getElementById('sidebarCollapse').addEventListener('click', function () {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse login times data from Django context
+            const loginTimes = JSON.parse('{{ login_times|escapejs }}');
+            
+            console.log("Login Times:", loginTimes); // Debugging line
+
+            // Prepare data for login times chart
+            const loginCounts = loginTimes.reduce((acc, dateTime) => {
+                const date = new Date(dateTime).toLocaleDateString();
+                if (acc[date]) {
+                    acc[date]++;
+                } else {
+                    acc[date] = 1;
+                }
+                return acc;
+            }, {});
+
+            const loginLabels = Object.keys(loginCounts);
+            const loginData = Object.values(loginCounts);
+
+            // Render the login times chart
+            const loginChartCtx = document.getElementById('parentLoginsChart').getContext('2d');
+            const loginChart = new Chart(loginChartCtx, {
+                type: 'line',
+                data: {
+                    labels: loginLabels,
+                    datasets: [{
+                        label: 'Login Count',
+                        data: loginData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Logins'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Parse student progress data from Django context
+            const studentProgress = JSON.parse('{{ student_progress|escapejs }}');
+            
+            console.log("Student Progress:", studentProgress); // Debugging line
+
+            // Prepare data for student progress chart
+            const studentNames = studentProgress.map(student => student.studentName);
+            const studentProgressData = studentProgress.map(student => student.progress_percentage);
+
+            // Render the student progress chart
+            const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
+            const studentProgressChart = new Chart(studentProgressChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: studentNames,
+                    datasets: [{
+                        label: 'Module Progress Percentage',
+                        data: studentProgressData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Progress Percentage (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Students'
+                            }
+                        }
+                    }
+                }
+            });
+        });
     </script>
-    
+
 </body>
 </html>

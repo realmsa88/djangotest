@@ -231,7 +231,13 @@ def success(request):
     # url = reverse('register')  # Assuming 'register' is the name of the URL pattern
     # url = url.split('?')[0]  # Remove query parameters
     # return HttpResponseRedirect(url)
-
+@admin_required
+def student_list(request):
+    students = Student.objects.select_related('assigned_teacher', 'assigned_parent', 'instrument').all()
+    context = {
+        'students': students,
+    }
+    return render(request, 'student_list.html', context)
 @admin_required
 def student(request) :
 
@@ -363,6 +369,23 @@ def get_books(request, instrument_id):
     books_list = [{"id": book.id, "book": book.book} for book in books]
     return JsonResponse({"books": books_list})
 
+def get_teachers(request, instrument_id):
+    try:
+        instrument = get_object_or_404(Instrument, id=instrument_id)
+        teachers = instrument.teacher_set.all()  # Assuming ManyToMany or ForeignKey relationship
+
+        teacher_data = [{
+            'id': teacher.id,
+            'first_name': teacher.first_name,
+            'last_name': teacher.last_name,
+        } for teacher in teachers]
+
+        return JsonResponse({'teachers': teacher_data})
+
+    except Instrument.DoesNotExist:
+        return JsonResponse({'error': 'Instrument not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -372,39 +395,37 @@ def modules(request):
     instrument_names = Instrument.objects.all()
     book_instrument = BookInstrument.objects.all()
 
-    instrumentID = request.GET.get('instrumentID')  # or however you get the instrument ID
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        book_id = request.POST.get('book_id')
+        instrument_id = request.POST.get('instrument_id')
+        module_name = request.POST.get('module_name')
 
-    # Print instrumentID to debug
-    print("Instrument ID:", instrumentID)
+        try:
+            if book_id:
+                book = Book.objects.get(id=book_id)
+            else:
+                book = Book.objects.create(book=module_name)
 
-    # Filter BookInstrument objects based on the instrumentID
-    book_instruments = BookInstrument.objects.filter(instrumentID=instrumentID)
+            instrument = Instrument.objects.get(id=instrument_id)
 
-    # Print the number of book_instruments for debugging
-    print("Number of BookInstruments:", book_instruments.count())
+            # Check if the relation already exists
+            existing_relation = BookInstrument.objects.filter(bookID=book, instrumentID=instrument).exists()
 
-     # Extract book IDs from the filtered queryset
-    book_ids = list(book_instruments.values_list('bookID', flat=True))
+            if not existing_relation:
+                # Create a new BookInstrument instance to associate the book with the instrument
+                BookInstrument.objects.create(bookID=book, instrumentID=instrument)
 
-    # Print book IDs for debugging
-    print("Book IDs:", book_ids)
+            return JsonResponse({'success': True})
 
-    # Filter BookInstrument objects based on the instrument ID
-    book_instruments = BookInstrument.objects.filter(instrumentID=instrumentID)
+        except (Book.DoesNotExist, Instrument.DoesNotExist):
+            return JsonResponse({'success': False})
 
-    books_with_instruments = BookInstrument.objects.values_list('bookID', flat=True).distinct()
-
-    # Filter Book objects based on the books_with_instruments queryset
-    books = Book.objects.filter(id__in=books_with_instruments)
-
-    print("Try find :" , books)
-
+    # Your existing code for rendering the modules page
     instruments_with_books = []
     for instrument in instruments:
         books = Book.objects.filter(bookinstrument__instrumentID=instrument.id)
         instruments_with_books.append((instrument, books))
 
-    # Extract unique major names
     unique_major_names = set()
     unique_instruments = []
     for instrument in instruments:
@@ -417,12 +438,19 @@ def modules(request):
         'instrument_names': instrument_names,
         'book_instrument': book_instrument,
         'instruments_with_books': instruments_with_books,
-        'book_ids': book_ids,
-        'books': books,
     }
     return render(request, 'learning_modules.html', data)
 
-
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["DELETE"])
+def delete_book(request, book_id):
+    try:
+        book = Book.objects.get(id=book_id)
+        book.delete()
+        return JsonResponse({'success': True})
+    except Book.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Book not found'}, status=404)
+    
 @admin_required
 def book_detail(request, book_id, instrument_major, instrument_minor):
     # Get the book object based on the book_id

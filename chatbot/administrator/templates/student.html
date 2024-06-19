@@ -1,15 +1,66 @@
-{%extends "master_admin.html"%}
-{%load static%}
+{% extends "master_admin.html" %}
+{% load static %}
 
-{%block content%}
+{% block content %}
 <script src="{% static 'js/navbar.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
 <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
 
 <style>
+    input {
+        padding-left: 6px;
+        width: 90%;
+        margin-left: 10px;
+    }
+    label {
+        margin-left: 10px;
+    }
+    /* Modal styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
 
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 40%; /* Could be more or less, depending on screen size */
+        height: 70%;
+        margin-top: 30px;
+    }
 
-    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .icon-container:hover i.fa-edit {
+        color: #ffffff; /* Edit icon color on hover */
+        background-color: #5b7cfa; /* Blue background color on hover */
+    }
+
+    .icon-container i.fa-edit {
+        color: #5b7cfa; /* Default edit icon color */
+    }
+
 </style>
 
 <div class="header-container">
@@ -26,22 +77,15 @@
 <p style="margin-top: 20px;" class="slide-in">Click on a row to view user details</p>
 
 <div class="entries-dropdown slide-in-left" style="color: black;">
-
-    
-
     Search: <input type="text" id="search-input" placeholder="Search" style="margin-right: 30px; margin-left: 5px;">
     <label for="entries-per-page" style="color: #000000;">Entries per page:</label>
     <select id="entries-per-page" onchange="changeEntriesPerPage(this)">
-        
         <option value="5">5</option>
         <option value="10">10</option>
         <option value="20">20</option>
         <option value="50">50</option>
-        <option value="{{ accounts.paginator.count }}">All</option>
+        <option value="{{ students.count }}">All</option>
     </select>
-
-   
-    
 </div>
 
 <br>
@@ -52,38 +96,166 @@
         <tr>
             <th>Student Name</th>
             <th>Assigned Teacher</th>
+            <th>Parent</th>
             <th style="text-align: center;">Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for student in students %}
-
-        <tr>
-            <td>
-                {{student.studentName}}
-            </td>
-            <td>{{student.assigned_teacher.first_name}} {{student.assigned_teacher.last_name}}</td>
-            <td style="text-align: center;"> 
-                <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ student.studentName }}" style="margin-left: 0px;">
+        <tr style="cursor: pointer;" class="student-row" data-book="{{student.book}}" data-birth="{{student.birthdate}}" data-age="{{student.age}}">
+            <td>{{ student.studentName }}</td>
+            <td>{{ student.assigned_teacher.first_name }} {{ student.assigned_teacher.last_name }}</td>
+            <td>{{ student.assigned_parent.first_name }} {{ student.assigned_parent.last_name }}</td>
+            <td style="text-align: center;">
+                <div class="icon-container" onclick="confirmDelete('{{ student.studentName }}')">
                     <i class="fa fa-trash" id="deleteIcon"></i>
+                </div>
+                <div class="icon-container edit-icon" onclick="openEditModal('{{ student.studentName }}', '{{ student.instrument }}')" style="margin-left: 10px;border-color: #5b7cfa;">
+                    <i class="fa fa-edit" id="editIcon"></i>
                 </div>
             </td>
         </tr>
-        
-
         {% endfor %}
     </tbody>
-
 </table>
 
-<script>
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('editModal')">&times;</span>
+        <div class="topic-background" style="background-color: #32373d; margin-top: -50px;">
+            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Edit Student Details</p>
+        </div>
+        <form id="editForm" method="POST">
+            {% csrf_token %}
+            <div>
+                <label for="edit-student-name">Student Name</label><br>
+                <input type="text" id="edit-student-name" name="student_name" readonly>
+            </div>
+            <br>
+            <div>
+                <label for="edit-instrument-name">Instrument</label><br>
+                <input type="text" id="edit-instrument-name" name="instrument_name">
+            </div>
+            <br>
+            <div>
+                <label for="edit-age">Age</label><br>
+                <input type="text" id="edit-age" name="age">
+            </div>
+            <br>
+            <div>
+                <label for="edit-parent-name">Parent</label><br>
+                <input type="text" id="edit-parent-name" name="parent_name">
+            </div>
+            <br>
+            <div>
+                <label for="edit-teacher-name">Assigned Teacher</label><br>
+                <input type="text" id="edit-teacher-name" name="teacher_name">
+            </div>
+            <br>
+            <div style="text-align: center;">
+                <button type="submit">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-function confirmDelete(element) {
-    const username = element.getAttribute('data-username');
-    const studentName = element.closest('tr').querySelector('td').innerText;
-    
+<!-- View Details Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('myModal')">&times;</span>
+        <div class="topic-background" style="background-color: #32373d; margin-top: -50px;">
+            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">User Account Details</p>
+        </div>
+        <div>
+            <label for="modal-student-name">Student Name</label><br>
+            <input type="text" id="modal-student-name" readonly>
+        </div>
+        <br>
+        <div>
+            <label for="modal-birth-date">Birth Date</label><br>
+            <input type="text" id="modal-birth-date" readonly>
+        </div>
+        <br>
+        <div>
+            <label for="modal-age">Age</label><br>
+            <input type="text" id="modal-age" readonly>
+        </div>
+        <br>
+        <div>
+            <label for="modal-parent-name">Parent</label><br>
+            <input type="text" id="modal-parent-name" readonly>
+        </div>
+        <br>
+        <div>
+            <label for="modal-teacher-name">Assigned Teacher</label><br>
+            <input type="text" id="modal-teacher-name" readonly>
+        </div>
+    </div>
+</div>
+
+<script>
+function closeModal(modalId) {
+    var modal = document.getElementById(modalId);
+    modal.style.display = "none";
+}
+
+function openEditModal(studentName, instrument) {
+    var editModal = document.getElementById("editModal");
+    document.getElementById('edit-student-name').value = studentName;
+    document.getElementById('edit-instrument-name').value = instrument;
+    // Fetch additional data as needed for editing
+    // Example: fetch('/get-student-data/' + studentName + '/', { method: 'GET' }).then(response => response.json()).then(data => {
+    //     document.getElementById('edit-age').value = data.age;
+    //     document.getElementById('edit-parent-name').value = data.parent_name;
+    //     document.getElementById('edit-teacher-name').value = data.teacher_name;
+    // });
+    editModal.style.display = "block";
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById("myModal");
+    var rows = document.querySelectorAll('tbody tr');
+
+    // Event listener for rows (to open details modal)
+    rows.forEach(row => {
+        row.addEventListener('click', function(event) {
+            if (!event.target.closest('.icon-container')) {
+                var studentName = row.querySelector('td:first-child').innerText.trim();
+                var parentName = row.querySelector('td:nth-child(3)').innerText.trim();
+                var teacherName = row.querySelector('td:nth-child(2)').innerText.trim();
+                var birthdate = row.getAttribute('data-birth');
+                var age = row.getAttribute('data-age');
+
+                document.getElementById('modal-student-name').value = studentName;
+                document.getElementById('modal-parent-name').value = parentName;
+                document.getElementById('modal-teacher-name').value = teacherName;
+                document.getElementById('modal-birth-date').value = birthdate;
+                document.getElementById('modal-age').value = age;
+
+                modal.style.display = "block";
+            }
+        });
+    });
+
+    // Close modal event listeners
+    var spans = document.querySelectorAll(".close");
+    spans.forEach(span => {
+        span.onclick = function() {
+            closeModal(span.closest('.modal').id);
+        }
+    });
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+});
+
+function confirmDelete(studentName) {
     if (confirm(`Are you sure you want to delete ${studentName}?`)) {
-        fetch(`/delete-student/${username}/`, {
+        fetch(`/delete-student/${studentName}/`, {
             method: 'DELETE',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -91,7 +263,7 @@ function confirmDelete(element) {
         })
         .then(response => {
             if (response.ok) {
-                element.closest('tr').remove();  // Remove the row from the table
+                document.querySelector(`.student-row[data-student-name="${studentName}"]`).remove();  // Remove the row from the table
                 alert('Student deleted successfully.');
             } else {
                 alert('Failed to delete student.');
@@ -106,7 +278,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -116,4 +287,4 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
-{%endblock%}
+{% endblock %}

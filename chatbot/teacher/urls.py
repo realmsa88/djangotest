@@ -19,5 +19,8 @@ urlpatterns = [
     path('verify-attendance/', views.verify_attendance, name='verify-attendance'),
     path('get_attendance/<int:student_id>/', views.get_attendance, name='get_attendance'),
     path('attend-student/', views.attend_student, name='attend_student'),
+    path('teacher/media-teacher', views.media, name='media-teacher'),
+    path('teacher/media/activity-details/<int:id>/', views.activity_details, name='activity-details'),
+    # path('performers/', views.performers, name='performers'),
 ]
 

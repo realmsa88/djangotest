@@ -12,15 +12,65 @@
 <link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
 
 <style>
-.highlighted {
-    background-color: #5b7cfa !important; /* Highlight color on hover */
-    border-color: #5b7cfa; /* Change border color on hover */
-    color: #fff;
-    
+    #myModal.modal {
+        height: 200%;
+        width: 100%;
+        margin-top: -100px;
+        color: transparent;
+        background-color: transparent;
+    }
+    .icon-container.fa.fa-trash.delete-book-icon::before {
+        color: red;
+    }
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    padding-top: 60px;
 }
 
-.highlighted li {
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px; /* Adjust the width as needed */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.success-message-container {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #5b7cfa;
     color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .hidden {
@@ -41,7 +91,14 @@
     position: absolute;
     top: 5px;
     right: 5px;
-    z-index: 1010; /* Ensure the close button is above other elements */
+    z-index: 1010;
+}
+.trash-icon {
+    color: red;
+}
+
+.trash-icon:hover {
+    color: red; /* Ensures color remains red on hover */
 }
 </style>
 
@@ -69,10 +126,6 @@
     <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
 </div>
 
-
-
-<!-- learning_modules.html -->
-
 {% for instrument, books in instruments_with_books %}
     {% if instrument.instrument_major_name %}
         {% if instrument.instrument_minor_name %}
@@ -86,8 +139,9 @@
                     {% for book in books %}
                         <div class="book-container" data-book-id="{{ book.id }}" style="background-color: white;">
                             <ul>
-                                <li style="margin-left: 10px;" >{{ book.book }}</li> <!-- Assuming Book model has an 'id' field for the book ID -->
+                                <li style="margin-left: 10px;">{{ book.book }}</li> <!-- Assuming Book model has an 'id' field for the book ID -->
                             </ul>
+                            <i class="icon-container fa fa-trash delete-book-icon" data-book-id="{{ book.id }}" style="cursor: pointer; color: red; float: right; margin-right: 10px;margin-top: -35px; padding:8px;"></i>
                             <div class="book-detail-container">
                                 <div class="book-detail-content">
                                     <!-- Book details will be populated here -->
@@ -97,10 +151,13 @@
                         </div>
                     {% empty %}
                         <div class="empty-message" style="cursor: default;">
-                        No books associated with this instrument
+                            No books associated with this instrument
                         </div>
                     {% endfor %}
+
+                    <button class="add-module-button" data-instrument-id="{{ instrument.id }}" style="background-color: #5b7cfa; border: none; color: white; border-radius: 10px; padding: 10px;float: right;">Add New Book</button>
                 </div>
+                <br>
             </div>
         {% else %}
             <div class="student-box slide-in-left" data-major="{{ instrument.instrument_major_name }}">
@@ -110,28 +167,143 @@
     {% endif %}
 {% endfor %}
 
+<div id="deleteModal" class="modal" style="margin-top: -395px;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Are you sure you want to delete this book?</p>
+        <button id="confirmDeleteButton" style="background-color: red; color: white; border: none; border-radius: 10px; padding: 10px;">Delete</button>
+        <button id="cancelDeleteButton" style="background-color: gray; color: white; border: none; border-radius: 10px; padding: 10px;">Cancel</button>
+    </div>
+</div>
+
+
+<div id="myModal" class="modal" style="margin-top: -400px;">
+    <div class="modal-content">
+        <div class="modal-header" style="margin-top: -20px; width: 110%; margin-left: -30px;background-color: green;">
+            <p class="modal-title" id="verificationModalLabel" style="color: white; margin-left: 225px;">Add Instrument Book</p>
+            <button type="button" class="close custom-close-button" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="registerForm">
+                {% csrf_token %}
+                <input type="hidden" id="instrumentIdInput" name="instrument_id">
+                <input type="text" id="moduleNameInput" name="module_name" placeholder="Module Name" style="width: 100%;">
+                <br>
+                <br>
+                <!-- <textarea id="moduleDescriptionInput" name="module_description" placeholder="Module Description"></textarea> -->
+                <button type="submit" class="register-module-button" style="background-color: #5b7cfa; border: none; color: white; border-radius: 10px; padding: 10px;">Add Book</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-    window.addEventListener('load', function() {
-        // Filter by default when the page loads
-        filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
-        var firstButton = document.querySelector('.filter-buttons-container button');
-        if (firstButton) {
-            firstButton.classList.add('actives');
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal and form elements
+    const modal = document.getElementById('myModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const instrumentIdInput = document.getElementById('instrumentIdInput');
+    const registerForm = document.getElementById('registerForm');
+    const addModuleButtons = document.querySelectorAll('.add-module-button');
+    const closeModalBtn = document.querySelector('.modal .close');
+    const closeDeleteModalBtn = deleteModal.querySelector('.close');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+    let bookIdToDelete = null;
+    const successMessageContainer = document.createElement('div');
+    successMessageContainer.classList.add('success-message-container');
+    document.body.appendChild(successMessageContainer);
+
+    function showModal(instrumentId) {
+        instrumentIdInput.value = instrumentId;
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    function showDeleteModal(bookId) {
+        bookIdToDelete = bookId;
+        deleteModal.style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        deleteModal.style.display = 'none';
+    }
+
+    function showSuccessMessage(message) {
+        successMessageContainer.innerText = message;
+        successMessageContainer.style.display = 'block';
+        setTimeout(() => {
+            successMessageContainer.style.display = 'none';
+        }, 3000); // Message disappears after 3 seconds
+    }
+
+    addModuleButtons.forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const instrumentId = this.getAttribute('data-instrument-id');
+            showModal(instrumentId);
+        });
+    });
+
+    closeModalBtn.addEventListener('click', function() {
+        closeModal();
+    });
+
+    closeDeleteModalBtn.addEventListener('click', function() {
+        closeDeleteModal();
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        } else if (event.target === deleteModal) {
+            closeDeleteModal();
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // AJAX submission of the registration form
+    registerForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(registerForm);
+        fetch('/administrator/modules/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Module added successfully');
+                showSuccessMessage('Module added successfully');
+                // Optionally, update UI or notify user of success
+            } else {
+                console.error('Failed to add module');
+                showSuccessMessage('Failed to add module');
+                // Optionally, handle errors or notify user of failure
+            }
+            closeModal(); // Close modal regardless of success or failure
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showSuccessMessage('An error occurred');
+            closeModal(); // Close modal on error
+        });
+    });
+
     // Function to handle book container click event and redirect to book detail page
     function showBookDetail(bookContainer, bookId) {
-        // Get instrument major and minor names from the book container's parent (student-details-container)
         const instrumentMajor = bookContainer.closest('.student-box').getAttribute('data-major');
         const instrumentMinor = bookContainer.closest('.student-box').getAttribute('data-minor');
-
-        // Construct the URL for the book detail page
         const url = `/administrator/modules/book_detail/${bookId}/${instrumentMinor}/${instrumentMajor}/`;
-
-
-        // Redirect to the book detail page
         window.location.href = url;
     }
 
@@ -144,7 +316,7 @@
         });
     });
 
-    // Add click event listener to the close button
+    // Add click event listener to the close detail button
     const closeDetailButtons = document.querySelectorAll('.close-detail-button');
     closeDetailButtons.forEach(button => {
         button.addEventListener('click', function(event) {
@@ -152,29 +324,72 @@
             hideBookDetail();
         });
     });
-});
 
+    // Add click event listener to the delete book icon
+    const deleteBookIcons = document.querySelectorAll('.delete-book-icon');
+    deleteBookIcons.forEach(icon => {
+        icon.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent triggering the parent click event
+            const bookId = this.getAttribute('data-book-id');
+            showDeleteModal(bookId);
+        });
+    });
+
+    // Confirm delete button click event
+    confirmDeleteButton.addEventListener('click', function() {
+        if (bookIdToDelete) {
+            fetch(`/administrator/modules/delete_book/${bookIdToDelete}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Book deleted successfully');
+                    showSuccessMessage('Book deleted successfully');
+                    // Remove the book container from the DOM
+                    document.querySelector(`.book-container[data-book-id="${bookIdToDelete}"]`).remove();
+                } else {
+                    console.error('Failed to delete book');
+                    showSuccessMessage('Failed to delete book');
+                }
+                closeDeleteModal();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showSuccessMessage('An error occurred');
+                closeDeleteModal();
+            });
+        }
+    });
+
+    // Cancel delete button click event
+    cancelDeleteButton.addEventListener('click', function() {
+        closeDeleteModal();
+    });
+
+    // Function to handle filtering instruments
     function filterInstruments(button, major) {
-        // Close all student boxes and reset positions
         closeAllStudentBoxes();
         resetAllBoxPositions();
 
-        // Remove active class from all buttons
-        var buttons = document.querySelectorAll('.filter-buttons-container button');
+        const buttons = document.querySelectorAll('.filter-buttons-container button');
         buttons.forEach(function(btn) {
             btn.classList.remove('actives');
         });
 
-        // Add active class to the clicked button
         if (button) {
             button.classList.add('actives');
         }
-        
-        var items = document.querySelectorAll('.student-box');
+
+        const items = document.querySelectorAll('.student-box');
         items.forEach(function(item) {
-            var itemMajor = item.getAttribute('data-major');
-            var itemMinor = item.getAttribute('data-minor');
-            
+            const itemMajor = item.getAttribute('data-major');
+            const itemMinor = item.getAttribute('data-minor');
+
             if (itemMajor === major || itemMinor === major) {
                 item.style.display = 'block';
             } else {
@@ -183,49 +398,62 @@
         });
     }
 
+    // Function to close all student boxes
     function closeAllStudentBoxes() {
-        var detailsContainers = document.querySelectorAll('.student-details-container');
+        const detailsContainers = document.querySelectorAll('.student-details-container');
         detailsContainers.forEach(function(container) {
             container.style.display = 'none';
         });
     }
 
+    // Function to reset all box positions
     function resetAllBoxPositions() {
-        var studentBoxes = document.querySelectorAll('.student-box');
+        const studentBoxes = document.querySelectorAll('.student-box');
         studentBoxes.forEach(function(box) {
             box.style.top = '0';
         });
     }
 
-    var scrollbar = document.querySelector('.scrollbar');
-    var buttonWrapper = document.querySelector('.button-wrapper');
+    // Event listener for scrollbar functionality
+    const scrollbar = document.querySelector('.scrollbar');
+    const buttonWrapper = document.querySelector('.button-wrapper');
+    let startX, startScrollLeft;
 
-    // Variables to keep track of initial mouse position and scroll position
-    var startX, startScrollLeft;
-
-    // Function to handle mouse down event on the scrollbar
     scrollbar.addEventListener('mousedown', function(e) {
         startX = e.clientX;
         startScrollLeft = buttonWrapper.scrollLeft;
-
-        // Add mousemove and mouseup event listeners to the document
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
 
-    // Function to handle mouse move event on the document
     function onMouseMove(e) {
-        var deltaX = e.clientX - startX;
+        const deltaX = e.clientX - startX;
         buttonWrapper.scrollLeft = startScrollLeft - deltaX;
     }
 
-    // Function to handle mouse up event on the document
     function onMouseUp() {
-        // Remove mousemove and mouseup event listeners from the document
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
     }
+
+    // Initial filter by default when the page loads
+    filterInstruments(null, '{{ instruments.0.instrument_major_name }}');
+    const firstButton = document.querySelector('.filter-buttons-container button');
+    if (firstButton) {
+        firstButton.classList.add('actives');
+    }
+});
+
+// Hide book detail function
+function hideBookDetail() {
+    const bookDetails = document.querySelectorAll('.book-detail-container');
+    bookDetails.forEach(detail => {
+        detail.style.display = 'none';
+    });
+}
+
 </script>
+
 
 <script src="{% static 'js/learning_modules.js' %}"></script>
 <script src="{% static 'js/accounts.js' %}"></script>

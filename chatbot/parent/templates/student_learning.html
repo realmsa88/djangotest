@@ -2,7 +2,6 @@
 {% load static %}
 {% load parent_tags %}
 
-
 {% block content %}
 <script src="{% static 'js/navbar.js' %}"></script>
 <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
@@ -12,7 +11,12 @@
 
 <style>
 
-.star {
+.button-wrapper button.selected {
+    background-color: #5b7cfa; /* Change to desired highlight color */
+    color: white; /* Change to desired text color */
+}
+
+    .star {
         font-size: 24px; /* Adjust size as needed */
         color: gray; /* Default color for empty stars */
     }
@@ -28,7 +32,6 @@
         cursor: pointer;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     }
-
     .newdrawer {
         display: none;
         position: absolute;
@@ -45,13 +48,9 @@
         padding: 16px;
         color: black;
     }
-
-    
-
     .newdrawer.open {
         display: block;
     }
-
     .close-btn {
         position: absolute;
         top: 10px;
@@ -68,11 +67,9 @@
         outline: none;
         z-index: 999;
     }
-
     .close-btn:hover {
         color: red;
     }
-
     .details-background {
         background-color: green;
         margin-top: -30px; /* Adjust as needed */
@@ -83,15 +80,12 @@
         top: 0; /* Stick to the top */
         z-index: 1;
     }
-
     .slide-in-right {
         animation: slideInRight 1s ease-in-out forwards; /* Apply animation */
     }
-
     ::-webkit-scrollbar {
         display: none;
     }
-
     @keyframes slideInRight {
         from {
             opacity: 0;
@@ -102,11 +96,9 @@
             transform: translateX(0);
         }
     }
-
     input[type="text"] {
         padding-right: 25px; /* Adjust as needed */
     }
-
     /* Style the caret */
     input[type="text"]::after {
         content: '▼'; /* Unicode character for caret */
@@ -117,11 +109,9 @@
         pointer-events: none; /* Ensure caret is not clickable */
         color: black; /* Adjust color as needed */
     }
-
     input[type="text"] {
         padding-right: 40px; /* Adjust as needed */
     }
-
     /* Style the caret */
     input {
         font-weight: 500;
@@ -131,17 +121,14 @@
         border-width: 0.2px;
         border-color: rgb(169, 168, 168);
     }
-
     input[type="text"] {
         padding-left: 10px; /* Adjust as needed */
     }
-
     .student-box:hover,
     .student-box.selected {
         border-color: #5b7cfa; /* Change border color on hover and selected */
         background-color: #5b7cfa; /* Highlight color on hover and selected */
     }
-
     .student-box:hover .try,
     .student-box.selected .try {
         color: white !important;
@@ -159,9 +146,7 @@
 
 {% for data in students_data %}
 <div class="student-box slide-in-left" onclick="toggleDrawer(event, '{{ data.student.id }}')" data-student-id="{{ data.student.id }}">
-    
     <p style="color: black; font-weight:" class="try">{{ data.student.studentName }} - {{ data.student.instrument}}</p>
-
     <div class="newdrawer slide-in-right" id="newdrawer_{{ data.student.id }}">
         <div class="main-container progress-main-container slide-in" style="margin-top: 25px; margin-bottom: 20px;">
             <div class="progress-background-title" style="background-color: green;">Student Academic Progress</div>
@@ -179,18 +164,12 @@
             <p class="background-title" style="background-color: green;">Student Progress</p>
             <div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative; margin-top: 20px;">
                 <div class="button-wrapper">
-                    <button onclick="filterInstruments(this, 'All')" class="active"
-                            style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
-                        All
-                    </button>
                     {% for module_type in data.module_types %}
-                        <button onclick="filterInstruments(this, '{{ module_type }}')"
-                                style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
-                            {{ module_type }}
-                        </button>
+                        <button onclick="filterInstruments(this, '{{ module_type }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">{{ module_type }}</button>
                     {% endfor %}
                 </div>
-            </div><hr >
+            </div>
+            <hr>
 
             {% for module, results in data.results_by_module.items %}
             <div class="module-container slide-in" data-module-type="{{ module.module_type }}">
@@ -213,14 +192,14 @@
                                 <span class="star filled">★</span>
                                 <span class="star filled">★</span>
                                 <span class="star">★</span>
-                                <span  style="color: gray; font-style: italic; font-size: 14px;">Good</span>
+                                <span style="color: gray; font-style: italic; font-size: 14px;">Good</span>
                             {% elif result == "3" %}
                                 <span class="star filled">★</span>
                                 <span class="star filled">★</span>
                                 <span class="star filled">★</span>
                                 <span class="star">★</span>
                                 <span class="star">★</span>
-                                <span  style="color: gray; font-style: italic; font-size: 14px;">Satisfactory</span>
+                                <span style="color: gray; font-style: italic; font-size: 14px;">Satisfactory</span>
                             {% else %}
                                 <span class="star">★</span>
                                 <span class="star">★</span>
@@ -230,19 +209,42 @@
                                 <span>{{ result }}</span>
                             {% endif %}
                             <br>
+                            
                         {% endfor %}
+                        
                     </div>
                     <hr>
+                    
                 {% endif %}
             </div>
+            <hr>
         {% endfor %}
         </div>
     </div>
+    
 </div>
 {% endfor %}
 
 <script>
 
+function filterInstruments(button, moduleType) {
+    // Highlight the clicked button
+    var buttons = document.querySelectorAll('.filter-buttons-container button');
+    buttons.forEach(function(btn) {
+        btn.classList.remove('selected');
+    });
+    button.classList.add('selected');
+
+    // Show or hide modules based on the selected module type
+    var modules = document.querySelectorAll('.module-container');
+    modules.forEach(function(module) {
+        if (moduleType === 'all' || module.getAttribute('data-module-type') === moduleType) {
+            module.style.display = 'block';
+        } else {
+            module.style.display = 'none';
+        }
+    });
+}
 
     var openDrawerId = null; // Variable to store the ID of the currently open drawer
 
@@ -301,27 +303,72 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        const studentBoxes = document.querySelectorAll('.student-box');
+    const studentBoxes = document.querySelectorAll('.student-box');
 
-        // Add event listeners for hover and click
-        studentBoxes.forEach(function(box) {
-            box.addEventListener('mouseenter', function() {
-                this.classList.add('hover');
-            });
-            box.addEventListener('mouseleave', function() {
-                this.classList.remove('hover');
-            });
-            box.addEventListener('click', function() {
-                // Remove 'selected' class from previously selected box, if any
-                const prevSelected = document.querySelector('.student-box.selected');
-                if (prevSelected) {
-                    prevSelected.classList.remove('selected');
-                }
-                // Add 'selected' class to the clicked box
-                this.classList.add('selected');
-            });
+    // Add event listeners for hover and click
+    studentBoxes.forEach(function(box) {
+        box.addEventListener('mouseenter', function() {
+            this.classList.add('hover');
+        });
+        box.addEventListener('mouseleave', function() {
+            this.classList.remove('hover');
+        });
+        box.addEventListener('click', function() {
+            // Remove 'selected' class from previously selected box, if any
+            const prevSelected = document.querySelector('.student-box.selected');
+            if (prevSelected) {
+                prevSelected.classList.remove('selected');
+            }
+            // Add 'selected' class to the clicked box
+            this.classList.add('selected');
         });
     });
+
+    // Filter modules by the first module type on page load
+    filterModulesOnLoad();
+
+    function filterModulesOnLoad() {
+        const filterButtons = document.querySelectorAll('.filter-buttons-container button');
+        if (filterButtons.length > 0) {
+            // Select the first button
+            const firstButton = filterButtons[0];
+            firstButton.classList.add('selected');
+
+            // Get the first module type from the button's onclick attribute
+            const firstModuleType = firstButton.getAttribute('onclick').match(/'([^']+)'/)[1];
+
+            // Filter modules by the first module type
+            filterInstruments(firstButton, firstModuleType);
+        }
+    }
+});
+
+// Close button functionality
+function hideModal(studentId) {
+    var drawer = document.getElementById('newdrawer_' + studentId);
+    drawer.classList.remove('open');
+    resetBoxPositions();
+}
+
+function filterInstruments(button, moduleType) {
+    // Highlight the clicked button
+    var buttons = document.querySelectorAll('.filter-buttons-container button');
+    buttons.forEach(function(btn) {
+        btn.classList.remove('selected');
+    });
+    button.classList.add('selected');
+
+    // Show or hide modules based on the selected module type
+    var modules = document.querySelectorAll('.module-container');
+    modules.forEach(function(module) {
+        if (moduleType === 'all' || module.getAttribute('data-module-type') === moduleType) {
+            module.style.display = 'block';
+        } else {
+            module.style.display = 'none';
+        }
+    });
+}
+
 
     // Close button functionality
     function hideModal(studentId) {
@@ -330,5 +377,23 @@
         resetBoxPositions();
     }
 
+    function filterInstruments(button, moduleType) {
+        // Highlight the clicked button
+        var buttons = document.querySelectorAll('.filter-buttons-container button');
+        buttons.forEach(function(btn) {
+            btn.classList.remove('selected');
+        });
+        button.classList.add('selected');
+
+        // Show or hide modules based on the selected module type
+        var modules = document.querySelectorAll('.module-container');
+        modules.forEach(function(module) {
+            if (moduleType === 'all' || module.getAttribute('data-module-type') === moduleType) {
+                module.style.display = 'block';
+            } else {
+                module.style.display = 'none';
+            }
+        });
+    }
 </script>
 {% endblock %}

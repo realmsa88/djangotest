@@ -62,7 +62,7 @@
             width: 55%;
         }
 
-        .card {
+        .card-info {
             height: 200px;
             width: calc(30% - 10px);
             border: none;
@@ -112,7 +112,7 @@
                     <a href="{% url 'activity-list' %}" style="margin-left: 1px;" ><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
                 </li>
                 <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
-                    <a href="" style="margin-left: 1px;">
+                    <a href="{% url 'media-teacher' %}" style="margin-left: 1px;">
                         <span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span>
                     </a>
                 </li>
@@ -140,54 +140,153 @@
             <h3 class="mb-4 slide-in-left" style="font-size: 20px;">Teacher Dashboard</h3><hr>
 
             <div class="details-container">
-                <div class="details slide-in-left" style="display: inline-block;">
-                    <h5 style="font-weight: bold;">Teaching Details</h5>
+                <div class="details slide-in-left" style="display: block; float: left; width: 50%;">
+                    <h5 style="font-weight: bold;">Details</h5>
                     <p>Summary</p>
                 
-                    <!-- <div class="card" style="background-color: #FFE2E5; display: inline-block;">
+                    <div class="card-info" style="background-color: #FFE2E5; display: inline-block;">
                         <i class="fa fa-user" style="font-size: 24px;"></i>
-                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_teachers }}</h4>
-                        <p>Total Teachers</p>
-                    </div> -->
-                
-                    <div class="card" style="background-color: #F3E8FF;display: inline-block;">
-                        <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
-                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_students }}</h4>
-                        <p>Students Taught</p>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ students_count }}</h4>
+                        <p>Total Students </p>
                     </div>
                 
-                    <div class="card" style="background-color: #DCFCE7;display: inline-block;">
+                    <div class="card-info" style="background-color: #F3E8FF;display: inline-block;">
+                        <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{total_instruments_taught}}</h4>
+                        <p>Instruments</p>
+                    </div>
+                
+                    <div class="card-info" style="background-color: #DCFCE7;display: inline-block;">
                         <i class="fa fa-trophy" style="font-size: 24px;"></i>
                         <h4 style="font-weight: bold; margin-top: 10px;">{{ total_instruments }}</h4>
                         <p>Total Instruments</p>
                     </div>
                 </div>
-
-              
+        
+                <div class="details slide-in" style="display: block; float: left; width: 43%; margin-left: 10px;">
+                    <h5 style="font-weight: bold;">Logins</h5>
+                    <p>Login Summary</p>
+                    <canvas id="parentLoginsChart"></canvas>
+                </div>
+        
+                <div class="clearfix" style="clear: both;"></div>
+               <!-- New div added below the existing divs -->
+               <div class="details new-div slide-in" style="display: block; margin-top: 20px; width: 97%;">
+                <h5 style="font-weight: bold;">Student Performance</h5>
+                <p>Progress of each registered student</p>
+                <select id="instrumentFilter" onchange="updateStudentProgressChart()">
+                    <option value="all">All Instruments</option>
+                    {% for instrument in instruments_taught %}
+                        <option value="{{ instrument.instrument_minor_name }}">{{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <canvas id="studentProgressChart"></canvas>
             </div>
-
-    
-            
-            {% endblock %}
         </div>
-
-
-
+        {% endblock %}
     </div>
+</div>
 
+<!-- Include necessary JavaScript libraries -->
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/popper.js' %}"></script>
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+<script>
+    // Function to handle sidebar collapse/expand
+    document.getElementById('sidebarCollapse').addEventListener('click', function () {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+    });
 
-    <script>
-        // Toggle sidebar collapse
-        document.getElementById('sidebarCollapse').addEventListener('click', function () {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse student progress data from Django context
+        const studentProgressData = JSON.parse('{{ student_progress|escapejs }}');
+
+        // Debugging: Output parsed data to console
+        console.log("Student Progress:", studentProgressData);
+
+        // Prepare data for student progress chart
+        const studentNames = studentProgressData.map(student => student.studentName);
+        const studentProgressPercentages = studentProgressData.map(student => student.progress_percentage);
+
+        // Render the initial student progress chart
+        renderStudentProgressChart(studentNames, studentProgressPercentages);
+
+        // Handle dropdown selection change event
+        const instrumentFilter = document.getElementById('instrumentFilter');
+        instrumentFilter.addEventListener('change', function () {
+            updateStudentProgressChart();
         });
-    </script>
-    
+
+        // Function to render student progress chart based on selected instrument
+        function updateStudentProgressChart() {
+            const selectedInstrument = instrumentFilter.value;
+
+            // Filter student progress data based on selected instrument
+            let filteredStudentProgressData;
+            if (selectedInstrument === 'all') {
+                filteredStudentProgressData = studentProgressData;
+            } else {
+                filteredStudentProgressData = studentProgressData.filter(student => student.instrument_minor_name === selectedInstrument);
+            }
+
+            // Prepare data for updated chart
+            const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
+            const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
+
+            // Update the student progress chart
+            studentProgressChart.data.labels = filteredStudentNames;
+            studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
+            studentProgressChart.update();
+        }
+
+        // Function to initially render student progress chart
+        function renderStudentProgressChart(studentNames, studentProgressPercentages) {
+            const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
+            const studentProgressChart = new Chart(studentProgressChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: studentNames,
+                    datasets: [{
+                        label: 'Module Progress Percentage',
+                        data: studentProgressPercentages,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Progress Percentage (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Students'
+                            }
+                        }
+                    }
+                }
+            });
+
+            return studentProgressChart;
+        }
+
+        // Parse login times data from Django context (if needed for other parts of the script)
+        // const loginTimesData = JSON.parse('{{ login_times|escapejs }}');
+        // console.log("Login Times:", loginTimesData);
+    });
+</script>
+
 </body>
 </html>

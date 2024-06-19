@@ -1,0 +1,141 @@
+{% extends "master_teacher.html" %}
+{% load static %}
+{% block content %}
+<style>
+    .image-container {
+        background-color: white; /* Set to white to match your other styles */
+        display: inline-block; /* Set to inline-block to adjust width based on content */
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        width: 25%; /* Set a maximum width for the container */
+        margin: 0 auto; /* Center the container */
+        margin-left: 40px;
+        margin-top: 15px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effect */
+        text-decoration: none; /* Remove underline from links */
+        color: inherit; /* Inherit text color */
+    }
+
+    .image-container img {
+        width: 100%; /* Ensure the image fills the container, even if it's distorted */
+        height: auto; /* Maintain aspect ratio */
+        display: block; /* Remove extra space below the image */
+    }
+
+    .image-container:hover {
+        background-color: #5B7CFA;
+        transform: scale(1.1) !important; /* Scale up the hovered container */
+    }
+
+    .image-container:hover p {
+        color: white !important; /* Change text color on hover */
+    }
+
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #5B7CFA;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .floating-button2 {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background-color: transparent;
+        color: black;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: none; /* Initially hide the button */
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s; /* Add a transition for opacity */
+    }
+
+    .floating-button2.show {
+        display: flex; /* Show the button */
+        opacity: 1;
+    }
+
+    .floating-button:hover {
+        background-color: #0056b3;
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    .activities-container {
+        display: flex;
+        justify-content: center; /* Center the divs horizontally */
+        flex-wrap: wrap; /* Wrap the divs if there are multiple rows */
+    }
+
+    .image-container {
+        margin: 10px; /* Add some margin between the divs */
+    }
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Media Gallery</h1>
+</div>
+
+<hr class="slide-in">
+
+<p class="slide-in-left">Click a container to view more.</p>
+
+<br>
+
+<div class="activities-container">
+    {% for activity in activities %}
+    <a href="{% url 'activity-details' activity.id %}" class="image-container slide-in">
+        <img src="{% static 'images/ii.jpg' %}" alt="Description of Image">
+        <hr>
+        <p style="color: black;">{{ activity.activity_name }}</p>
+        <hr>
+        <p style="display: inline-block;">{{ activity.activity_date }}</p>
+        <p style="display: inline-block; float: right;">{{ activity.activity_type }}</p>
+    </a>
+{% endfor %}
+    
+
+</div>
+
+<button class="floating-button2" id="scrollToTopBtn" onclick="scrollToTop()">↑</button>
+<button class="floating-button">+</button>
+
+<script>
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('scroll', function() {
+        var scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        if (window.scrollY > 200) {
+            scrollToTopBtn.classList.add('show');
+        } else {
+            scrollToTopBtn.classList.remove('show');
+        }
+    });
+</script>
+
+{% endblock %}

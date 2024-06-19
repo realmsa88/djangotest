@@ -76,7 +76,7 @@ class TeacherInstrumentForm(forms.Form):
     instruments = forms.ModelMultipleChoiceField(
         queryset=Instrument.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=True
+        required=False
     )
 
     class Meta : 

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .decorators import parent_required
-from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity
+from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin
 from teacher.models import ProgressBar, Attendance
 from django.template import loader
 from django.contrib import messages
@@ -10,43 +10,76 @@ from django.http import JsonResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
-
-# Create your views here.
-# @csrf_exempt
+from django.db.models import Count, Q
+import json
+from django.contrib.auth.decorators import login_required
 @parent_required
 def parent(request):
-    # Ensure that the user is authenticated
     if request.user.is_authenticated:
-        # Access the first name and last name of the authenticated user
+        # Get the authenticated user's details
         first_name = request.user.first_name
         last_name = request.user.last_name
-
-         # Access the groups that the user belongs to
         user_groups = request.user.groups.all()
-        
-        # Extract group names from the user_groups queryset
         group_names = [group.name for group in user_groups]
+
+        # Count the total students assigned to the parent
+        total_students = Student.objects.filter(assigned_parent=request.user).count()
         
-        # Pass the user data and group information to the template
+        # Count the total instruments (unique instruments) assigned to the parent's children
+        total_instruments = Student.objects.filter(assigned_parent=request.user).values('instrument').distinct().count()
+
+        # Get the list of students assigned to the parent
+        students = Student.objects.filter(assigned_parent=request.user).annotate(
+            pass_progress_count=Count('progressbar', filter=Q(progressbar__result__in=['3', '4', '5']))
+        )
+
+        student_progress = []
+        total_modules_all_children = 0  # Total modules taken by all children
+        
+        for student in students:
+            # Calculate total modules for the specific book and instrument
+            total_modules = ModuleDetails.objects.filter(
+                bookInstrument__bookID_id=student.book_id,
+                bookInstrument__instrumentID_id=student.instrument_id
+            ).count()
+            
+            total_modules_all_children += total_modules  # Accumulate total modules
+
+            # Calculate passed modules for the student
+            pass_modules = ProgressBar.objects.filter(student=student, result__in=['3', '4', '5']).count()
+
+            if total_modules > 0:
+                progress_percentage = (pass_modules / total_modules) * 100
+            else:
+                progress_percentage = 0
+
+            student_progress.append({
+                'studentName': student.studentName,
+                'progress_percentage': progress_percentage,
+                'total_modules': total_modules  # Include total modules in student progress
+            })
+
+        # Retrieve login times for the current user
+        login_times = ParentLogin.objects.filter(parent=request.user).values_list('login_time', flat=True)
+        login_times = [login_time.isoformat() for login_time in login_times]
+
+        # Pass the user data, group information, login times, total students, total instruments, and student progress to the template
         context = {
             'first_name': first_name,
             'last_name': last_name,
-            'groups': group_names  # Pass the group names to the template context
+            'groups': group_names,
+            'total_students': total_students,
+            'total_instruments': total_instruments,
+            'login_times': json.dumps(login_times),  # Pass the login times to the template context
+            'student_progress': json.dumps(student_progress),  # Pass student progress to the template context
+            'total_modules_all_children': total_modules_all_children  # Pass total modules taken by all children
         }
-        
-        # You can also access other user attributes if needed
-        # username = request.user.username
-        # email = request.user.email
-        
-        # Pass the user data to the template
-       
-        
-        # Load the template and render it with the context
+
+        # Render the template with the context
         template = loader.get_template('master_parent.html')
         return HttpResponse(template.render(context, request))
     else:
-        # Redirect or handle unauthenticated users as needed
-        # For example, you might want to redirect them to the login page
+        # Handle unauthenticated users as needed
         return HttpResponse("You are not logged in.")
 
 

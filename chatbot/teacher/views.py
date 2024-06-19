@@ -3,47 +3,109 @@ from .decorators import teacher_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
-from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details
+from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details,Activity
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from collections import defaultdict, Counter
 from .models import ProgressBar, Attendance
 from django.contrib import messages
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Avg
 from django.views.decorators.http import require_POST
 import json, logging
 from pytz import timezone as pytz_timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.core.exceptions import MultipleObjectsReturned
 # Create your views here.
 
 @teacher_required
 def teacher(request):
     # Ensure that the user is authenticated
     if request.user.is_authenticated:
-        # Access the first name and last name of the authenticated user
-        first_name = request.user.first_name
-        last_name = request.user.last_name
+        try:
+            user_details = request.user.auth_user_details
+        except auth_user_details.DoesNotExist:
+            return HttpResponse("User details do not exist.")
         
-        # You can also access other user attributes if needed
-        # username = request.user.username
-        # email = request.user.email
+        # Use filter() to retrieve Teacher queryset instead of get()
+        teachers = Teacher.objects.filter(teacher=user_details)
         
-        # Pass the user data to the template
-        context = {
-            'first_name': first_name,
-            'last_name': last_name
-        }
+        if teachers.exists():
+            # Choose the appropriate Teacher instance based on your application logic
+            teacher = teachers.first()  # Or apply your selection logic here
+        else:
+            return HttpResponse("Teacher record does not exist for the logged-in user.")
         
-        # Load the template and render it with the context
-        template = loader.get_template('master_teacher.html')
-        return HttpResponse(template.render(context, request))
-    else:
-        # Redirect or handle unauthenticated users as needed
-        # For example, you might want to redirect them to the login page
-        return HttpResponse("")
-    
+        # Fetch students count assigned to the teacher
+        students_count = Student.objects.filter(assigned_teacher=user_details.user).count()
 
+        # Fetch total instruments taught by the teacher
+        total_instruments_taught = Instrument.objects.filter(teacher=teacher).count()
+
+        # Fetch instruments taught by the teacher
+        instruments_taught = Instrument.objects.filter(teacher=teacher)
+
+        # Initialize instrument data list
+        instrument_data = []
+        for instrument in instruments_taught:
+            students_under_instrument = Student.objects.filter(assigned_teacher=user_details.user, instrument=instrument)
+            student_progress = ProgressBar.objects.filter(student__in=students_under_instrument)
+            
+            if student_progress.exists():
+                average_progress = student_progress.aggregate(avg_progress=Avg('result'))['avg_progress']
+            else:
+                average_progress = 0
+
+            instrument_data.append({
+                'instrument_name': instrument.instrument_minor_name,
+                'average_progress': average_progress,
+                'students_count': students_under_instrument.count()
+            })
+
+        # Initialize student progress list
+        student_progress = []
+        total_modules_all_students = 0
+
+        # Fetch students assigned to the teacher and calculate progress
+        students = Student.objects.filter(assigned_teacher=user_details.user).annotate(
+            pass_progress_count=Count('progressbar', filter=Q(progressbar__result__in=['3', '4', '5']))
+        )
+
+        for student in students:
+            total_modules = ModuleDetails.objects.filter(
+                bookInstrument__bookID_id=student.book_id,
+                bookInstrument__instrumentID_id=student.instrument_id
+            ).count()
+            
+            total_modules_all_students += total_modules
+            pass_modules = ProgressBar.objects.filter(student=student, result__in=['3', '4', '5']).count()
+
+            if total_modules > 0:
+                progress_percentage = (pass_modules / total_modules) * 100
+            else:
+                progress_percentage = 0
+
+            student_progress.append({
+                'studentName': student.studentName,
+                'progress_percentage': progress_percentage,
+                'total_modules': total_modules
+            })
+
+        # Prepare context dictionary for rendering
+        context = {
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'students_count': students_count,
+            'total_instruments_taught': total_instruments_taught,
+            'instrument_data': instrument_data,
+            'instruments_taught': instruments_taught,
+            'student_progress': json.dumps(student_progress),  # Serialize student_progress to JSON
+        }
+
+        return render(request, 'master_teacher.html', context)
+    
+    else:
+        return HttpResponse("You are not logged in.")
 @teacher_required
 def teaching_modules(request):
     # Get the logged-in user
@@ -345,13 +407,18 @@ def attend_student(request):
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
-
 @login_required
 def attendance(request):
     try:
-        teacher_instance = Teacher.objects.get(teacher=request.user.auth_user_details)
-    except Teacher.DoesNotExist:
-        return render(request, 'student_attendance.html', {'error': 'Teacher does not exist for the logged-in user'})
+        teacher_instances = Teacher.objects.filter(teacher=request.user.auth_user_details)
+        
+        if teacher_instances.exists():
+            teacher_instance = teacher_instances.first()  # Assuming we only take the first instance
+        else:
+            return render(request, 'student_attendance.html', {'error': 'Teacher does not exist for the logged-in user'})
+        
+    except MultipleObjectsReturned:
+        return render(request, 'student_attendance.html', {'error': 'Multiple Teacher instances found for the logged-in user'})
     
     instruments = Instrument.objects.filter(teacher=teacher_instance)
     instrument_majors = instruments.values_list('instrument_major_name', flat=True).distinct()
@@ -508,4 +575,30 @@ def verify_attendance(request):
 
 
 def activity_list_teacher(request):
-    return render(request,'activity_list_teacher.html')
+    category = request.GET.get('category')
+    if category:
+        activities = Activity.objects.filter(activity_type=category)
+    else:
+        activities = Activity.objects.all()
+
+    activity_types = Activity.objects.values_list('activity_type', flat=True).distinct()
+    return render(request, 'activity_list_teacher.html', {
+        'activities': activities,
+        'activity_types': activity_types,
+    })
+
+@teacher_required
+def media (request) :
+    activities = Activity.objects.all()
+
+    context = {
+        'activities' : activities
+    }
+    
+    return render(request, 'media_teacher.html', context)
+
+def activity_details(request, id):
+    activity = get_object_or_404(Activity, id=id)
+    albums = activity.album_set.all()  # Fetch all albums related to this activity
+    
+    return render(request, 'activity_details_teacher.html', {'activity': activity, 'albums': albums})

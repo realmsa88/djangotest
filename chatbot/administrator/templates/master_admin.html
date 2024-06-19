@@ -170,6 +170,57 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+
+$(document).ready(function() {
+            // AJAX request to fetch student progress data
+            $.ajax({
+                url: '/student-progress/',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Process the data received from the server
+                    var studentNames = data.student_progress.map(student => student.studentName);
+                    var studentProgressPercentages = data.student_progress.map(student => student.progress_percentage);
+
+                    // Render the student progress chart using Chart.js
+                    var ctx = document.getElementById('studentProgressChart').getContext('2d');
+                    var studentProgressChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: studentNames,
+                            datasets: [{
+                                label: 'Module Progress Percentage',
+                                data: studentProgressPercentages,
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Progress Percentage (%)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Students'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching student progress data:', error);
+                    // Handle error cases here
+                }
+            });
+        });
         var ctx = document.getElementById('parentLoginsChart').getContext('2d');
         var months = {{ months|safe }};
     

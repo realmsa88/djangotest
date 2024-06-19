@@ -241,13 +241,13 @@ button:active {
 <!-- Attendance list grouped by student names -->
 <div class="attendance-list slide-in">
     <div class="actions-container">
-    <div class="attendance-card-actions">
+    <!-- <div class="attendance-card-actions">
         <button onclick="filterAttendance('Pending')" class="active">Pending</button>
         <button onclick="filterAttendance('Approved')">Approved</button>
-    </div>
+    </div> -->
 
     <div class="search-bar-container">
-        <input type="text" id="searchBar" onkeyup="searchStudent()" placeholder="Search for student name..." title="Type in a name" style="width: 50%; padding: 10px;">
+        <input type="text" id="searchBar" onkeyup="searchStudent()" placeholder="Search for student name..." title="Type in a name" style="width: 60%; padding: 10px;">
         <i class="fa fa-search search-icon"></i>
     </div>
     </div>
@@ -384,6 +384,26 @@ button:active {
                     </tr>
                 </tbody>
             </table>
+            <table id="descriptionTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Placeholder rows for description data -->
+                    <tr>
+                        <td>Description 1</td>
+                        <td>Count 1</td>
+                    </tr>
+                    <tr>
+                        <td>Description 2</td>
+                        <td>Count 2</td>
+                    </tr>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -464,12 +484,6 @@ function openInfoModal(studentName, attendanceList) {
     var infoModal = document.getElementById("infoModal");
     infoModal.style.display = "block"; // Show the modal
 
-    console.log('Student Name:', studentName);
-    console.log('Attendance List:', attendanceList);
-
-    var modalContent = ''; // Initialize modal content variable
-
-    // Split the attendance list string into individual records
     var records = attendanceList.slice(1, -1).split('>, <');
 
     // Initialize counts
@@ -478,25 +492,19 @@ function openInfoModal(studentName, attendanceList) {
     var absentApprovedCount = 0;
     var absentPendingCount = 0;
 
-    // Iterate through each attendance record
-    records.forEach(function(record) {
-        // Clean up each record by removing leading/trailing spaces and angle brackets
-        var cleanedRecord = record.replace(/[<>]/g, '').trim();
+    // Initialize an object to store descriptions and their counts
+    var descriptionCounts = {};
 
-        // Split the cleaned record into its components
+    records.forEach(function(record) {
+        var cleanedRecord = record.replace(/[<>]/g, '').trim();
         var components = cleanedRecord.split(' - ');
 
-        // Extract attendance details
-        var studentName = components[0].trim();
-        var attendanceStatus = components[1].trim();
         var attendanceType = components[2].trim();
+        var attendanceStatus = components[1].trim();
         var statusStatus = components[6].trim();
+        var description = components[10].trim();
 
-        // Debugging output
-        console.log('Components:', components);
-        console.log('Attendance Type:', attendanceType);
-        console.log('Attendance Status:', attendanceStatus);
-        console.log('Status Status:', statusStatus);
+        console.log("Description : " + description);
 
         if (attendanceType === 'Class') {
             if (attendanceStatus === 'Attend') {
@@ -512,20 +520,19 @@ function openInfoModal(studentName, attendanceList) {
                     absentPendingCount++;
                 }
             }
+        }
 
-            // Append record details to modalContent only if it's a Class attendance
-            
+        if (attendanceStatus === 'Absent' && description) {
+            if (!descriptionCounts[description]) {
+                descriptionCounts[description] = 0;
+            }
+            descriptionCounts[description]++;
         }
     });
 
-    console.log("Attend Pending Verification:", attendPendingCount);
-    console.log("Attend Approved:", attendApprovedCount);
-    console.log("Absent Pending Verification:", absentPendingCount);
-    console.log("Absent Approved:", absentApprovedCount);
-
-    // Update totals in the modal table
     var totalAttendanceCount = attendApprovedCount + attendPendingCount + absentApprovedCount + absentPendingCount;
-    var tableContent = `        <p>Class</p>
+    var tableContent = `
+        <br><p>Class</p>
         <tr>
             <td>Attend (Approved)</td>
             <td>${attendApprovedCount}</td>
@@ -548,9 +555,21 @@ function openInfoModal(studentName, attendanceList) {
         </tr>
     `;
 
-    // Update the modal's content and table
+    // Generate description table rows
+    var descriptionTableContent = '';
+    for (var description in descriptionCounts) {
+        if (descriptionCounts.hasOwnProperty(description)) {
+            descriptionTableContent += `
+                <tr>
+                    <td>${description}</td>
+                    <td>${descriptionCounts[description]}</td>
+                </tr>
+            `;
+        }
+    }
+
     document.getElementById("infoModalContent").innerHTML = `
-        <table id="attendanceTable" class="attendance-table" border="1">
+        <table id="attendanceTable" class="description-table" border="1">
             <thead>
                 <tr>
                     <th>Type</th>
@@ -558,14 +577,23 @@ function openInfoModal(studentName, attendanceList) {
                 </tr>
             </thead>
             <tbody>
-                ${modalContent}
                 ${tableContent}
+            </tbody>
+        </table>
+        <p>Absences</p>
+        <table id="descriptionTable" class="attendance-table" border="1">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${descriptionTableContent}
             </tbody>
         </table>
     `;
 }
-
-
 
 
 
