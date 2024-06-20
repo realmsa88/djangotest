@@ -10,5 +10,6 @@ urlpatterns = [
     path('parent/activities-list', views.activity_list, name='activities-list'),
     path('parent/<int:student_id>/attendance/<int:attendance_id>/', views.verify_attendance, name='verify_attendance'),
     path('submit_absence/', views.submit_absence, name='submit_absence'),
-
+    path('parent/media-parent', views.media, name='media-parent'),
+    path('parent/media/activity-details/<int:id>/', views.activity_details, name='activity-details-parent'),
 ]

@@ -127,9 +127,44 @@
     }
 
     .student-box:hover .try,
-.student-box.selected .try {
-    color: white !important;
-}
+    .student-box.selected .try {
+        color: white !important;
+    }
+
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .btn {
+        border: 2px solid #007bff;
+        color: #007bff;
+        background-color: wh#007bffite;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        
+        cursor: pointer;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+    }
+
+    .img-preview {
+        width: 100px;
+        height: 100px;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+        display: none;
+    }
 
 </style>
 
@@ -141,6 +176,14 @@
 <p style="color: black;" class="slide-in">Registered students: {{ students|length }}</p> 
 <hr>
 <p style="color: black;" class="slide-in-left">Student Name</p>
+
+{% if messages %}
+<div class="alert alert-success" role="alert">
+    {% for message in messages %}
+        {{ message }}
+    {% endfor %}
+</div>
+{% endif %}
 {% for student in students %}
 <div class="student-box slide-in-left" onclick="toggleDrawer(event, '{{ student.id }}')" data-student-id="{{ student.id }}">
     <p style="color: black; font-weight:" class="try">{{ student.studentName }}</p>
@@ -170,45 +213,76 @@
             <p style="color: black; margin-bottom: 5px;">Identification Number</p>
             <input type="text" id="studentIC_{{ student.id }}" value="{{ student.identification_number }}" readonly>
             <p style="color: black; margin-bottom: 5px;">Current Book</p>
-            <input type="text" id="studentIC_{{ student.id }}" value="{{ student.book }}" readonly>
+            <input type="text" id="studentBook_{{ student.id }}" value="{{ student.book }}" readonly>
         </div>
+
+         <!-- Display student photo if available -->
+         {% if student.picture %}
+         <img src="{{ MEDIA_URL }}{{ student.picture.url }}" alt="Student Photo">
+     {% else %}
+         <p>No photo available</p>
+     {% endif %}
+
+        <div style="display: inline-block; margin-left: 20px;">
+            <!-- Inside the newdrawer div for each student -->
+<img id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo" class="img-preview">
+
+        </div>
+        <!-- <form id="photoForm_{{ student.id }}" onsubmit="submitPhotoForm(event, '{{ student.id }}')" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="student_id" value="{{ student.id }}">
+            <input type="file" name="picture" accept="image/*" onchange="previewPhoto(event, '{{ student.id }}')">
+            <img id="imgPreview_{{ student.id }}" src="#" alt="Photo Preview" style="display:none; max-width: 100%; height: auto;">
+            <button type="submit">Upload Photo</button>
+        </form> -->
+        <!-- student_info.html -->
+
+    
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="student_id" value="{{ student.id }}">
+    {{ form.as_p }}
+    <button type="submit">Upload Photo</button>
+</form>
+
+        
     </div>
 </div>
+
 {% endfor %}
 
 <script>
     var openDrawerId = null; // Variable to store the ID of the currently open drawer
 
     function toggleDrawer(event, studentId) {
-    var drawer = document.getElementById('newdrawer_' + studentId);
+        var drawer = document.getElementById('newdrawer_' + studentId);
 
-    // If a drawer is already open and it's not the one being clicked, close it
-    if (openDrawerId && openDrawerId !== 'newdrawer_' + studentId) {
-        var currentDrawer = document.getElementById(openDrawerId);
-        if (currentDrawer) {
-            currentDrawer.classList.remove('open');
+        // If a drawer is already open and it's not the one being clicked, close it
+        if (openDrawerId && openDrawerId !== 'newdrawer_' + studentId) {
+            var currentDrawer = document.getElementById(openDrawerId);
+            if (currentDrawer) {
+                currentDrawer.classList.remove('open');
+                resetBoxPositions(); // Reset box positions when closing the drawer
+                showAllBoxes(); // Show all boxes when closing the drawer
+            }
+        }
+
+        // Toggle the clicked drawer
+        drawer.classList.toggle('open');
+        openDrawerId = drawer.classList.contains('open') ? 'newdrawer_' + studentId : null;
+
+        // Adjust box positions if the drawer is opened
+        if (drawer.classList.contains('open')) {
+            adjustBoxPositions(studentId);
+            hideOtherBoxes(studentId); // Hide other boxes when drawer is opened
+        } else {
             resetBoxPositions(); // Reset box positions when closing the drawer
             showAllBoxes(); // Show all boxes when closing the drawer
         }
+
+        event.stopPropagation(); // Prevent click event propagation to parent
     }
-
-    // Toggle the clicked drawer
-    drawer.classList.toggle('open');
-    openDrawerId = drawer.classList.contains('open') ? 'newdrawer_' + studentId : null;
-
-    // Adjust box positions if the drawer is opened
-    if (drawer.classList.contains('open')) {
-        adjustBoxPositions(studentId);
-        hideOtherBoxes(studentId); // Hide other boxes when drawer is opened
-    } else {
-        resetBoxPositions(); // Reset box positions when closing the drawer
-        showAllBoxes(); // Show all boxes when closing the drawer
-    }
-
-    event.stopPropagation(); // Prevent click event propagation to parent
-}
-
-
 
     function adjustBoxPositions(clickedStudentId) {
         var boxes = document.querySelectorAll('.student-box');
@@ -244,12 +318,11 @@
     }
 
     function showAllBoxes() {
-    var boxes = document.querySelectorAll('.student-box');
-    boxes.forEach(function(box) {
-        box.style.display = 'block';
-    });
-}
-
+        var boxes = document.querySelectorAll('.student-box');
+        boxes.forEach(function(box) {
+            box.style.display = 'block';
+        });
+    }
 
     function resetBoxPositions() {
         var boxes = document.querySelectorAll('.student-box');
@@ -257,6 +330,64 @@
             box.style.position = '';
             box.style.top = ''; // Reset top position to default
         });
+    }
+    // Function to handle photo preview
+    function previewPhoto(event, studentId) {
+        var fileInput = event.target;
+        var file = fileInput.files[0];
+        var imgPreview = document.getElementById('imgPreview_' + studentId);
+
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Function to handle photo form submission
+    function submitPhotoForm(event, studentId) {
+        event.preventDefault();
+        var form = document.getElementById('photoForm_' + studentId);
+        var formData = new FormData(form);
+
+        fetch("{% url 'student-information' %}", { // Update this to match your view name
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Photo uploaded successfully');
+            } else {
+                alert('Error uploading photo');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while uploading the photo');
+        });
+    }
+
+    // Function to handle photo upload
+    function uploadPhoto(event, studentId) {
+        var fileInput = event.target;
+        var file = fileInput.files[0];
+        var imgPreview = document.getElementById('imgPreview_' + studentId);
+
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
     }
 
     // Prevent closing the drawer when clicking inside it

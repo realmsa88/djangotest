@@ -210,15 +210,34 @@ class ModuleForm(forms.ModelForm):
         model = ModuleDetails
         fields = ['module_type', 'module_name', 'description', 'bookInstrument']
 
+from django import forms
+from .models import Book
 
 class RegisterInstrumentForm(forms.Form):
-    primary_instrument = forms.CharField(label='Primary Instrument', max_length=100, required=True,widget=forms.TextInput(attrs={'placeholder': 'Primary Instrument - e.g Guitar'}))
+    primary_instrument = forms.CharField(label='Primary Instrument', max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Primary Instrument - e.g Guitar'}))
     variation = forms.CharField(label='Variation', max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Variation - e.g. Electric'}))
     
     books = forms.ModelMultipleChoiceField(
-        queryset=Book.objects.all(),
+        queryset=Book.objects.none(),  # Start with an empty queryset
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
 
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Use a set to track unique book names
+        unique_books = set()
+
+        # Fetch all books from the database
+        all_books = Book.objects.all()
+
+        # Iterate over all books to collect unique book names
+        for book in all_books:
+            unique_books.add(book.book)  # Assuming 'name' is the attribute containing the book name
+
+        # Create a queryset of Book objects filtered by unique book names
+        unique_books_queryset = Book.objects.filter(book__in=unique_books)
+
+        # Set the queryset for the books field
+        self.fields['books'].queryset = unique_books_queryset

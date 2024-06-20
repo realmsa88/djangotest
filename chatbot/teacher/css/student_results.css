@@ -161,29 +161,50 @@ border-radius: 3px;
 margin-bottom: 20px; /* Adjust the spacing between progress bars */
 margin-top: 20px;
 }
-
 progress[value] {
---w: 200px; /* the width*/
---color:  /* the progress color */
-linear-gradient(#fff8,#fff0),
-repeating-linear-gradient(135deg,#0003 0 10px,#0000 0 20px),
-/* if < 30% "red" */
-linear-gradient(red    0 0) 0 /calc(var(--w)*.8 - 100%) 1px,
-/* if < 60% "orange" */
-linear-gradient(orange 0 0) 0 /calc(var(--w)*.15 - 100%) 1px,
-/* else "green" */
-green;
---background: rgb(234, 234, 234); /* the background color */
+    --w: 200px; /* the width */
+    --background: rgb(234, 234, 234); /* the background color */
 
--webkit-appearance: none;
--moz-appearance: none;
-appearance: none;
-border: none;
-width: var(--w);
-margin: 0 10px;
-border-radius: 10em;
-background: var(--background);
+    /* Define the progress color */
+    --color: 
+        linear-gradient(#fff8, #fff0), /* background gradient */
+        repeating-linear-gradient(135deg, #0003 0 10px, #0000 0 20px), /* striped pattern */
+
+        /* Color stops based on progress percentage */
+        linear-gradient(
+            red 0 0   /* if < 30% "red" */
+        ) 0 / calc(var(--w) * 0.3 - 1px) 1px,
+
+        linear-gradient(
+            orange 0 0   /* if < 60% "orange" */
+        ) 0 / calc(var(--w) * 0.6 - 1px) 1px,
+
+        linear-gradient(
+            yellow 0 0   /* if < 70% "yellow" */
+        ) 0 / calc(var(--w) * 0.7 - 1px) 1px,
+
+        linear-gradient(
+            green 0 0   /* if < 100% "green" */
+        ) 0 / calc(var(--w) * 0.3 - 1px) 1px,
+
+        linear-gradient(
+            purple 0 0  /* if 100% "purple" */
+        ) 0 / calc(var(--w) - 1px) 1px; /* extends to full width at 100% */
+
+    /* Apply the defined background and color */
+    background:
+        var(--background),
+        var(--color);
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    width: var(--w);
+    margin: 0 10px;
+    border-radius: 10em;
 }
+
 progress[value]::-webkit-progress-bar {
 border-radius: 10em;
 background: var(--background);

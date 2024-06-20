@@ -560,17 +560,20 @@ def verify_attendance(request):
             attendance = Attendance.objects.get(id=int(attendance_id))
             attendance.status = 'Approved'
             attendance.save()
+            messages.success(request, "Attendance verified and approved successfully!")
             return redirect('attendance-list')
-        except (ValueError, ObjectDoesNotExist) as e:
-            # Handle errors when retrieving or updating attendance
-            print(f"Error verifying attendance: {e}")
-            # Redirect back to attendance-list with error message in query parameters
-            return redirect('attendance-list', error='Attendance record not found or could not be verified.')
+        except ObjectDoesNotExist:
+            # Handle case where Attendance record does not exist
+            messages.error(request, "Attendance record not found or could not be verified.")
+            return redirect('attendance-list')
+        except ValueError as e:
+            # Handle case where attendance_id conversion to int fails
+            messages.error(request, f"Invalid attendance ID format: {e}")
+            return redirect('attendance-list')
     else:
         # Handle case where attendance_id is empty
-        print("Attendance ID is empty.")
-        # Redirect back to attendance-list with error message in query parameters
-        return redirect('attendance-list', error='Attendance ID is empty or invalid.')
+        messages.error(request, "Attendance ID is empty or invalid.")
+        return redirect('attendance-list')
 
 
 

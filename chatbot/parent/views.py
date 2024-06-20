@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count, Q
 import json
 from django.contrib.auth.decorators import login_required
+from .forms import StudentPhotoForm
 @parent_required
 def parent(request):
     if request.user.is_authenticated:
@@ -88,18 +89,37 @@ def student_info(request):
     user = request.user
     students = None
 
-    # Assuming the logged-in user is a parent
     if user.groups.filter(name='parent').exists():
-        # Retrieve the students associated with the parent
         students = Student.objects.filter(assigned_parent=user)
-    # Assuming the logged-in user is a teacher
     elif user.groups.filter(name='teacher').exists():
-        # Retrieve the students associated with the teacher
         students = Student.objects.filter(assigned_teacher=user)
+
+    if request.method == 'POST':
+        form = StudentPhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            student_id = request.POST.get('student_id')  # Retrieve student_id from POST data
+            student = Student.objects.get(id=student_id)
+
+            # Check if there is already a photo uploaded
+            if student.picture:
+                # If there is an existing photo, you can choose to delete it or overwrite it
+                student.picture.delete()  # Delete the existing photo
+
+            # Save the new photo
+            student.picture = form.cleaned_data['picture']
+            student.save()
+
+            messages.success(request, 'Photo uploaded successfully')
+            return redirect('student-information')  # Adjust this to your actual URL name
+        else:
+            messages.error(request, 'Error uploading photo')
+    else:
+        form = StudentPhotoForm()
 
     context = {
         'user': user,
-        'students': students
+        'students': students,
+        'form': form,
     }
 
     return render(request, 'student_info.html', context)
@@ -164,24 +184,65 @@ def student_modules(request):
 
 @parent_required
 def attendance(request):
-    # Get the logged-in parent
+    # Get the logged-in parent user object
     parent = request.user
 
-    # Get the students related to this parent
+    # Print debug information
+    print(f"Logged-in parent: {parent}")
+
+    # Get students related to this parent
     students = Student.objects.filter(assigned_parent=parent)
 
+    # Print debug information
+    print(f"Related students: {students}")
+
+    # Retrieve all attendance records associated with the parent user
+    all_attendance = Attendance.objects.filter(student__assigned_parent=parent)
+
+    # Debug prints for verification
+    print("All Attendance:", all_attendance)
+
     # Prepare a dictionary to store attendance details for each student
-   # Simplified view logic
     attendance_data = {}
+    total_attend_approved = 0
+    total_attend_pending = 0
+    total_absent_approved = 0
+    total_absent_pending = 0
+
+    # Fetch attendance data for each student
     for student in students:
-        attendance_data[student.id] = Attendance.objects.filter(student=student)
+        # Fetch attendance records for each student
+        student_attendance = Attendance.objects.filter(student=student)
 
-    context = {
-        'students': students,
+        # Calculate totals for this student
+        for attendance in student_attendance:
+            if attendance.attendance == 'Attend':
+                if attendance.status == 'Approved':
+                    total_attend_approved += 1
+                elif attendance.status == 'Pending Verification':
+                    total_attend_pending += 1
+            elif attendance.attendance == 'Absent':
+                if attendance.status == 'Approved':
+                    total_absent_approved += 1
+                elif attendance.status == 'Pending Verification':
+                    total_absent_pending += 1
+
+        # Store attendance data for this student
+        attendance_data[student.id] = student_attendance
+
+    # Print debug information
+    print(f"Attendance data: {attendance_data}")
+
+    # Render the template with context data
+    return render(request, 'attendance.html', {
         'attendance_data': attendance_data,
-    }
-
-    return render(request, 'attendance.html', context)
+        'attendance_list': all_attendance,  # Pass all_attendance to the template context
+        'students': students,
+        'total_attend_approved': total_attend_approved,
+        'total_attend_pending': total_attend_pending,
+        'total_absent_approved': total_absent_approved,
+        'total_absent_pending': total_absent_pending,
+    })
 
 def verify_attendance(request, student_id, attendance_id):
     try:
@@ -280,3 +341,19 @@ def activity_list(request) :
         'activities': activities,
         'activity_types': activity_types,
     })
+
+@parent_required
+def media (request) :
+    activities = Activity.objects.all()
+
+    context = {
+        'activities' : activities
+    }
+    
+    return render(request, 'media_parent.html', context)
+
+def activity_details(request, id):
+    activity = get_object_or_404(Activity, id=id)
+    albums = activity.album_set.all()  # Fetch all albums related to this activity
+    
+    return render(request, 'activity_details_parent.html', {'activity': activity, 'albums': albums})

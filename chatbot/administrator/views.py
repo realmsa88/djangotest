@@ -310,6 +310,7 @@ def registerStudent(request):
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {str(e)}")
             return JsonResponse({'success': False, 'message': 'Invalid JSON data received'})
+        
         except Exception as e:
             logger.error(f"Error registering student: {str(e)}")
             return JsonResponse({'success': False, 'message': str(e)})
@@ -394,6 +395,7 @@ def modules(request):
     instruments = Instrument.objects.all()
     instrument_names = Instrument.objects.all()
     book_instrument = BookInstrument.objects.all()
+    book_available = Book.objects.all()
 
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         book_id = request.POST.get('book_id')
@@ -436,6 +438,7 @@ def modules(request):
     data = {
         'instruments': unique_instruments,
         'instrument_names': instrument_names,
+        'book_available' : book_available,
         'book_instrument': book_instrument,
         'instruments_with_books': instruments_with_books,
     }
@@ -574,7 +577,7 @@ def register_modules(request):
         if form.is_valid():
             primary_instrument = form.cleaned_data['primary_instrument']
             variation = form.cleaned_data['variation']
-            books = form.cleaned_data['books']
+            books = form.cleaned_data['books']  # Assuming books field handles uniqueness
 
             # Create the instrument with primary_instrument and variation
             instrument = Instrument.objects.create(
@@ -583,8 +586,10 @@ def register_modules(request):
             )
 
             # Associate selected books with the instrument
-            for book in books:
-                BookInstrument.objects.create(bookID=book, instrumentID=instrument)
+            for book_name in books:
+                # Find or create the book if necessary
+                book, created = Book.objects.get_or_create(name=book_name)
+                BookInstrument.objects.create(book=book, instrument=instrument)
 
             messages.success(request, 'Instrument and associated books registered successfully.')
             return redirect('register-modules')

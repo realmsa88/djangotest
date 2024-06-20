@@ -177,7 +177,7 @@
 </div>
 
 
-<div id="myModal" class="modal" style="margin-top: -400px;">
+<div id="myModal" class="modal" style="margin-top: -200px;">
     <div class="modal-content">
         <div class="modal-header" style="margin-top: -20px; width: 110%; margin-left: -30px;background-color: green;">
             <p class="modal-title" id="verificationModalLabel" style="color: white; margin-left: 225px;">Add Instrument Book</p>
@@ -189,15 +189,22 @@
             <form id="registerForm">
                 {% csrf_token %}
                 <input type="hidden" id="instrumentIdInput" name="instrument_id">
-                <input type="text" id="moduleNameInput" name="module_name" placeholder="Module Name" style="width: 100%;">
+                
+                <!-- Dropdown for selecting books -->
+                <select id="bookSelect" name="book" class="form-control" style="width: 100%;">
+                    {% for book in book_available %}
+                        <option value="{{ book.id }}">{{ book.book }}</option>
+                    {% endfor %}
+                </select>
+                
                 <br>
                 <br>
-                <!-- <textarea id="moduleDescriptionInput" name="module_description" placeholder="Module Description"></textarea> -->
                 <button type="submit" class="register-module-button" style="background-color: #5b7cfa; border: none; color: white; border-radius: 10px; padding: 10px;">Add Book</button>
             </form>
         </div>
     </div>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -268,36 +275,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // AJAX submission of the registration form
     registerForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+    event.preventDefault();
 
-        const formData = new FormData(registerForm);
-        fetch('/administrator/modules/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Module added successfully');
-                showSuccessMessage('Module added successfully');
-                // Optionally, update UI or notify user of success
-            } else {
-                console.error('Failed to add module');
-                showSuccessMessage('Failed to add module');
-                // Optionally, handle errors or notify user of failure
-            }
-            closeModal(); // Close modal regardless of success or failure
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showSuccessMessage('An error occurred');
-            closeModal(); // Close modal on error
-        });
+    // Get instrument ID from hidden input
+    const instrumentId = instrumentIdInput.value;
+
+    // Get selected book ID from dropdown
+    const bookSelect = document.getElementById('bookSelect');
+    const bookId = bookSelect.value;
+
+    // Construct FormData object
+    const formData = new FormData();
+    formData.append('instrument_id', instrumentId);
+    formData.append('book_id', bookId); // Ensure 'book_id' matches the parameter name in your backend view
+
+    // AJAX request to submit form data
+    fetch('/administrator/modules/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Book added successfully');
+            showSuccessMessage('Book added successfully');
+            // Optionally, update UI or notify user of success
+        } else {
+            console.error('Failed to add book');
+            showSuccessMessage('Failed to add book');
+            // Optionally, handle errors or notify user of failure
+        }
+        closeModal(); // Close modal regardless of success or failure
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showSuccessMessage('An error occurred');
+        closeModal(); // Close modal on error
     });
+});
+
 
     // Function to handle book container click event and redirect to book detail page
     function showBookDetail(bookContainer, bookId) {

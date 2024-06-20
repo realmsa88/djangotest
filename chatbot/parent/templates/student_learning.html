@@ -133,7 +133,117 @@
     .student-box.selected .try {
         color: white !important;
     }
+
+    progress[value] {
+    --w: 200px; /* width of the progress bar */
+    --background: rgb(234, 234, 234); /* background color */
+    --stripes: repeating-linear-gradient(135deg, #0003 0 10px, #0000 0 20px); /* striped pattern */
+
+    /* Define the progress bar color based on practice_completion_percentage */
+    /* Define the progress bar color based on practice_completion_percentage */
+{% if data.practice_completion_percentage < 30 %}
+--color1: red;
+{% elif data.practice_completion_percentage < 70 %}
+--color1: orange;
+{% elif data.practice_completion_percentage < 99 %}
+--color1: green;
+{% else %}
+--color1: purple;
+{% endif %}
+
+
+    /* Apply the defined background and color */
+    background:
+        var(--background),
+        var(--stripes),
+        linear-gradient(var(--color1), var(--color1));
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    width: var(--w);
+    margin: 0 10px;
+    border-radius: 10em;
+}
+
+progress[value]::-webkit-progress-bar {
+    background-color: var(--background); /* Set background color for the progress bar */
+    border-radius: 10em; /* Apply border radius */
+}
+
+progress[value]::-webkit-progress-value {
+    background-image:
+        var(--stripes),
+        linear-gradient(var(--color1), var(--color1)); /* Apply striped pattern and gradient color */
+    border-radius: 10em; /* Apply border radius */
+}
+
+progress[value]::-moz-progress-bar {
+    background-image:
+        var(--stripes),
+        linear-gradient(var(--color1), var(--color1)); /* Apply striped pattern and gradient color */
+    border-radius: 10em; /* Apply border radius */
+}
+
+
+
+/* Additional progress bar for repertoire */
+progress#progress2 {
+    --w: 200px; /* width of the progress bar */
+    --background: rgb(234, 234, 234); /* background color */
+
+    /* Define the progress bar color based on repertoire_completion_percentage */
+    {% if data.repertoire_completion_percentage < 30 %}
+    --color2: linear-gradient(red, red);
+    {% elif data.repertoire_completion_percentage < 70 %}
+    --color2: linear-gradient(orange, orange);
+    {% elif data.repertoire_completion_percentage < 99 %}
+    --color2: green;
+    {% else %}
+    --color2: purple;
+    {% endif %}
+
+    /* Apply the defined background and color */
+    background:
+        var(--background),
+        var(--color2);
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    width: var(--w);
+    margin: 0 10px;
+    border-radius: 10em;
+}
+
+
+
+
+
+/* Styling for the progress bar background */
+progress#progress2::-webkit-progress-bar {
+    border-radius: 10em;
+    background: var(--background);
+}
+
+/* Styling for the progress bar value */
+progress#progress2::-webkit-progress-value {
+    background-image:
+        var(--stripes),
+        linear-gradient(var(--color2), var(--color2)); /* Apply striped pattern and gradient color */
+    border-radius: 10em; /* Apply border radius */
+}
+
+progress#progress2::-moz-progress-bar {
+    border-radius: 10em;
+    background: var(--color2);
+}
 </style>
+
+
+
 
 <div class="header-container">
     <h1 style="font-size: 20px;" class="slide-in-left">Student Information</h1>
@@ -155,7 +265,7 @@
                 <p style="margin-left: 20px; color: black;">Practice : {{ data.practice_completion_percentage }}% Completed</p>
             </div>
             <div class="progress-container">
-                <progress max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 50%;">{{ data.repertoire_completion_percentage }}%</progress>
+                <progress id="progress2" max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 50%;"></progress>
                 <p style="margin-left: 20px; color: black;">Repertoire : {{ data.repertoire_completion_percentage }}% Completed</p>
             </div>
         </div>

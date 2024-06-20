@@ -96,7 +96,7 @@ class Student(models.Model):
     age = models.IntegerField(null=True)
     gender = models.CharField(max_length=255,null=True)
     race = models.CharField(max_length=255, null=True)
-    picture = models.ImageField(null=True)
+    picture = models.ImageField(upload_to='student_pictures/', blank=True, null=True)
     assigned_teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='student_assigned_teacher')
     assigned_parent = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='student_assigned_parent')
     teaching_mode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)

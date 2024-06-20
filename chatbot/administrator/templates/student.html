@@ -60,6 +60,35 @@
     .icon-container i.fa-edit {
         color: #5b7cfa; /* Default edit icon color */
     }
+    .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Adjust margin as needed */
+}
+
+.header-left {
+    flex: 1; /* Take up remaining space in the header */
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.entries-dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.entries-dropdown label {
+    margin-right: 10px; /* Adjust margin as needed */
+}
+
+.entries-dropdown select {
+    margin-right: 10px; /* Adjust margin as needed */
+}
+
 
 </style>
 
@@ -74,22 +103,27 @@
 
 <hr class="slide-in">
 
-<p style="margin-top: 20px;" class="slide-in">Click on a row to view user details</p>
-
-<div class="entries-dropdown slide-in-left" style="color: black;">
-    Search: <input type="text" id="search-input" placeholder="Search" style="margin-right: 30px; margin-left: 5px;">
-    <label for="entries-per-page" style="color: #000000;">Entries per page:</label>
-    <select id="entries-per-page" onchange="changeEntriesPerPage(this)">
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-        <option value="{{ students.count }}">All</option>
-    </select>
+<div class="header-container">
+    <div class="header-left">
+        <p style="margin-top: 20px;" class="slide-in">Click on a row to view user details</p>
+    </div>
+    <div class="header-right">
+        <div class="entries-dropdown slide-in-left" style="color: black; display: flex; align-items: center;">
+            <label for="search-input">Search:</label>
+            <input type="text" id="search-input" placeholder="Search" style="margin-right: 20px;">
+            <label for="entries-per-page" style="white-space: nowrap;">Entries per page:</label>
+            <select id="entries-per-page" onchange="changeEntriesPerPage(this)">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="{{ students.count }}">All</option>
+            </select>
+        </div>
+    </div>
 </div>
 
-<br>
-<br>
+
 
 <table border="1" class="slide-in">
     <thead>
@@ -195,6 +229,26 @@
 </div>
 
 <script>
+
+function filterTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("search-input");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("student-table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[0]; // Adjust index as per the column you want to filter
+        if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     modal.style.display = "none";
@@ -263,8 +317,9 @@ function confirmDelete(studentName) {
         })
         .then(response => {
             if (response.ok) {
-                document.querySelector(`.student-row[data-student-name="${studentName}"]`).remove();  // Remove the row from the table
                 alert('Student deleted successfully.');
+                document.querySelector(`.student-row[data-student-name="${studentName}"]`).remove();  // Remove the row from the table
+                
             } else {
                 alert('Failed to delete student.');
             }

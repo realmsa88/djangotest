@@ -90,6 +90,15 @@ function calculateAge() {
     overflow-y: scroll; /* Enable vertical scrolling */
 }
 
+.time-slot.selected {
+    background-color: #5b7cfa;
+    color: white;
+}
+
+.time-slot:hover {
+    cursor: pointer;
+}
+
 
 
     .selected {
@@ -284,10 +293,10 @@ function calculateAge() {
                 {{ student_form.instrument }}
             </div>
 
-            <div style="display: inline-block; margin-left: 20px;">
+            <!-- <div style="display: inline-block; margin-left: 20px;">
                 <p>Student Photo</p>
                 <button>Choose A File</button>
-            </div>
+            </div> -->
 
             <div style="margin-top: 15px;">
                 <div style="display: inline-block; margin-left: 0px;">
@@ -313,6 +322,7 @@ function calculateAge() {
         </form>
     </div>
 </div>
+
 
 <div class="form-container-wrapper slide-in" style="margin-top: 20px;">
     <div class="progress-background-title" style="margin-top: 30px;height: 60px;">
@@ -359,12 +369,14 @@ function calculateAge() {
     </div>
 </div>
 
-{% if messages %}
-    {% for message in messages %}
-        <h3 class="messages" style="font-size: 18px; color: black;">{{ message }}</h3>
-    {% endfor %}
+{% if success_message %}
+    <div id="successMessageContainer">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ success_message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
 {% endif %}
-
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 
