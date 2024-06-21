@@ -1,5 +1,7 @@
 from . import views
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('parent/', views.parent, name='parent'),
@@ -12,4 +14,9 @@ urlpatterns = [
     path('submit_absence/', views.submit_absence, name='submit_absence'),
     path('parent/media-parent', views.media, name='media-parent'),
     path('parent/media/activity-details/<int:id>/', views.activity_details, name='activity-details-parent'),
-]
+    path('generate_report/<int:student_id>/', views.generate_report, name='generate_report'),
+    path('parent/view_report/<int:student_id>/', views.view_report, name='view_report')
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

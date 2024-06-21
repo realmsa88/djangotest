@@ -1,0 +1,297 @@
+{% load custom_filters_parent %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Progress Report</title>
+    <style>
+        /* Basic styling, adjust as needed */
+        body {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .progress {
+            height: 20px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .attendance {
+            margin-top: 20px;
+        }
+        .attendance th, .attendance td {
+            padding: 5px;
+            text-align: center;
+        }
+
+        /* Styling for the student image */
+        .student-image {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px; /* Adjust the size as needed */
+            height: 100px; /* Adjust the size as needed */
+            border-radius: 50%; /* Optional: To make it circular */
+            object-fit: cover; /* To maintain aspect ratio */
+        }
+
+        /* Custom progress bar colors based on completion percentage */
+        .progress-bar-purple {
+            background-color: #800080; /* Purple */
+        }
+        .progress-bar-green {
+            background-color: #4CAF50; /* Green */
+        }
+        .progress-bar-orange {
+            background-color: #FFA500; /* Orange */
+        }
+        .progress-bar-yellow {
+            background-color: #FFFF00; /* Yellow */
+        }
+        .progress-bar-red {
+            background-color: #FF0000; /* Red */
+        }
+
+        /* Print styling */
+        @media print {
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .progress-bar {
+                background-color: #4CAF50 !important;
+                color: white !important;
+            }
+            .progress-bar-purple {
+                background-color: #800080 !important; /* Purple */
+            }
+            .progress-bar-green {
+                background-color: #4CAF50 !important; /* Green */
+            }
+            .progress-bar-orange {
+                background-color: #FFA500 !important; /* Orange */
+            }
+            .progress-bar-yellow {
+                background-color: #FFFF00 !important; /* Yellow */
+            }
+            .progress-bar-red {
+                background-color: #FF0000 !important; /* Red */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Music Academy Management System (MAMS)</h2>
+        <p>Subang Jaya, Selangor</p>
+        <strong>DETAILED REPORT SHEET</strong>
+        <hr>
+    
+        <div style="border-color: black;">
+            <div>
+                {% if student.picture %}
+                    <img class="student-image" id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo">
+                {% else %}
+                    <img class="student-image" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                {% endif %}
+            </div>
+        </div>
+        
+        <table>
+            <tbody>
+                <tr>
+                    <td width="80">&nbsp;NAME<br></td>
+                    <td width="1">:<br></td>
+                    <td width="388">&nbsp;{{ student.studentName }}<br></td>
+                    <td width="80">&nbsp;GENDER</td>
+                    <td width="1">:<br></td>
+                    <td width="150">&nbsp;{{ student.gender }}<br></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;INSTRUMENT</td>
+                    <td>:</td>
+                    <td>&nbsp;{{ student.instrument }}</td>
+                    <td>&nbsp;BOOK</td>
+                    <td>:</td>
+                    <td>&nbsp;{{ student.book.id }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <hr>
+        <div>
+            <h3>Module Performance - Practice Modules</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Module Title</th>
+                        <th>Description</th>
+                        <th>Result</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for module in module_details %}
+                        {% if module.module_type == 'Practice' %}
+                            <tr>
+                                <td>{{ module.module_name }}</td>
+                                <td>{{ module.description }}</td>
+                                <td>
+                                    {% if module.id in results_by_module %}
+                                        {% if results_by_module|get_item:module.id == '3' %}
+                                            ★★★  <!-- Display three stars for result 3 -->
+                                        {% elif results_by_module|get_item:module.id == '4' %}
+                                            ★★★★  <!-- Display four stars for result 4 -->
+                                        {% elif results_by_module|get_item:module.id == '5' %}
+                                            ★★★★★  <!-- Display five stars for result 5 -->
+                                        {% else %}
+                                            {{ results_by_module|get_item:module.id }}  <!-- Display the result as is -->
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if results_by_module|get_item:module.id == '3' %}
+                                        Satisfactory  <!-- Display 'Satisfactory' for result 3 -->
+                                    {% elif results_by_module|get_item:module.id == '4' %}
+                                        Good  <!-- Display 'Good' for result 4 -->
+                                    {% elif results_by_module|get_item:module.id == '5' %}
+                                        Excellent  <!-- Display 'Excellent' for result 5 -->
+                                    {% else %}
+                                        -  <!-- Display '-' for other results -->
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% empty %}
+                    <!-- Handle case where no Practice modules are found -->
+                    <tr>
+                        <td colspan="4">No Practice modules found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <hr>
+        <div>
+            <h3>Module Performance - Repertoire Modules</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Module Title</th>
+                        <th>Description</th>
+                        <th>Result</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for module in module_details %}
+                        {% if module.module_type == 'Repertoire' %}
+                            <tr>
+                                <td>{{ module.module_name }}</td>
+                                <td>{{ module.description }}</td>
+                                <td>
+                                    {% if module.id in results_by_module %}
+                                        {% if results_by_module|get_item:module.id == '3' %}
+                                            ★★★  <!-- Display three stars for result 3 -->
+                                        {% elif results_by_module|get_item:module.id == '4' %}
+                                            ★★★★  <!-- Display four stars for result 4 -->
+                                        {% elif results_by_module|get_item:module.id == '5' %}
+                                            ★★★★★  <!-- Display five stars for result 5 -->
+                                        {% else %}
+                                            {{ results_by_module|get_item:module.id }}  <!-- Display the result as is -->
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if results_by_module|get_item:module.id == '3' %}
+                                        Satisfactory  <!-- Display 'Satisfactory' for result 3 -->
+                                    {% elif results_by_module|get_item:module.id == '4' %}
+                                        Good  <!-- Display 'Good' for result 4 -->
+                                    {% elif results_by_module|get_item:module.id == '5' %}
+                                        Excellent  <!-- Display 'Excellent' for result 5 -->
+                                    {% else %}
+                                        -  <!-- Display '-' for other results -->
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% empty %}
+                    <!-- Handle case where no Repertoire modules are found -->
+                    <tr>
+                        <td colspan="4">No Repertoire modules found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <hr>
+        <div>
+            <h3>Progress</h3>
+            <div class="progress">
+                <div class="progress-bar {% if practice_completion_percentage >= 100 %}progress-bar-purple{% elif practice_completion_percentage >= 70 %}progress-bar-green{% elif practice_completion_percentage >= 50 %}progress-bar-orange{% elif practice_completion_percentage >= 30 %}progress-bar-yellow{% else %}progress-bar-red{% endif %}" style="width: {{ practice_completion_percentage }}%;">Practice Modules Completion: {{ practice_completion_percentage }}%</div>
+            </div>
+            <div class="progress">
+                <div class="progress-bar {% if repertoire_completion_percentage >= 100 %}progress-bar-purple{% elif repertoire_completion_percentage >= 70 %}progress-bar-green{% elif repertoire_completion_percentage >= 50 %}progress-bar-orange{% elif repertoire_completion_percentage >= 30 %}progress-bar-yellow{% else %}progress-bar-red{% endif %}" style="width: {{ repertoire_completion_percentage }}%;">Repertoire Modules Completion: {{ repertoire_completion_percentage }}%</div>
+            </div>
+        </div>
+        <br>
+        <hr>
+        <div>
+            <h3>Attendance</h3>
+            <table class="attendance" border="1">
+                <thead>
+                    <tr>
+                        <th>Class Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-06-01</td>
+                        <td>Absent</td>
+                    </tr>
+                    <tr>
+                        <td>2024-06-08</td>
+                        <td>Present</td>
+                    </tr>
+                    <!-- Add more rows dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

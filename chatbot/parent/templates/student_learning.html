@@ -141,15 +141,24 @@
 
     /* Define the progress bar color based on practice_completion_percentage */
     /* Define the progress bar color based on practice_completion_percentage */
-{% if data.practice_completion_percentage < 30 %}
---color1: red;
-{% elif data.practice_completion_percentage < 70 %}
---color1: orange;
-{% elif data.practice_completion_percentage < 99 %}
---color1: green;
-{% else %}
---color1: purple;
-{% endif %}
+   {% if data.practice_completion_percentage < 30 %}
+        progress[value] {
+            --color1: red;
+        }
+    {% elif data.practice_completion_percentage < 70 %}
+        progress[value] {
+            --color1: orange;
+        }
+    {% elif data.practice_completion_percentage < 99 %}
+        progress[value] {
+            --color1: green;
+        }
+    {% else %}
+        progress[value] {
+            --color1: purple;
+        }
+    {% endif %}
+
 
 
     /* Apply the defined background and color */
@@ -268,6 +277,9 @@ progress#progress2::-moz-progress-bar {
                 <progress id="progress2" max="100" value="{{ data.repertoire_completion_percentage }}" style="width: 50%;"></progress>
                 <p style="margin-left: 20px; color: black;">Repertoire : {{ data.repertoire_completion_percentage }}% Completed</p>
             </div>
+            <button onclick="window.location.href='{% url 'generate_report' data.student.id %}'" style="background-color: red; color: white; border-radius: 5px; border: none; height: 40px; width: 140px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
+                Download Report
+            </button>
         </div>
         
         <div class="main-container slide-in-left" style="margin-top: 60px;">
@@ -327,7 +339,7 @@ progress#progress2::-moz-progress-bar {
                     
                 {% endif %}
             </div>
-            <hr>
+            
         {% endfor %}
         </div>
     </div>

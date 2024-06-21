@@ -14,6 +14,9 @@ from django.db.models import Count, Q
 import json
 from django.contrib.auth.decorators import login_required
 from .forms import StudentPhotoForm
+from xhtml2pdf import pisa 
+from django.template.loader import get_template
+
 @parent_required
 def parent(request):
     if request.user.is_authenticated:
@@ -357,3 +360,100 @@ def activity_details(request, id):
     albums = activity.album_set.all()  # Fetch all albums related to this activity
     
     return render(request, 'activity_details_parent.html', {'activity': activity, 'albums': albums})
+
+
+def generate_report(request, student_id):
+    # Fetch student based on student_id
+    student = get_object_or_404(Student, id=student_id)
+
+    # Fetch related data for the student
+    book_instruments = BookInstrument.objects.filter(bookID=student.book, instrumentID=student.instrument)
+    module_details = ModuleDetails.objects.filter(bookInstrument__in=book_instruments)
+
+    results_by_module = {module: [] for module in module_details}
+
+    # Get ProgressBar entries for the student and the modules found
+    progress_bar_objects = ProgressBar.objects.filter(student=student, module__in=module_details)
+
+    for progress_bar in progress_bar_objects:
+        results_by_module[progress_bar.module].append(progress_bar.result)
+
+    # Calculate progress for Practice modules
+    practice_modules = module_details.filter(module_type='Practice')
+    total_practice_modules = practice_modules.count()
+    passed_practice_modules = progress_bar_objects.filter(module__in=practice_modules, result__in=['3', '4', '5']).count()
+    practice_completion_percentage = (passed_practice_modules / total_practice_modules) * 100 if total_practice_modules > 0 else 0
+
+    # Calculate progress for Repertoire modules
+    repertoire_modules = module_details.filter(module_type='Repertoire')
+    total_repertoire_modules = repertoire_modules.count()
+    passed_repertoire_modules = progress_bar_objects.filter(module__in=repertoire_modules, result__in=['3', '4', '5']).count()
+    repertoire_completion_percentage = (passed_repertoire_modules / total_repertoire_modules) * 100 if total_repertoire_modules > 0 else 0
+
+    # Prepare data to be passed to the template
+    context = {
+        'student': student,
+        'practice_completion_percentage': practice_completion_percentage,
+        'repertoire_completion_percentage': repertoire_completion_percentage,
+        'module_types': set(module.module_type for module in module_details),
+        'results_by_module': results_by_module,
+    }
+
+    # Render the template with context data
+    template_path = 'report_template.html'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # Create a PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="student_report_{student.id}.pdf"'
+
+    # Generate PDF file
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+
+    return response
+
+
+
+def view_report(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    
+    # Fetch related data for the student
+    book_instruments = BookInstrument.objects.filter(bookID=student.book, instrumentID=student.instrument)
+    module_details = ModuleDetails.objects.filter(bookInstrument__in=book_instruments)
+    
+    # Fetch progress bar objects for the student and modules found
+    progress_bar_objects = ProgressBar.objects.filter(student=student, module__in=module_details)
+    
+    # Prepare results by module
+    results_by_module = {}
+    for progress_bar in progress_bar_objects:
+        results_by_module[progress_bar.module_id] = progress_bar.result
+        print(f"Module ID: {progress_bar.module_id}, Result: {progress_bar.result}")
+    
+    
+    # Calculate progress for Practice modules
+    practice_modules = module_details.filter(module_type='Practice')
+    total_practice_modules = practice_modules.count()
+    passed_practice_modules = progress_bar_objects.filter(module__in=practice_modules, result__in=['3', '4', '5']).count()
+    practice_completion_percentage = (passed_practice_modules / total_practice_modules) * 100 if total_practice_modules > 0 else 0
+    
+    # Calculate progress for Repertoire modules
+    repertoire_modules = module_details.filter(module_type='Repertoire')
+    total_repertoire_modules = repertoire_modules.count()
+    passed_repertoire_modules = progress_bar_objects.filter(module__in=repertoire_modules, result__in=['3', '4', '5']).count()
+    repertoire_completion_percentage = (passed_repertoire_modules / total_repertoire_modules) * 100 if total_repertoire_modules > 0 else 0
+    
+    # Prepare data to be passed to the template
+    context = {
+        'student': student,
+        'practice_completion_percentage': practice_completion_percentage,
+        'repertoire_completion_percentage': repertoire_completion_percentage,
+        'results_by_module': results_by_module,
+        'module_details': module_details,
+        'progress_bar' : progress_bar
+    }
+    
+    return render(request, 'report_template.html', context)

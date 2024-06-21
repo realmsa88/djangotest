@@ -11,6 +11,8 @@
 
 <style>
 
+
+
     p {
         color: black;
     }
@@ -148,20 +150,6 @@
 
 <p class="slide-in-left">Registered Students: {{ students|length }}</p>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    {% endfor %}
-{% endif %}
-
-{% if attendance_list %}
-        {% regroup attendance_list by student as student_records %}
-        {% for student_group in student_records %}
 <div class="wrapper" style="margin-top: -35px;">
     <div class="main">
         <div class="container p-5 slide-in">
@@ -174,18 +162,18 @@
                             View Attendance
                         </button>
                         <div class="fa fa-info" style="display: inline-block; float: right; border-color: #165227; color: #5b7cfa; cursor: pointer; height: 100%;"
-     onclick="openInfoModal('{{ student.studentName }}', '{{ student_group.list|safe }}')">
-</div>
-
-
+                        onclick="openInfoModal('{{ student.studentName }}', '{{ student_group.list|safe }}')">
+                   </div>
+                   
                         <div class="collapse" id="attendance{{ student.id }}">
                             <div class="card card-body mt-3">
                                 {% if student.attendance_set.all %}
                                     {% for attendance in student.attendance_set.all %}
+                                    
                                         <div class="attendance-record">
                                             <div class="attendance-info">
                                                 <p style="font-weight: bold;color: black;">
-                                                    {{ attendance.title }}
+                                                    {{ attendance.title }} 
                                                     <span class="attendance-time" style="font-weight: lighter; color: gray;">
                                                         🕒{{ attendance.date }}  {{ attendance.start_time }} - {{ attendance.end_time }}
                                                     </span>
@@ -225,78 +213,7 @@
             {% endfor %}
         </div>
     </div>
-    {% endfor %}
-    {% else %}
-        <p>No attendance records found.</p>
-    {% endif %}
 </div>
-
-<!-- The Info Modal -->
-<div id="infoModal" class="modal" >
-    <div class="modal-content slide-in" style="margin-top: 30px;">
-        <div class="modal-header">
-            <p class="modal-title" style="color: white;">Attendance Overview</p>
-            <span class="close" onclick="closeInfoModal()">&times;</span>
-        </div>
-
-        <div id="infoModalContent">
-            
-            <table id="attendanceTable" class="attendance-table" border="1">
-               
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Table rows will be dynamically added here by JavaScript -->
-                    <tr>
-                        <td>Attend (Approved)</td>
-                        <td id="attendApprovedCount"></td>
-                    </tr>
-                    <tr>
-                        <td>Attend (Pending Verification)</td>
-                        <td id="attendPendingCount"></td>
-                    </tr>
-                    <tr>
-                        <td>Absent (Approved)</td>
-                        <td id="absentApprovedCount"></td>
-                    </tr>
-                    <tr>
-                        <td>Absent (Pending Verification)</td>
-                        <td id="absentPendingCount"></td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: bold;">Total</td>
-                        <td id="totalAttendanceCount"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <table id="descriptionTable" border="1">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Placeholder rows for description data -->
-                    <tr>
-                        <td>Description 1</td>
-                        <td>Count 1</td>
-                    </tr>
-                    <tr>
-                        <td>Description 2</td>
-                        <td>Count 2</td>
-                    </tr>
-                    <!-- Add more rows as needed -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
 
 <!-- Modal -->
 <div class="modal fade" id="verificationModal" tabindex="-1" role="dialog" aria-labelledby="verificationModalLabel" aria-hidden="true">
@@ -374,10 +291,77 @@
     </div>
 </div>
 
+<!-- The Info Modal -->
+<div id="infoModal" class="modal" >
+    <div class="modal-content slide-in" style="margin-top: 30px;">
+        <div class="modal-header">
+            <p class="modal-title" style="color: white;">Attendance Overview</p>
+            <span class="close" onclick="closeInfoModal()">&times;</span>
+        </div>
+
+        <div id="infoModalContent">
+            
+            <table id="attendanceTable" class="attendance-table" border="1">
+               
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be dynamically added here by JavaScript -->
+                    <tr>
+                        <td>Attend (Approved)</td>
+                        <td id="attendApprovedCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Attend (Pending Verification)</td>
+                        <td id="attendPendingCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Absent (Approved)</td>
+                        <td id="absentApprovedCount"></td>
+                    </tr>
+                    <tr>
+                        <td>Absent (Pending Verification)</td>
+                        <td id="absentPendingCount"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Total</td>
+                        <td id="totalAttendanceCount"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table id="descriptionTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Placeholder rows for description data -->
+                    <tr>
+                        <td>Description 1</td>
+                        <td>Count 1</td>
+                    </tr>
+                    <tr>
+                        <td>Description 2</td>
+                        <td>Count 2</td>
+                    </tr>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+
 function openInfoModal(studentName, attendanceList) {
     var infoModal = document.getElementById("infoModal");
     infoModal.style.display = "block"; // Show the modal
@@ -493,25 +477,6 @@ function openInfoModal(studentName, attendanceList) {
     `;
 }
 
-
-
-
-// Function to close the info modal
-function closeInfoModal() {
-    var infoModal = document.getElementById("infoModal");
-    infoModal.style.display = "none"; // Hide the modal
-}
-
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    var infoModal = document.getElementById("infoModal");
-    if (event.target == infoModal) {
-        closeInfoModal();
-    }
-}
-
-    
     $(document).ready(function() {
         // Function to handle click event for the verify button
         $(document).on('click', '.verify-button', function() {
@@ -562,7 +527,6 @@ window.onclick = function(event) {
                 $('#charCount').text(remainingLength + ' characters remaining');
             });
         });
-        
 </script>
 
     

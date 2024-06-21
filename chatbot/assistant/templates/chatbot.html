@@ -10,6 +10,36 @@
     <!-- <script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=adc05c73-f935-4a9e-b0e0-f764cc5be2f8"></script> -->
 
     <style>
+        .user-text {
+            color: white;
+        }
+
+.fas.fa-comment {
+         
+         color: #fff !important;
+         background-color: #32373d;
+         
+        
+     }
+     .fas.fa-comment::before {
+         
+         height: 50%;
+         width: 50%;
+        
+     }
+
+     .fas.fa-paper-plane.fa-sm {
+         color: #32373d !important;
+         background-color: #fff;
+     }
+     .fas.fa-times {
+         color: #fff !important;
+         background-color: #32373d;
+     }
+     .fas.fa-robot {
+         color: #fff !important;
+         background-color: #32373d;
+     }
         /* Chat container styles */
         #chat-container {
             position: fixed;
@@ -106,7 +136,7 @@
             z-index: 10000; /* Ensure it's above other content */
             background-color: #32373d;
             border-radius: 50px;
-            color: #fff;
+            color: #fff !important;
             font-size: 24px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
             cursor: pointer;
@@ -115,7 +145,7 @@
         /* Styling for user messages */
         .user-message {
             background-color: #32373d;
-            color: #fff;
+            color: #fff !important;
             margin-left: 40px;
             margin-right: 20px;
             padding: 10px;
@@ -294,7 +324,7 @@
         // Display user message in the chat box
         const userMessageDiv = document.createElement("div");
         userMessageDiv.classList.add("mt-3", "p-3", "rounded", "user-message", );
-        userMessageDiv.innerHTML = `<p>${userMessage}</p>`;
+        userMessageDiv.innerHTML = `<p style="color: white;">${userMessage}</p>`;
         document.querySelector(".chat-box").appendChild(userMessageDiv);
 
         try {

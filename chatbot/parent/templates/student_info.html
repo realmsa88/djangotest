@@ -7,6 +7,66 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 <style>
+
+body{margin-top:20px;
+background-color:#f2f6fc;
+color:#69707a;
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
     .student-box {
         border: 2px solid rgb(255, 255, 255);
         border-radius: 10px;
@@ -24,15 +84,15 @@
         left: 0;
         z-index: 900;
         width: 100%;
-        height: 350px;
+        height: 550px;
         overflow-y: auto;
-        overflow-x: hidden; /* Prevent horizontal scrolling */
+        overflow-x: auto; /* Prevent horizontal scrolling */
         background-color: white;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
         border-radius: 10px;
         padding: 16px;
         color: black;
-        border: 2px solid rgb(0, 0, 0);
+       
     }
 
     .newdrawer.open {
@@ -109,7 +169,7 @@
     /* Style the caret */
     input {
         font-weight: 500;
-        color: rgb(78, 78, 78);
+        /* color: rgb(78, 78, 78); */
         height: 35px;
         border-radius: 5px;
         border-width: 0.2px;
@@ -185,74 +245,119 @@
 </div>
 {% endif %}
 {% for student in students %}
+
 <div class="student-box slide-in-left" onclick="toggleDrawer(event, '{{ student.id }}')" data-student-id="{{ student.id }}">
     <p style="color: black; font-weight:" class="try">{{ student.studentName }}</p>
     <div class="newdrawer slide-in-right" id="newdrawer_{{ student.id }}">
-        <div class="details-background"></div>
-        <p style="color: white; text-align: center; margin-top: -35px;">Student Details</p>
-        <button class="close-btn" onclick="hideModal('{{ student.id }}')">×</button>
-        <div style="display: inline-block;">
-            <p style="color: black; margin-bottom: 5px; margin-top: 20px;">Age</p>
-            <input type="text" id="studentAge_{{ student.id }}" value="{{ student.age }}" style="margin-bottom: 30px;" readonly>
-            <p style="color: black; margin-bottom: 5px;">Gender</p>
-            <input type="text" id="studentGender_{{ student.id }}" value="{{ student.gender }}" readonly>
-            <p style="color: black; margin-bottom: 5px;">Race</p>
-            <input type="text" id="studentRace_{{ student.id }}" value="{{ student.race }}" readonly>
-        </div>
-        <div style="display: inline-block; margin-left: 20px;">
-            <p style="color: black; margin-bottom: 5px;">Teacher</p>
-            <input type="text" id="studentTeacher_{{ student.id }}" value="{{ student.assigned_teacher.first_name }} {{ student.assigned_teacher.last_name }}" readonly>
-            <p style="color: black; margin-bottom: 5px;">Learning Mode</p>
-            <input type="text" id="studentMode_{{ student.id }}" value="{{ student.teaching_mode }}" readonly>
-            <p style="color: black; margin-bottom: 5px;">Instrument</p>
-            <input type="text" id="studentInstrument_{{ student.id }}" value="{{ student.instrument }}" readonly>
-        </div>
-        <div style="display: inline-block; margin-left: 20px;">
-            <p style="color: black; margin-bottom: 5px;">Date of Birth</p>
-            <input type="text" id="studentBirthDate_{{ student.id }}" value="{{ student.birthdate }}" readonly>
-            <p style="color: black; margin-bottom: 5px;">Identification Number</p>
-            <input type="text" id="studentIC_{{ student.id }}" value="{{ student.identification_number }}" readonly>
-            <p style="color: black; margin-bottom: 5px;">Current Book</p>
-            <input type="text" id="studentBook_{{ student.id }}" value="{{ student.book }}" readonly>
-        </div>
-
-         <!-- Display student photo if available -->
-         {% if student.picture %}
-         <img src="{{ MEDIA_URL }}{{ student.picture.url }}" alt="Student Photo">
-     {% else %}
-         <p>No photo available</p>
-     {% endif %}
-
-        <div style="display: inline-block; margin-left: 20px;">
-            <!-- Inside the newdrawer div for each student -->
-<img id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo" class="img-preview">
-
-        </div>
-        <!-- <form id="photoForm_{{ student.id }}" onsubmit="submitPhotoForm(event, '{{ student.id }}')" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="hidden" name="student_id" value="{{ student.id }}">
-            <input type="file" name="picture" accept="image/*" onchange="previewPhoto(event, '{{ student.id }}')">
-            <img id="imgPreview_{{ student.id }}" src="#" alt="Photo Preview" style="display:none; max-width: 100%; height: auto;">
-            <button type="submit">Upload Photo</button>
-        </form> -->
-        <!-- student_info.html -->
-
-    
-
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="hidden" name="student_id" value="{{ student.id }}">
-    {{ form.as_p }}
-    <button type="submit">Upload Photo</button>
-</form>
-
-        
+        <!-- Account details card-->
+        <div class="row">
+            <div class="col-xl-4">
+                <!-- Profile picture card-->
+                <div class="card mb-4 mb-xl-0">
+                    <div class="card-header">Profile Picture</div>
+                    <div class="card-body text-center">
+                        <!-- Profile picture image-->
+              
+                        <div>
+                            {% if student.picture %}
+                                <img  class="img-account-profile rounded-circle mb-2" id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo" class="img-preview">
+                            {% else %}
+                            <img class="img-account-profile rounded-circle mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                            {% endif %}
+                        </div>
+   
+                        <!-- Profile picture help block-->
+                        <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+                        <!-- Profile picture upload button-->
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <p>{{ form.as_p }}</p>
+                            <button type="submit" class="btn btn-primary" style="color: #fff;">Upload Photo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-8">
+                <!-- Account details card-->
+                <div class="card mb-4">
+                    <div class="card-header">Student Details</div>
+                    <div class="card-body">
+                        <form>
+                            <!-- Form Group (username)-->
+                            <div class="mb-3">
+                                <p style="color: black; margin-bottom: 5px;">Assigned Teacher</p>
+                                <input class="form-control" type="text" placeholder="Enter your username" id="studentTeacher_{{ student.id }}" value="{{ student.assigned_teacher.first_name }} {{ student.assigned_teacher.last_name }}" readonly>
+                            </div>
+                            <!-- Form Row-->
+                            <div class="row gx-3 mb-3">
+                                <!-- Form Group (first name)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Instrument</p>
+                                    <input type="text" class="form-control" id="studentInstrument_{{ student.id }}" value="{{ student.instrument }}" readonly>
+                                </div>
+                                <!-- Form Group (last name)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Current Book</p>
+                                    <input class="form-control" type="text" id="studentIC_{{ student.id }}" value="{{ student.book }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Form Row        -->
+                            <div class="row gx-3 mb-3">
+                                <!-- Form Group (organization name)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Gender</p>
+                                    <input class="form-control" type="text" id="studentGender_{{ student.id }}" value="{{ student.gender }}" readonly>
+                                </div>
+                                <!-- Form Group (location)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Race</p>
+                                    <input class="form-control" type="text" id="studentRace_{{ student.id }}" value="{{ student.race }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Form Group (email address)-->
+                            <!-- <div class="mb-3">
+                                <label class="small mb-1" for="inputEmailAddress">Email address</label>
+                                <input class="form-control" id="inputEmailAddress" type="email" placeholder="Enter your email address" value="name@example.com">
+                            </div> -->
+                            <!-- Form Row-->
+                            <div class="row gx-3 mb-3">
+                                <!-- Form Group (phone number)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Age</p>
+                                    <input class="form-control" type="text" id="studentAge_{{ student.id }}" value="{{ student.age }}" readonly>
+                                </div>
+                                <!-- Form Group (birthday)-->
+                                <div class="col-md-6">
+                                    <p style="color: black; margin-bottom: 5px;">Date of Birth</p>
+                                    <input class="form-control" type="text" id="studentBirthDate_{{ student.id }}" value="{{ student.birthdate }}" readonly>
+                                </div>
+                            </div>
+                            <!-- Save changes button-->
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>    
     </div>
 </div>
-
 {% endfor %}
 
+
+        
+        
+
+
+
+
 <script>
+
+function loadImage(studentId, picturePath) {
+    var imgPreview = document.getElementById('imgPreview_' + studentId);
+    imgPreview.src = picturePath;
+}
+
     var openDrawerId = null; // Variable to store the ID of the currently open drawer
 
     function toggleDrawer(event, studentId) {
