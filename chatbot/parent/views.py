@@ -58,6 +58,7 @@ def parent(request):
                 progress_percentage = 0
 
             student_progress.append({
+                'studentId': student.id,
                 'studentName': student.studentName,
                 'progress_percentage': progress_percentage,
                 'total_modules': total_modules  # Include total modules in student progress
@@ -417,7 +418,11 @@ def generate_report(request, student_id):
 
 
 
+@login_required
 def view_report(request, student_id):
+    # Retrieve parent associated with the logged-in user
+    parent = request.user  # Assuming parent is directly related to User model
+
     student = get_object_or_404(Student, id=student_id)
     
     # Fetch related data for the student
@@ -426,6 +431,18 @@ def view_report(request, student_id):
     
     # Fetch progress bar objects for the student and modules found
     progress_bar_objects = ProgressBar.objects.filter(student=student, module__in=module_details)
+
+    print(f"Logged-in parent: {parent}")
+
+    # Get students related to this parent
+    students = Student.objects.filter(assigned_parent=parent)
+
+    # Print debug information
+    print(f"Related students: {students}")
+
+    # Retrieve all attendance records associated with the parent user
+    all_attendance = Attendance.objects.filter(student=student, student__assigned_parent=parent)
+
     
     # Prepare results by module
     results_by_module = {}
@@ -453,7 +470,7 @@ def view_report(request, student_id):
         'repertoire_completion_percentage': repertoire_completion_percentage,
         'results_by_module': results_by_module,
         'module_details': module_details,
-        'progress_bar' : progress_bar
+        'all_attendance': all_attendance  # Include attendance data
     }
     
     return render(request, 'report_template.html', context)

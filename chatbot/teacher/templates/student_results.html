@@ -313,7 +313,13 @@ margin: 20px 0;
     content: '\2605'; /* filled star */
     color: #ffc107; /* change color of filled star */
 }
-
+.img-account-profile {
+    height: 8rem;
+    float: right;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
 
 
 
@@ -333,6 +339,15 @@ margin: 20px 0;
             font-weight: normal; /* Bold font weight for 3 stars and 4 stars labels */
             color: black;
         }
+
+        .img-preview {
+        width: 100px;
+        height: 100px;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+        display: none;
+    }
 
 </style>
 
@@ -359,6 +374,13 @@ margin: 20px 0;
 <div class="main-container progress-main-container slide-in" style="margin-top: 50px; margin-bottom: 20px;">
     <div class="progress-background-title">Student Academic Progress</div>
     <div class="progress-container">
+        <div>
+            {% if student.picture %}
+                <img  class="img-account-profile rounded-circle mb-2" id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo" class="img-preview">
+            {% else %}
+            <img class="img-account-profile rounded-circle mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+            {% endif %}
+        </div>
         <progress id="progress1" value="{{ practice_completion_percentage }}" max="100" style="width: 50%;"></progress>
         <p style="margin-left: 20px; color: black;">Practice : {{ practice_completion_percentage }}% Completed</p>
     </div>

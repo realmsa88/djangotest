@@ -511,6 +511,7 @@ def attendance_list(request):
         all_attendance = Attendance.objects.filter(teacher_email=user_details.user)
         for attendance in all_attendance:
             attendance.instrument_major_name = attendance.student.instrument
+            attendance.picture_url = attendance.student.picture.url if attendance.student.picture else 'http://bootdey.com/img/Content/avatar/avatar1.png'
     else:
         all_attendance = []
 
@@ -545,6 +546,7 @@ def attendance_list(request):
         'total_absent_approved': total_absent_approved,
         'total_absent_pending': total_absent_pending,
     })
+
 
 
 

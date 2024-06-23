@@ -168,7 +168,8 @@
                 <!-- New div added below the existing divs -->
                 <div class="details new-div slide-in" style="display: block; margin-top: 20px; width: 97%;">
                     <h5 style="font-weight: bold;">Child Performance</h5>
-                    <p>Progress of each registered student under the parent</p>
+                    <p>Click on a bar chart to view student detailed report</p>
+                    
                     
                     <canvas id="studentProgressChart"></canvas>
                 </div>
@@ -185,31 +186,94 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <script>
-        document.getElementById('sidebarCollapse').addEventListener('click', function () {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
+            // Parse student progress data from Django context
+            const studentProgress = JSON.parse('{{ student_progress|escapejs }}');
+            
+            // Prepare data for student progress chart
+            const studentNames = studentProgress.map(student => student.studentName);
+            const studentProgressData = studentProgress.map(student => student.progress_percentage);
+            const studentIds = studentProgress.map(student => student.studentId);  // Make sure the key matches your context variable
+            
+            // Render the student progress chart
+            const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
+            const studentProgressChart = new Chart(studentProgressChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: studentNames,
+                    datasets: [{
+                        label: 'Module Progress Percentage',
+                        data: studentProgressData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Progress Percentage (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Students'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: (tooltipItem) => tooltipItem[0].label,
+                                label: (tooltipItem) => `Progress: ${tooltipItem.raw.toFixed(2)}%`
+                            }
+                        }
+                    },
+                    onClick: (event, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            const studentId = studentIds[index];
+                            const url = `/parent/view_report/${encodeURIComponent(studentId)}/`;
+                            
+                            console.log("Clicked Student ID:", studentId); // Debugging
+                            console.log("URL:", url); // Debugging
+                            
+                            // Attempt to open URL in a new tab
+                            const newTab = window.open(url, '_blank');
+                            
+                            // Check if new tab opened successfully
+                            if (newTab) {
+                                newTab.focus();
+                            } else {
+                                // Handle cases where new tab was blocked
+                                console.error("Failed to open new tab. Check browser settings.");
+                                // You can also redirect current window to the URL as fallback
+                                // window.location.href = url;
+                            }
+                        }
+                    }
+                }
+            });
+            
             // Parse login times data from Django context
             const loginTimes = JSON.parse('{{ login_times|escapejs }}');
             
             console.log("Login Times:", loginTimes); // Debugging line
-
+    
             // Prepare data for login times chart
             const loginCounts = loginTimes.reduce((acc, dateTime) => {
                 const date = new Date(dateTime).toLocaleDateString();
-                if (acc[date]) {
-                    acc[date]++;
-                } else {
-                    acc[date] = 1;
-                }
+                acc[date] = acc[date] ? acc[date] + 1 : 1;
                 return acc;
             }, {});
-
+    
             const loginLabels = Object.keys(loginCounts);
             const loginData = Object.values(loginCounts);
-
+    
             // Render the login times chart
             const loginChartCtx = document.getElementById('parentLoginsChart').getContext('2d');
             const loginChart = new Chart(loginChartCtx, {
@@ -242,50 +306,10 @@
                     }
                 }
             });
-
-            // Parse student progress data from Django context
-            const studentProgress = JSON.parse('{{ student_progress|escapejs }}');
-            
-            console.log("Student Progress:", studentProgress); // Debugging line
-
-            // Prepare data for student progress chart
-            const studentNames = studentProgress.map(student => student.studentName);
-            const studentProgressData = studentProgress.map(student => student.progress_percentage);
-
-            // Render the student progress chart
-            const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
-            const studentProgressChart = new Chart(studentProgressChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: studentNames,
-                    datasets: [{
-                        label: 'Module Progress Percentage',
-                        data: studentProgressData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Progress Percentage (%)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Students'
-                            }
-                        }
-                    }
-                }
-            });
         });
     </script>
+    
+        
 
 </body>
 </html>

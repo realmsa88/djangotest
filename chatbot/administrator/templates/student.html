@@ -33,8 +33,9 @@
         margin: 15% auto; /* 15% from the top and centered */
         padding: 20px;
         border: 1px solid #888;
-        width: 40%; /* Could be more or less, depending on screen size */
+        width: 50%; /* Could be more or less, depending on screen size */
         height: 70%;
+        margin-left: 500px;
         margin-top: 30px;
     }
 
@@ -193,37 +194,28 @@
         </form>
     </div>
 </div>
-
-<!-- View Details Modal -->
 <div id="myModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('myModal')">&times;</span>
         <div class="topic-background" style="background-color: #32373d; margin-top: -50px;">
-            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">User Account Details</p>
+            <p style="color: white; padding: 10px; text-align: center; margin-top: 10px; font-weight: 500;">Student Details</p>
         </div>
-        <div>
-            <label for="modal-student-name">Student Name</label><br>
-            <input type="text" id="modal-student-name" readonly>
-        </div>
-        <br>
-        <div>
-            <label for="modal-birth-date">Birth Date</label><br>
-            <input type="text" id="modal-birth-date" readonly>
-        </div>
-        <br>
-        <div>
-            <label for="modal-age">Age</label><br>
-            <input type="text" id="modal-age" readonly>
-        </div>
-        <br>
-        <div>
-            <label for="modal-parent-name">Parent</label><br>
-            <input type="text" id="modal-parent-name" readonly>
-        </div>
-        <br>
-        <div>
-            <label for="modal-teacher-name">Assigned Teacher</label><br>
-            <input type="text" id="modal-teacher-name" readonly>
+        <div class="modal-body">
+            <div>
+                {% if student.picture %}
+                    <img class="img-account-profile rounded-circle mb-2" id="imgPreview_{{ student.id }}" src="{{ student.picture.url }}" alt="Student Photo" class="img-preview">
+                {% else %}
+                    <img class="img-account-profile rounded-circle mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                {% endif %}
+            </div>
+            <div class="student-details">
+                <p>Student Name: <span id="modal-student-name"></span></p>
+                <p>Parent: <span id="modal-parent-name"></span></p>
+                <p>Assigned Teacher: <span id="modal-teacher-name"></span></p>
+                <p>Birthdate: <span id="modal-birth-date"></span></p>
+                <p>Age: <span id="modal-age"></span></p>
+            </div>
+            <!-- Add more details as needed -->
         </div>
     </div>
 </div>
@@ -249,6 +241,7 @@ function filterTable() {
         }
     }
 }
+
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     modal.style.display = "none";
@@ -258,12 +251,7 @@ function openEditModal(studentName, instrument) {
     var editModal = document.getElementById("editModal");
     document.getElementById('edit-student-name').value = studentName;
     document.getElementById('edit-instrument-name').value = instrument;
-    // Fetch additional data as needed for editing
-    // Example: fetch('/get-student-data/' + studentName + '/', { method: 'GET' }).then(response => response.json()).then(data => {
-    //     document.getElementById('edit-age').value = data.age;
-    //     document.getElementById('edit-parent-name').value = data.parent_name;
-    //     document.getElementById('edit-teacher-name').value = data.teacher_name;
-    // });
+
     editModal.style.display = "block";
 }
 
@@ -280,12 +268,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 var teacherName = row.querySelector('td:nth-child(2)').innerText.trim();
                 var birthdate = row.getAttribute('data-birth');
                 var age = row.getAttribute('data-age');
+                var studentPictureUrl = row.querySelector('.img-account-profile').getAttribute('src');
 
-                document.getElementById('modal-student-name').value = studentName;
-                document.getElementById('modal-parent-name').value = parentName;
-                document.getElementById('modal-teacher-name').value = teacherName;
-                document.getElementById('modal-birth-date').value = birthdate;
-                document.getElementById('modal-age').value = age;
+                document.getElementById('modal-student-name').innerText = studentName;
+                document.getElementById('modal-parent-name').innerText = parentName;
+                document.getElementById('modal-teacher-name').innerText = teacherName;
+                document.getElementById('modal-birth-date').innerText = birthdate;
+                document.getElementById('modal-age').innerText = age;
+
+                var modalImage = modal.querySelector('.img-account-profile');
+                if (studentPictureUrl) {
+                    modalImage.setAttribute('src', studentPictureUrl);
+                } else {
+                    modalImage.setAttribute('src', 'http://bootdey.com/img/Content/avatar/avatar1.png');
+                }
 
                 modal.style.display = "block";
             }
@@ -342,4 +338,5 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
+
 {% endblock %}

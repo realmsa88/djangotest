@@ -276,22 +276,33 @@
                 <thead>
                     <tr>
                         <th>Class Date</th>
+                        <th>Attendance</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>2024-06-01</td>
-                        <td>Absent</td>
-                    </tr>
-                    <tr>
-                        <td>2024-06-08</td>
-                        <td>Present</td>
-                    </tr>
-                    <!-- Add more rows dynamically -->
+                    {% for attendance in all_attendance %}
+                        <tr>
+                            
+                            <td>{{ attendance.date }}</td>
+                            {% if attendance.status == 'Approved' %}
+                                <td>{{ attendance.attendance }}</td>
+                                <td>{{ attendance.status }}</td>
+
+                            {% elif attendance.status == 'Pending Verification' %}
+                                <td>-</td>
+                                <td>-</td>
+                            {%endif%}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No attendance records found</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
+        
     </div>
 </body>
 </html>

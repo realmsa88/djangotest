@@ -28,7 +28,15 @@
     margin-right: 10px;
 }
 
+.img-account-profile {
+    height: 8rem;
+    display: block;
+    margin: 0 auto;
 
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
 
 
 .modal-header {
@@ -216,41 +224,22 @@ button:active {
     color: #aaa;
 }
 </style>
-
 <div class="header-container">
     <h1 style="font-size: 20px;" class="slide-in-left">Attendance List</h1>
     <div id="navbar">
         <a href="{% url 'student-attendance' %}" class="navbar-link">Student Attendance</a>
         <a href="{% url 'attendance-list' %}" class="navbar-link">Attendance List</a>
-        
     </div>
 </div>
 
 <hr>
 
-
-
-<!-- <div class="dropdown-container">
-    <select id="instrumentDropdown" onchange="filterByInstrument(this.value)">
-        <option value="">Select Instrument</option>
-        {% for instrument in instruments %}
-            <option value="{{ instrument }}">{{ instrument }}</option>
-        {% endfor %}
-    </select>
-</div> -->
-
-<!-- Attendance list grouped by student names -->
 <div class="attendance-list slide-in">
     <div class="actions-container">
-    <!-- <div class="attendance-card-actions">
-        <button onclick="filterAttendance('Pending')" class="active">Pending</button>
-        <button onclick="filterAttendance('Approved')">Approved</button>
-    </div> -->
-
-    <div class="search-bar-container">
-        <input type="text" id="searchBar" onkeyup="searchStudent()" placeholder="Search for student name..." title="Type in a name" style="width: 60%; padding: 10px;">
-        <i class="fa fa-search search-icon"></i>
-    </div>
+        <div class="search-bar-container">
+            <input type="text" id="searchBar" onkeyup="searchStudent()" placeholder="Search for student name..." title="Type in a name" style="width: 60%; padding: 10px;">
+            <i class="fa fa-search search-icon"></i>
+        </div>
     </div>
     {% if messages %}
     {% for message in messages %}
@@ -261,7 +250,7 @@ button:active {
             </button>
         </div>
     {% endfor %}
-{% endif %}
+    {% endif %}
     
     <br>
     {% if attendance_list %}
@@ -269,15 +258,13 @@ button:active {
         {% for student_group in student_records %}
         
             <div class="attendance-card">
-                <div class=" fa fa-info" style="display: inline-block; float: right;border-color: #165227; color: #5b7cfa;cursor: pointer;"
-                         onclick="openInfoModal('{{ student_group.grouper }}', '{{ student_group.list|safe }}')">
-                    </div>
+                <div class="fa fa-info" style="display: inline-block; float: right;border-color: #165227; color: #5b7cfa;cursor: pointer;"
+                         onclick="openInfoModal('{{ student_group.grouper }}', '{{ student_group.list|safe }}', '{{ student_group.list.0.student.picture.url }}')">
+                </div>
                 <div class="attendance-card-header" onclick="toggleAttendanceCard(this)">
                     <div class="attendance-card-title" style="color: black; font-size: 14px; font-weight: normal;display: inline-block;">
                         {{ student_group.grouper }}
-                        
                     </div>
-                    
                 </div>
                 <div class="attendance-card-body" style="margin-top: 10px;">
                     {% for attendance in student_group.list %}
@@ -300,7 +287,6 @@ button:active {
                                         <span>{{ attendance.end_time|date:"g:i A" }}</span>
                                     </div>
                                 </div>
-                                
                             </div>
                             <div class="attendance-description">{{ attendance.description }}</div>
                             {%if attendance.absence_reason %}
@@ -324,27 +310,9 @@ button:active {
                                 data-username="{{ account.username }}">
                                 <i class="fa fa-pencil" id="updateIcon" style="color: #5b7cfa;"></i>
                             </div>
-
                             {% endif %}
                         </div>
                     {% endfor %}
-                    <div class="attendance-card-body" style="margin-top: 10px;">
-                        {% for attendance in student_group.list %}
-                            <!-- Display individual attendance records -->
-                            <div class="attendance-record">
-                                <p><strong>Title:</strong> {{ attendance.title }}</p>
-                                <p><strong>Description:</strong> {{ attendance.description }}</p>
-                                <p><strong>Date:</strong> {{ attendance.date }}</p>
-                                <p><strong>Start Time:</strong> {{ attendance.start_time|date:"g:i A" }}</p>
-                                <p><strong>End Time:</strong> {{ attendance.end_time|date:"g:i A" }}</p>
-                                <p><strong>Attendance:</strong> {{ attendance.attendance }}</p>
-                                <p><strong>Status:</strong> {{ attendance.status }}</p>
-                                {% if attendance.absence_reason %}
-                                    <p><strong>Absence Reason:</strong> {{ attendance.absence_reason }}</p>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -360,11 +328,11 @@ button:active {
             <p class="modal-title" style="color: white;">Attendance Overview</p>
             <span class="close" onclick="closeInfoModal()">&times;</span>
         </div>
-
         <div id="infoModalContent">
-            
+            <div>
+                <img class="img-account-profile rounded-circle mb-2" id="studentPhoto" src="" alt="Student Photo">
+            </div>
             <table id="attendanceTable" class="attendance-table" border="1">
-               
                 <thead>
                     <tr>
                         <th>Title</th>
@@ -372,7 +340,6 @@ button:active {
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Table rows will be dynamically added here by JavaScript -->
                     <tr>
                         <td>Attend (Approved)</td>
                         <td id="attendApprovedCount"></td>
@@ -446,52 +413,13 @@ button:active {
 </div>
 
 <script>
-function filterAttendance(status) {
-    var records = document.getElementsByClassName("attendance-record");
-    var buttons = document.querySelectorAll(".attendance-card-actions button");
-
-    // Remove active class from all buttons
-    buttons.forEach(function(button) {
-        button.classList.remove("active");
-    });
-
-    // Highlight the clicked button
-    event.target.classList.add("active");
-
-    for (var i = 0; i < records.length; i++) {
-        var record = records[i];
-        if (status === 'All' || record.classList.contains(status.toLowerCase())) {
-            record.style.display = "block";
-        } else {
-            record.style.display = "none";
-        }
-    }
-}
-
 function toggleAttendanceCard(element) {
     var cardBody = element.nextElementSibling; // Get the next sibling which is the attendance-card-body
     cardBody.style.display = (cardBody.style.display === 'none' || cardBody.style.display === '') ? 'block' : 'none';
 }
 
-// Get the modal
-var verifyModal = document.getElementById("verifyModal");
-var infoModal = document.getElementById("infoModal");
-
-// Function to open the verify modal
-function openModal(studentName, attendanceId, date, startTime, endTime, title, description, absence_reason) {
-    verifyModal.style.display = "block";
-    document.getElementById("attendanceName").innerHTML = "<strong>Student Name:</strong> " + studentName;
-    document.getElementById("attendanceId").value = attendanceId;
-    document.getElementById("attendanceDate").innerHTML = "<strong>Date:</strong> " + date;
-    document.getElementById("attendanceStartTime").innerHTML = "<strong>Start Time:</strong> " + startTime;
-    document.getElementById("attendanceEndTime").innerHTML = "<strong>End Time:</strong> " + endTime;
-    document.getElementById("attendanceTitle").innerHTML = "<strong>Title:</strong> " + title;
-    document.getElementById("attendanceDescription").innerHTML = "<strong>Description:</strong> " + description;
-    document.getElementById("attendanceReason").value = absence_reason || "Not provided";
-}
-
-
-function openInfoModal(studentName, attendanceList) {
+// Function to open the info modal
+function openInfoModal(studentName, attendanceList, studentPhoto) {
     var infoModal = document.getElementById("infoModal");
     infoModal.style.display = "block"; // Show the modal
 
@@ -543,7 +471,7 @@ function openInfoModal(studentName, attendanceList) {
 
     var totalAttendanceCount = attendApprovedCount + attendPendingCount + absentApprovedCount + absentPendingCount;
     var tableContent = `
-        <br><p>Class</p>
+        
         <tr>
             <td>Attend (Approved)</td>
             <td>${attendApprovedCount}</td>
@@ -579,9 +507,14 @@ function openInfoModal(studentName, attendanceList) {
         }
     }
 
-    document.getElementById("infoModalContent").innerHTML = `
+    document.getElementById("infoModalContent").innerHTML = `<br>
+        <div>
+            <img class="img-account-profile rounded-circle mb-2" src="${studentPhoto}" alt="Student Photo" class="img-preview">
+        </div>
         <table id="attendanceTable" class="description-table" border="1">
+            
             <thead>
+                <p>Class</p>
                 <tr>
                     <th>Type</th>
                     <th>Status</th>
@@ -606,53 +539,49 @@ function openInfoModal(studentName, attendanceList) {
     `;
 }
 
-
-
-
-// Function to close the info modal
+// Function to close the modal
 function closeInfoModal() {
     var infoModal = document.getElementById("infoModal");
     infoModal.style.display = "none"; // Hide the modal
 }
 
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    var infoModal = document.getElementById("infoModal");
-    if (event.target == infoModal) {
-        closeInfoModal();
-    }
+function openModal(studentName, attendanceId, attendanceDate, attendanceStartTime, attendanceEndTime, attendanceTitle, attendanceDescription, attendanceReason) {
+    var modal = document.getElementById("verifyModal");
+    modal.style.display = "block"; // Show the modal
+
+    // Set the values in the modal
+    document.getElementById("attendanceName").innerText = studentName;
+    document.getElementById("attendanceTitle").innerText = attendanceTitle;
+    document.getElementById("attendanceDescription").innerText = attendanceDescription;
+    document.getElementById("attendanceDate").innerText = attendanceDate;
+    document.getElementById("attendanceStartTime").innerText = attendanceStartTime;
+    document.getElementById("attendanceEndTime").innerText = attendanceEndTime;
+    document.getElementById("attendanceReason").innerText = attendanceReason;
+
+    document.getElementById("attendanceId").value = attendanceId;
 }
 
-function filterByInstrument(instrument) {
-    var cards = document.getElementsByClassName("attendance-card");
-
-    for (var i = 0; i < cards.length; i++) {
-        var card = cards[i];
-        var studentName = card.querySelector(".attendance-card-title").textContent.trim();
-
-        // Check if the student's instrument matches the selected instrument
-        if (instrument === '' || studentInstruments[studentName] === instrument) {
-            card.style.display = "block";
-        } else {
-            card.style.display = "none";
-        }
-    }
+// Function to close the modal
+function closeModal() {
+    var modal = document.getElementById("verifyModal");
+    modal.style.display = "none"; // Hide the modal
 }
 
-// Search function
+// Function to filter students based on search input
 function searchStudent() {
-    var input = document.getElementById("searchBar");
-    var filter = input.value.toUpperCase();
-    var attendanceCards = document.querySelectorAll('.attendance-card');
+    var input, filter, cards, cardTitle, i;
+    input = document.getElementById("searchBar");
+    filter = input.value.toUpperCase();
+    cards = document.getElementsByClassName("attendance-card");
 
-    attendanceCards.forEach(function(card) {
-        var titleElement = card.querySelector('.attendance-card-title');
-        if (titleElement.textContent.toUpperCase().indexOf(filter) > -1) {
-            card.style.display = "";
+    for (i = 0; i < cards.length; i++) {
+        cardTitle = cards[i].getElementsByClassName("attendance-card-title")[0];
+        if (cardTitle.innerHTML.toUpperCase().indexOf(filter) > -1) {
+            cards[i].style.display = "";
         } else {
-            card.style.display = "none";
+            cards[i].style.display = "none";
         }
-    });
+    }
 }
 </script>
 

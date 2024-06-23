@@ -238,10 +238,12 @@ def student_list(request):
         'students': students,
     }
     return render(request, 'student_list.html', context)
+
 @admin_required
 def student(request) :
 
     students = Student.objects.all()
+    
 
     context = {
         'students' : students
