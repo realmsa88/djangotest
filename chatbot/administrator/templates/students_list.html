@@ -1,0 +1,19 @@
+<!-- students_list.html -->
+{%extends "master_admin.html"%}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+    <!-- Include any necessary CSS -->
+
+
+    <h1>Students Enrolled under {{ instrument.instrument_name }}</h1>
+    <ul>
+        {% for student in students %}
+            <li>{{ student.first_name }} {{ student.last_name }}</li>
+        {% endfor %}
+    </ul>
+
+    {% endblock %}

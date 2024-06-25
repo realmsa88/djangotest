@@ -1,4 +1,4 @@
-{% extends 'master_admin.html'%}
+{% extends 'master_admin.html' %}
 
 {% load static %}
 
@@ -67,16 +67,34 @@
     }
 
     #successMessage {
-    display: none;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    border-radius: 5px;
-}
+        display: none;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        border-radius: 5px;
+    }
 
+    #selectedStudents {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    #selectedStudents li {
+        list-style-type: none;
+        margin-bottom: 5px;
+        padding: 5px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
 </style>
 
 <div class="header-container">
@@ -97,14 +115,7 @@
     </div>
 {% endif %}
 
-
-
-
-
-
 <div class="wrapper slide-in">
-    
-
     <div class="main">
         <div class="container">
             <div class="form-container p-5">
@@ -113,12 +124,13 @@
                     <hr>
                     <form method="POST" action="">
                         {% csrf_token %}
+                        <input type="hidden" id="selectedStudentIds" name="selected_student_ids">
+
                         <div class="row mb-5">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name" class="mb-2">Activity Name</label>
                                     <input type="text" class="form-control" id="name" name="activity_name" placeholder="Enter Name" required>
-
                                 </div>
                             </div>
 
@@ -126,69 +138,34 @@
                                 <div class="form-group">
                                     <label for="type" id="typeLabel" class="mb-2">Activity Type</label>
                                     <select class="form-select" id="type" name="activity_type" required>
-
                                         <option value="">Select type</option>
-                                 
                                         <option value="Performance">Performance</option>
                                         <option value="Examination">Examination</option>
-                                        
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="category" id="categoryLabel" class="mb-2">Category</label>
-                                    <select class="form-select" id="category" name="category" required>
-                                        <option value="">Select Category</option>
-                                        <option value="U8">U8</option>
-                                        <option value="U10">U10</option>
-                                        <option value="U12">U12</option>
-                                    </select>
-                                </div>
-                            </div> -->
-
                         </div>
-                        <div class="row mb-5">
 
+                        <div class="row mb-5">
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="date" class="mb-2">Date</label>
                                     <input type="date" class="form-control" id="date" name="activity_date" required>
-
                                 </div>
                             </div>
 
                             <div class="col-md-3">
                                 <label for="startTime" class="mb-2">Start Time</label>
                                 <input type="time" class="form-control" id="startTime" name="start_time">
-
                             </div>
 
                             <div class="col-md-3">
                                 <label for="endTime" class="mb-2">End Time</label>
                                 <input type="time" class="form-control" id="endTime" name="end_time">
-
                                 <small id="endTimeError" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="recurring" class="mb-2">Recurring Activity</label>
-                                    <select class="form-select" id="recurring" name="recurring">
-                                        <option value="">None</option>
-                                        <option value="1">Repeat For 1 Week</option>
-                                        <option value="2">Repeat For 2 Weeks</option>
-                                        <option value="3">Repeat For 3 Weeks</option>
-                                        <option value="4">Repeat For 4 Weeks</option>
-                                        <option value="5">Repeat For 5 Weeks</option>
-                                        <option value="6">Repeat For 6 Weeks</option>
-                                        <option value="7">Repeat For 7 Weeks</option>
-                                        <option value="8">Repeat For 8 Weeks</option>
-                                    </select>
-                                </div>
-                            </div>
-
+                            
                         </div>
 
                         <div class="row mb-5">
@@ -196,7 +173,6 @@
                                 <div class="form-group">
                                     <label for="location" class="mb-2">Location</label>
                                     <textarea class="form-control" id="location" name="location" placeholder="Enter Location" required rows="4"></textarea>
-
                                 </div>
                             </div>
 
@@ -204,11 +180,30 @@
                                 <div class="form-group">
                                     <label for="desc" class="mb-2">Description (Optional)</label>
                                     <textarea class="form-control" id="desc" name="description" placeholder="Enter Description" rows="4"></textarea>
-
                                 </div>
                             </div>
-
                         </div>
+
+                        <!-- Student Selection Dropdown -->
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="studentSelect" class="mb-2">Select Students</label>
+                                    
+                                        {{activity_form.student}}
+                                        <button type="button" id="addStudentBtn" onclick="addSelectedStudent()" class="btn btn-primary">Add Student</button>
+                                   
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="selectedStudents" class="mb-2">Selected Students</label>
+                                <ul id="selectedStudents" class="list-group" required>
+                                    <!-- Selected students will be listed here -->
+                                </ul>
+                            </div>
+                        </div>
+
+                       
 
                         <div class="row mt-2">
                             <div class="col-md-12 text-end">
@@ -223,12 +218,8 @@
                 </div> <!-- End of form-background div -->
             </div>
         </div>
-    
-
     </div>
 </div>
-
-
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -248,15 +239,26 @@
                 document.getElementById('endTimeError').textContent = '';
             }
         });
+
+        $('#studentSelect').change(function () {
+            // Clear existing selected students
+            $('#selectedStudents').empty();
+
+            // Get selected options and append them to the selected students list
+            $(this).children('option:selected').each(function () {
+                var studentName = $(this).text();
+                var listItem = $('<li class="list-group-item"></li>').text(studentName);
+                $('#selectedStudents').append(listItem);
+            });
+        });
     });
 
     function confirmCancel() {
-    var confirmed = window.confirm('Are you sure you want to cancel?');
-    if (confirmed) {
-        window.location.href = window.location.href; // Refresh current page
+        var confirmed = window.confirm('Are you sure you want to cancel?');
+        if (confirmed) {
+            window.location.href = window.location.href; // Refresh current page
+        }
     }
-}
-
 
     function confirmAdd() {
         var confirmed = window.confirm('Are you sure you want to add this activity?');
@@ -265,15 +267,38 @@
         }
     }
 
-    $(document).ready(function() {
-    // Check if the success message div is not empty
-    if ($('#successMessage').text().trim().length > 0) {
-        // If not empty, show the success message
-        $('#successMessage').fadeIn().delay(3000).fadeOut();  // Display for 3 seconds and then fade out
+    function addSelectedStudent() {
+        // Get the selected student from the dropdown
+        var studentSelect = document.getElementById('id_student');
+
+        if (studentSelect.value !== '') {
+            var studentName = studentSelect.options[studentSelect.selectedIndex].text;
+            var studentId = studentSelect.value;
+
+            // Create list item element
+            var listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = studentName;
+
+            // Append the list item to the selected students list
+            document.getElementById('selectedStudents').appendChild(listItem);
+
+            // Add the student ID to the hidden input
+            var selectedStudentIds = document.getElementById('selectedStudentIds');
+            selectedStudentIds.value += studentId + ',';
+
+            // Clear the selected option
+            studentSelect.value = '';
+        }
     }
-});
 
-
+    $(document).ready(function() {
+        // Check if the success message div is not empty
+        if ($('#successMessage').text().trim().length > 0) {
+            // If not empty, show the success message
+            $('#successMessage').fadeIn().delay(3000).fadeOut();  // Display for 3 seconds and then fade out
+        }
+    });
 
 </script>
 {% endblock %}

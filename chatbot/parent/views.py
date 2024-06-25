@@ -18,6 +18,7 @@ from xhtml2pdf import pisa
 from django.template.loader import get_template
 
 @parent_required
+@login_required
 def parent(request):
     if request.user.is_authenticated:
         # Get the authenticated user's details
@@ -186,67 +187,42 @@ def student_modules(request):
 
     return render(request, 'student_learning.html', context)
 
-@parent_required
 def attendance(request):
-    # Get the logged-in parent user object
     parent = request.user
-
-    # Print debug information
-    print(f"Logged-in parent: {parent}")
-
-    # Get students related to this parent
     students = Student.objects.filter(assigned_parent=parent)
 
-    # Print debug information
-    print(f"Related students: {students}")
+    attendance_data = {}  # Initialize an empty dictionary
 
-    # Retrieve all attendance records associated with the parent user
-    all_attendance = Attendance.objects.filter(student__assigned_parent=parent)
-
-    # Debug prints for verification
-    print("All Attendance:", all_attendance)
-
-    # Prepare a dictionary to store attendance details for each student
-    attendance_data = {}
-    total_attend_approved = 0
-    total_attend_pending = 0
-    total_absent_approved = 0
-    total_absent_pending = 0
-
-    # Fetch attendance data for each student
     for student in students:
-        # Fetch attendance records for each student
-        student_attendance = Attendance.objects.filter(student=student)
+        # Initialize counts for each student
+        attendance_data[student.id] = {
+            'total_attend_approved': 1,
+            'total_attend_pending': 0,
+            'total_absent_approved': 0,
+            'total_absent_pending': 0,
+        }
 
-        # Calculate totals for this student
-        for attendance in student_attendance:
-            if attendance.attendance == 'Attend':
-                if attendance.status == 'Approved':
-                    total_attend_approved += 1
-                elif attendance.status == 'Pending Verification':
-                    total_attend_pending += 1
-            elif attendance.attendance == 'Absent':
-                if attendance.status == 'Approved':
-                    total_absent_approved += 1
-                elif attendance.status == 'Pending Verification':
-                    total_absent_pending += 1
+        # Populate counts from Attendance records
+        attendance_records = Attendance.objects.filter(student=student)
+        for record in attendance_records:
+            if record.attendance == 'Attend':
+                if record.status == 'Approved':
+                    attendance_data[student.id]['total_attend_approved'] += 1
+                elif record.status == 'Pending Verification':
+                    attendance_data[student.id]['total_attend_pending'] += 1
+            elif record.attendance == 'Absent':
+                if record.status == 'Approved':
+                    attendance_data[student.id]['total_absent_approved'] += 1
+                elif record.status == 'Pending Verification':
+                    attendance_data[student.id]['total_absent_pending'] += 1
 
-        # Store attendance data for this student
-        attendance_data[student.id] = student_attendance
-
-    # Print debug information
-    print(f"Attendance data: {attendance_data}")
-
-    # Render the template with context data
     return render(request, 'attendance.html', {
         'attendance_data': attendance_data,
-        'attendance_list': all_attendance,  # Pass all_attendance to the template context
         'students': students,
-        'total_attend_approved': total_attend_approved,
-        'total_attend_pending': total_attend_pending,
-        'total_absent_approved': total_absent_approved,
-        'total_absent_pending': total_absent_pending,
     })
+
+
+
 
 def verify_attendance(request, student_id, attendance_id):
     try:

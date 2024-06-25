@@ -26,7 +26,7 @@ urlpatterns = [
     path('delete-activity/<int:activity_id>/', views.delete_activity, name='delete-activity'),
     path('administrator/activity/register-activity', views.registerActivity, name = 'register-activity'),
     path('administrator/activity/register-activity/<str:success_message>/', views.registerActivity, name='register-activity'),
-    path('administrator/media/activity-details/<int:id>/', views.activity_details, name='activity-details'),
+    path('administrator/media/activity-details/<int:id>/', views.activity_details, name='activity-details-admin'),
     path('administrator/accounts/register', views.register, name='register'),
     path('administrator/media/', views.media, name='media'),
     # path('administrator/accounts/drawer', views.drawer,name='drawer'),
@@ -34,8 +34,10 @@ urlpatterns = [
     path('administrator/accounts/navbartest', views.navbartest,name='navbartest'),
     path('success/',views.success, name='success'),
     path('administrator/modules/delete_book/<int:book_id>/', views.delete_book, name='delete_book'),
-  
-
+    # path('administrator/get_students_by_instrument/', views.get_students_by_instrument, name='get_students_by_instrument'),
+    path('administrator/fetch_students/<int:instrument_id>/', views.fetch_students, name='fetch_students'),
+    path('fetch_teachers/', views.fetch_teachers, name='fetch_teachers'),
+    path('activity/details/<int:activity_id>/', views.activity_students_list, name='activity-students-list'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
 if settings.DEBUG:

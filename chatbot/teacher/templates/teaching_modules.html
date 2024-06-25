@@ -16,20 +16,17 @@
 
 
 
-<p class="slide-in-left">Instruments</p>
+<p class="slide-in-left">Instruments Teaching</p>
 
-<div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative; visibility: hidden;">
-    <div class="button-wrapper">
+
+    <div class="button-wrapper" style="visibility: hidden;">
         {% for instrument_major in instrument_majors %}
         <button onclick="filterInstruments(this, '{{ instrument_major }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
             {{ instrument_major }}
         </button>
         {% endfor %}
     </div>
-    <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
-</div>
-
-<br><br>
+    <div class="scrollbar" style="cursor: pointer;"></div>
 
 {% for instrument in instruments %}
     {% if instrument.instrument_major_name %}

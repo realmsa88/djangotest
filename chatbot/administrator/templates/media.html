@@ -108,7 +108,7 @@
 
 <div class="activities-container">
     {% for activity in activities %}
-    <a href="{% url 'activity-details' activity.id %}" class="image-container slide-in">
+    <a href="{% url 'activity-details-admin' activity.id %}" class="image-container slide-in">
         <img src="{% static 'images/ii.jpg' %}" alt="Description of Image">
         <hr>
         <p style="color: black;">{{ activity.activity_name }}</p>

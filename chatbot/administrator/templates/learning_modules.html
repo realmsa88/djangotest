@@ -114,8 +114,8 @@
 
 <p class="slide-in-left">Instruments</p>
 
-<div class="filter-buttons-container slide-in" style="max-width: 800px; position: relative;visibility: hidden;">
-    <div class="button-wrapper">
+
+    <div class="button-wrapper" style="visibility: hidden;">
         {% for instrument in instruments %}
         <button onclick="filterInstruments(this, '{{ instrument.instrument_major_name }}', '{{ instrument.instrument_minor_name }}')" style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); border: 1px solid black;">
             {{ instrument.instrument_major_name }}
@@ -124,7 +124,7 @@
     </div>
     <!-- Position scrollbar inside the filter-buttons-container -->
     <div class="scrollbar" style="cursor: pointer; margin-top: 10px;"></div>
-</div>
+
 
 {% for instrument, books in instruments_with_books %}
     {% if instrument.instrument_major_name %}

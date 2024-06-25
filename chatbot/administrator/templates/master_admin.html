@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     <style>
-
+        /* Additional CSS styles */
         ::-webkit-scrollbar {
             display: none;
         }
@@ -80,38 +80,33 @@
                     <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
                     <h3 style="font-size: small;">
                         {% for group in request.user.groups.all %}
-                           You're an {{ group }}
+                            You're an {{ group }}
                         {% endfor %}
                     </h3>
                 </div>
             </div>
 
             <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #43207a;">
-                <li class="{% if request.path == '/administrator/dashboard' %}active{% endif %}">
+                <li class="{% if request.path == '/administrator/dashboard/' %}active{% endif %}">
                     <a href="{% url 'dashboard' %}" style="margin-left: 0px;" onclick="showLoadingScreen()">
                         <span class="fa fa-home mr-3"></span><span class="text"> Home</span>
                     </a>
                 </li>
 
-                <li class="{% if request.path == '/administrator/accounts/' %}active{% endif %} {% if request.path == '/administrator/accounts/register/' %}active{% endif %}">
+                <li class="{% if request.path == '/administrator/accounts/' or request.path == '/administrator/accounts/register/' %}active{% endif %}">
                     <a href="{% url 'accounts' %}"><span class="fa fa-list mr-3"></span><span class="text"> Accounts Management</span></a>   
                 </li>
 
-                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
-                        <a href="{% url 'student' %}"><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span></a>   
+                <li class="{% if request.path == '/administrator/student/' or request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                    <a href="{% url 'student' %}"><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span></a>   
                 </li>
 
-                <li class="{% if request.path == '/administrator/modules/' %}active{% endif %} {% if request.path == '/administrator/modules/register-modules' %}active{% endif %}">
+                <li class="{% if request.path == '/administrator/modules/' or request.path == '/administrator/modules/register-modules/' %}active{% endif %}">
                     <a href="{% url 'modules' %}"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
                 </li>
 
-                <!-- <li>
-                    <a href="#"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
-                </li> -->
-
-                <li class="{% if request.path == '/administrator/activity/' %}active{% endif %} {% if request.path == '/administrator/activity/register-activity' %}active{% endif %}">
-                    <a href="{% url 'activity' %}"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span>
-                    </a>
+                <li class="{% if request.path == '/administrator/activity/' or request.path == '/administrator/activity/register-activity/' %}active{% endif %}">
+                    <a href="{% url 'activity' %}"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
                 </li>
 
                 <li class="{% if request.path == '/administrator/media/' %}active{% endif %}">
@@ -161,12 +156,39 @@
                 <div class="clearfix" style="clear: both;"></div>
                 
                 <!-- New div added below the existing divs -->
-                <div class="details new-div slide-in" style="display: block;  width: 100%;">
-                    <h5 style="font-weight: bold;"></h5>
-                    <p>Progress of each registered student under the parent</p>
-                    
-                    <canvas id="studentProgressChart"></canvas>
+                
+            </div>
+            <div class="details-container">
+                <div class="details slide-in-left" style="display: inline-block; max-height: 600px;">
+                    <h5 style="font-weight: bold;">Student Enrolments</h5>
+                    <p>Total number of students enrolling for an instrument</p>
+                    <select id="ageFilter">
+                        <option value="">All</option>
+                        <option value="6_10">6-10 years</option>
+                        <option value="11_15">11-15 years</option>
+                        <option value="16_20">16-20 years</option>
+                    </select>
+                    <!-- <select id="genderFilter">
+                        <option value="">All</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select> -->
+                    <button type="button" id="applyFilters" style="background-color: green; color: white; border-radius: 5px; border: none; height: 40px;width:60px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">Search</button>
+                    <canvas id="studentEnrollment" style="max-height: 400px;"></canvas>
                 </div>
+
+                <div class="details slide-in" style="width: 43%;">
+                    <h5 style="font-weight: bold;">Student Ages</h5>
+                    <p>Distribution by Age Groups</p>
+                    <canvas id="studentAgesChart"></canvas>
+                </div>
+                
+
+                <div class="clearfix" style="clear: both;"></div>
+                
+                <!-- New div added below the existing divs -->
+                
             </div>
 
             {% endblock %}
@@ -180,128 +202,210 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+      $(document).ready(function() {
+    var instruments = {{ instruments|safe }};
+    var student_enrollments = {{ student_enrollments|safe }};
+    var age_6_10 = {{ age_6_10 }};
+    var age_11_15 = {{ age_11_15 }};
+    var age_16_20 = {{ age_16_20 }};
 
-$(document).ready(function() {
-            // AJAX request to fetch student progress data
-            $.ajax({
-                url: '/student-progress/',
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    // Process the data received from the server
-                    var studentNames = data.student_progress.map(student => student.studentName);
-                    var studentProgressPercentages = data.student_progress.map(student => student.progress_percentage);
-
-                    // Render the student progress chart using Chart.js
-                    var ctx = document.getElementById('studentProgressChart').getContext('2d');
-                    var studentProgressChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: studentNames,
-                            datasets: [{
-                                label: 'Module Progress Percentage',
-                                data: studentProgressPercentages,
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Progress Percentage (%)'
-                                    }
-                                },
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Students'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching student progress data:', error);
-                    // Handle error cases here
-                }
-            });
-        });
-        var ctx = document.getElementById('parentLoginsChart').getContext('2d');
-        var months = {{ months|safe }};
     
-        // Function to shift array to start from the previous month
-        function shiftMonthsArray(arr) {
-            if (arr.length > 0) {
-                // Find index of current month
-                var currentMonthIndex = arr.findIndex(month => month === '{{ current_month_name }}');
+
+    // Initialize Chart.js for student enrollments
+    var ctx = document.getElementById('studentEnrollment').getContext('2d');
+    
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: instruments,
+            datasets: [{
+                label: 'Student Enrollments',
+                data: student_enrollments,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
                 
-                if (currentMonthIndex !== -1) {
-                    // Shift array to start from previous month
-                    var startIndex = (currentMonthIndex - 1 + arr.length) % arr.length;
-                    return arr.slice(startIndex).concat(arr.slice(0, startIndex));
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        precision: 0,
+                        callback: function(value) {
+                            return Number.parseInt(value);
+                        }
+                    }
+                }]
+            },
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    fontColor: '#333',
+                    usePointStyle: true
                 }
-            }
-            return arr; // Return original array if no valid shift
+            },
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+    // Inside your Chart.js initialization script
+// Inside your Chart.js initialization script
+myChart.options.onClick = function(event, elements) {
+    if (elements.length > 0) {
+        var clickedDatasetIndex = elements[0].datasetIndex;
+        var clickedElementIndex = elements[0].index;
+        var instrumentId = instruments[clickedElementIndex].instrument_id; // Assuming 'id' is the instrument's ID field
+        console.log('Clicked instrumentId:', instrumentId); 
+        // Redirect to the URL to fetch students for the selected instrument
+        window.location.href = `/administrator/fetch_students/${instrumentId}/`;
+    }
+};
+
+
+
+    // Dropdown change event listener
+    $('#applyFilters').click(function() {
+        var selectedAge = $('#ageFilter').val();
+        var selectedGender = $('#genderFilter').val();
+        var filteredData = [];
+
+        // Filter student enrollments based on selected age and gender
+        if (selectedAge === '6_10') {
+            filteredData = [age_6_10];
+        } else if (selectedAge === '11_15') {
+            filteredData = [age_11_15];
+        } else if (selectedAge === '16_20') {
+            filteredData = [age_16_20];
+        } else {
+            filteredData = student_enrollments;
         }
 
+        // Update chart data
+        myChart.data.datasets[0].data = filteredData;
+        myChart.update();
+    });
+
+
     
-        months = shiftMonthsArray(months);
-        var parentLoginCounts = {{ parent_login_values|safe }};
-        var teacherLoginCounts = {{ teacher_login_values|safe }};
+            // Initialize Chart.js for student ages
+            var ageData = {
+                labels: ['6-10 years', '11-15 years', '16-20 years'],
+                datasets: [{
+                    label: 'Student Age Groups',
+                    data: [
+                        {{ age_6_10 }},
+                        {{ age_11_15 }},
+                        {{ age_16_20 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
     
-        console.log(months); // Check if months array starts correctly
-        console.log(teacherLoginCounts); // Check teacher login counts
-        console.log(parentLoginCounts); // Check parent login counts
+            var ctx2 = document.getElementById('studentAgesChart').getContext('2d');
+            var studentAgesChart = new Chart(ctx2, {
+                type: 'pie',
+                data: ageData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    var dataset = ageData.datasets[tooltipItem.datasetIndex];
+                                    var currentValue = dataset.data[tooltipItem.dataIndex];
+                                    return `${tooltipItem.label}: ${currentValue} student(s)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
     
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    {
+            // Initialize Chart.js for parent logins
+            var ctx3 = document.getElementById('parentLoginsChart').getContext('2d');
+            var months = {{ months|safe }};
+            var parentLoginCounts = {{ parent_login_values|safe }};
+            var teacherLoginCounts = {{ teacher_login_values|safe }};
+    
+            console.log(months); // Check if months array starts correctly
+            console.log(teacherLoginCounts); // Check teacher login counts
+            console.log(parentLoginCounts); // Check parent login counts
+    
+            // Function to shift array to start from the previous month
+            function shiftMonthsArray(arr) {
+                if (arr.length > 0) {
+                    var currentMonthIndex = arr.findIndex(month => month === '{{ current_month_name }}');
+                    if (currentMonthIndex !== -1) {
+                        var startIndex = (currentMonthIndex - 1 + arr.length) % arr.length;
+                        return arr.slice(startIndex).concat(arr.slice(0, startIndex));
+                    }
+                }
+                return arr; // Return original array if no valid shift
+            }
+    
+            months = shiftMonthsArray(months);
+    
+            var parentLoginsChart = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
                         label: 'Parent Logins',
                         data: parentLoginCounts,
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Teacher Logins',
+                        data: teacherLoginCounts,
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
-                    },
-                    {
-                        label: 'Teacher Logins',
-                        data: teacherLoginCounts,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            callback: function(value) {
-                                if (value % 1 === 0) {
-                                    return value;
-                                }
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Logins'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months'
                             }
                         }
                     }
                 }
-            }
+            });
         });
     
-        // Rest of your JavaScript code
+        // Toggle sidebar
         document.getElementById('sidebarCollapse').addEventListener('click', function () {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
         });
     
+        // Dropdown functionality
         document.querySelectorAll('.dropdown-btn').forEach(button => {
             button.addEventListener('click', function () {
                 this.classList.toggle('active');

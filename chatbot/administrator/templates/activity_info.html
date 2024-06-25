@@ -1,0 +1,43 @@
+<!-- activity_students_list.html -->
+
+ <!-- Extend your base template if you have one -->
+{% load static %}
+
+
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Activity Information</h1>
+
+    <div id="navbar">
+        <a href="{% url 'activity' %}" class="navbar-link">Activity List</a>
+        <a href="{% url 'register-activity' %}" class="navbar-link">Register Activity</a>
+    </div>
+</div>
+
+<hr class="slide-in-left">
+<div class="container">
+    <h4> {{ activity.activity_name }}</h4>
+
+    <h2>Activity Details:</h2>
+    <p><strong>Activity Name:</strong> {{ activity.activity_name }}</p>
+    <p><strong>Activity Type:</strong> {{ activity.activity_type }}</p>
+    <p><strong>Date:</strong> {{ activity.activity_date }}</p>
+    <p><strong>Time:</strong> {{ activity.start_time }} - {{ activity.end_time }}</p>
+    <p><strong>Location:</strong> {{ activity.location }}</p>
+
+    <h2>Involved Students:</h2>
+    <ul>
+        {% for student in students_list %}
+        <li>{{ student.studentName }} - {{ student.instrument }}</li>
+        {% empty %}
+        <li>No students enrolled in this activity.</li>
+        {% endfor %}
+    </ul>
+</div>

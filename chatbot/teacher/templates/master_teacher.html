@@ -1,6 +1,5 @@
 {% include 'chatbot.html' %}
-{%load static%}
-
+{% load static %}
 {% load custom_tags %}
 
 <!DOCTYPE html>
@@ -11,42 +10,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!-- Update the link tag to point to your CSS file -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-
 
     <style>
         li, ul {
             border-color: #32373d;
         }
-
         .img.bg-wrap.text-center.py-4::after {
             background-color: transparent;
         }
-
         ::-webkit-scrollbar {
             display: none;
         }
         li, ul, nav{
-            background-color:  ;
+            background-color: ;
         }
         p {
             color: black;
         }
-
         .a:hover {
             background-color: #5bca32 !important;
         }
-
         .bg-wrap {
             background-color: #5b7cfa !important;
         }
-
         .img.bg-wrap.text-center.py-4::after {
             background-color: transparent;
         }
-
         .details-container {
             display: flex;
             flex-wrap: wrap;
@@ -54,14 +45,12 @@
             justify-content: space-between;
             margin-bottom: 20px;
         }
-
         .details {
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
             padding: 20px;
             border-radius: 10px;
             width: 55%;
         }
-
         .card-info {
             height: 200px;
             width: calc(30% - 10px);
@@ -70,13 +59,11 @@
             padding: 16px;
             margin-left: 15px;
         }
-
     </style>
 </head>
 <body>
 
     {% include 'loading_screen.html' %}
-
 
     <div class="wrapper d-flex align-items-stretch " style="font-size: small; ">
         <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #43207a" >
@@ -96,12 +83,10 @@
                 </div>
             </div>
 
-
             <ul class="list-unstyled components mb-5" style="padding-left: 0;background-color: #43207a " >
                 <li class="{% if request.path == '/teacher' %}active{% endif %}">
                     <a href="{% url 'teacher' %}"  style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-home mr-3" ></span><span class="text"> Home</span></a>
                 </li>
-                
                 <li class = "{% if request.path == '/teacher/teaching-modules' %}active{% endif %} ">
                     <a href="{% url 'teaching_modules' %}" style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-trophy mr-3"></span><span class="text"> Student Performance</span></a>
                 </li>
@@ -116,16 +101,6 @@
                         <span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span>
                     </a>
                 </li>
-<!--                 
-                <li >
-                    <a href="#"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
-                </li>
-                <li  class="{% if request.path == '/administrator/activity/' %}active{% endif %} {% if request.path == '/administrator/activity/register-activity' %}active{% endif %} "  >
-                    <a href=""><span class="fa fa-pencil mr-3"></span><span class="text"> Activity</span></a>
-                </li>
-                <li class="{% if request.path == '/administrator/media/' %}active{% endif %} "  >
-                    <a href=""><span class="fa fa-camera mr-3"></span><span class="text"> Media</span></a>
-                </li> -->
                 <li style="position: absolute; bottom: 0; left: 0; width: 100%;">
                     <a href="{% url 'logout' %}"><span class="fa fa-sign-out mr-3"></span><span class="text"> Sign Out</span></a>
                 </li>
@@ -133,8 +108,6 @@
         </nav>
 
         <!-- Page Content  -->
-      
-
         <div id="content" class="p-4 p-md-5 pt-5">
             {% block content %}
             <h3 class="mb-4 slide-in-left" style="font-size: 20px;">Teacher Dashboard</h3><hr>
@@ -163,90 +136,162 @@
                     </div>
                 </div>
         
-                <div class="details slide-in" style="display: block; float: left; width: 43%; margin-left: 10px;">
-                    <h5 style="font-weight: bold;">Logins</h5>
-                    <p>Login Summary</p>
-                    <canvas id="parentLoginsChart"></canvas>
+                <div class="details new-div slide-in" style="display: block;  width: 43%;">
+                    <h5 style="font-weight: bold;">Overall Student Attendance</h5>
+                    <p style="display: inline-block;">Attendance per week</p>
+
+                    <!-- Student Filter Dropdown -->
+                    <select id="studentFilter" onchange="updateAttendanceChart()" style="display: inline-block; float: right;">
+                        <option value="all">All Students</option>
+                        {% for student in students %}
+                            <option value="{{ student.studentName }}">{{ student.studentName }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <canvas id="attendanceChart"></canvas>
                 </div>
         
                 <div class="clearfix" style="clear: both;"></div>
                <!-- New div added below the existing divs -->
                <div class="details new-div slide-in" style="display: block; margin-top: 20px; width: 97%;">
-                <h5 style="font-weight: bold;">Student Performance</h5>
-                <p>Progress of each registered student</p>
-                <select id="instrumentFilter" onchange="updateStudentProgressChart()">
-                    <option value="all">All Instruments</option>
-                    {% for instrument in instruments_taught %}
-                        <option value="{{ instrument.instrument_minor_name }}">{{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}</option>
-                    {% endfor %}
-                </select>
-                
-                <canvas id="studentProgressChart"></canvas>
+                    <h5 style="font-weight: bold;">Student Performance</h5>
+                    <p style="display: inline-block;">Progress of each registered student</p>
+                    <p style="font-style: italic; color: blue; display: inline-block;float: right;">*Click on student bar to view detailed student report</p>
+                    <select id="instrumentFilter" onchange="updateStudentProgressChart()">
+                        <option value="all">All Instruments</option>
+                        {% for instrument in instruments_taught %}
+                            <option value="{{ instrument.instrument_minor_name }}">{{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <canvas id="studentProgressChart"></canvas>
+                </div>
             </div>
+            {% endblock %}
         </div>
-        {% endblock %}
     </div>
-</div>
 
-<!-- Include necessary JavaScript libraries -->
-<script src="{% static 'js/jquery.min.js' %}"></script>
-<script src="{% static 'js/popper.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/main.js' %}"></script>
-<!-- Include Chart.js library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include necessary JavaScript libraries -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/popper.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-    // Function to handle sidebar collapse/expand
-    document.getElementById('sidebarCollapse').addEventListener('click', function () {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('collapsed');
-    });
-
+  <!-- Add this section to the existing HTML -->
+  <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Parse student progress data from Django context
-        const studentProgressData = JSON.parse('{{ student_progress|escapejs }}');
+        const attendanceData = JSON.parse('{{ attendance_data|escapejs }}');
 
-        // Debugging: Output parsed data to console
-        console.log("Student Progress:", studentProgressData);
+        const studentFilter = document.getElementById('studentFilter');
 
-        // Prepare data for student progress chart
-        const studentNames = studentProgressData.map(student => student.studentName);
-        const studentProgressPercentages = studentProgressData.map(student => student.progress_percentage);
-
-        // Render the initial student progress chart
-        renderStudentProgressChart(studentNames, studentProgressPercentages);
-
-        // Handle dropdown selection change event
-        const instrumentFilter = document.getElementById('instrumentFilter');
-        instrumentFilter.addEventListener('change', function () {
-            updateStudentProgressChart();
+        // Populate the student filter dropdown
+        const studentIds = new Set();
+        attendanceData.forEach(item => {
+            if (!studentIds.has(item.student__id)) {
+                studentIds.add(item.student__id);
+                const option = document.createElement('option');
+                option.value = item.student__id;
+                option.text = item.student__studentName;
+                studentFilter.appendChild(option);
+            }
         });
 
-        // Function to render student progress chart based on selected instrument
-        function updateStudentProgressChart() {
-            const selectedInstrument = instrumentFilter.value;
+        // Function to update the attendance chart
+        function updateAttendanceChart() {
+            const selectedStudentId = studentFilter.value;
 
-            // Filter student progress data based on selected instrument
-            let filteredStudentProgressData;
-            if (selectedInstrument === 'all') {
-                filteredStudentProgressData = studentProgressData;
+            // Filter the attendance data based on the selected student
+            let filteredAttendanceData;
+            if (selectedStudentId === 'all') {
+                filteredAttendanceData = attendanceData;
             } else {
-                filteredStudentProgressData = studentProgressData.filter(student => student.instrument_minor_name === selectedInstrument);
+                filteredAttendanceData = attendanceData.filter(item => item.student__id == selectedStudentId);
             }
 
-            // Prepare data for updated chart
-            const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
-            const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
+            // Aggregate the filtered data by week
+            const aggregatedData = {};
+            filteredAttendanceData.forEach(item => {
+                const weekKey = `${item.year}-W${item.week}`;
+                if (!aggregatedData[weekKey]) {
+                    aggregatedData[weekKey] = {attendance_count: 0, absence_count: 0};
+                }
+                aggregatedData[weekKey].attendance_count += item.attendance_count;
+                aggregatedData[weekKey].absence_count += item.absence_count;
+            });
 
-            // Update the student progress chart
-            studentProgressChart.data.labels = filteredStudentNames;
-            studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
-            studentProgressChart.update();
+            const weeks = Object.keys(aggregatedData).sort();
+            const attendanceCounts = weeks.map(week => aggregatedData[week].attendance_count);
+            const absenceCounts = weeks.map(week => aggregatedData[week].absence_count);
+
+            // Update the attendance chart
+            attendanceChart.data.labels = weeks;
+            attendanceChart.data.datasets[0].data = attendanceCounts;
+            attendanceChart.data.datasets[1].data = absenceCounts;
+            attendanceChart.update();
         }
 
-        // Function to initially render student progress chart
-        function renderStudentProgressChart(studentNames, studentProgressPercentages) {
+        // Initial rendering of the attendance chart
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        const attendanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Attendance',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderWidth: 1
+                }, {
+                    label: 'Absence',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Week'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update the chart when the student filter changes
+        studentFilter.addEventListener('change', updateAttendanceChart);
+
+        // Initial chart update
+        updateAttendanceChart();
+    });
+// Function to handle sidebar collapse/expand
+document.getElementById('sidebarCollapse').addEventListener('click', function () {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Student progress chart rendering and updating
+            const studentProgressData = JSON.parse('{{ student_progress|escapejs }}');
+            const studentIds = studentProgressData.map(student => student.student_id);
+            const studentNames = studentProgressData.map(student => student.studentName);
+            const studentProgressPercentages = studentProgressData.map(student => student.progress_percentage);
+
+            console.log("Student Progress Data:", studentProgressData);
+console.log("Mapped Student IDs:", studentIds);
+
+            
             const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
             const studentProgressChart = new Chart(studentProgressChartCtx, {
                 type: 'bar',
@@ -275,17 +320,70 @@
                                 text: 'Students'
                             }
                         }
-                    }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: (tooltipItem) => tooltipItem[0].label,
+                                label: (tooltipItem) => `Progress: ${tooltipItem.raw.toFixed(2)}%`
+                            }
+                        }
+                    },
+                    onClick: (event, activeElements) => {
+    if (activeElements.length > 0) {
+        const index = activeElements[0].index;
+        console.log("Clicked index:", index);
+        console.log("Student IDs:", studentIds);
+
+        // Ensure index is within bounds of studentIds array
+        if (index >= 0 && index < studentIds.length) {
+            const studentId = studentIds[index];
+            const url = `/teacher/view_report/${encodeURIComponent(studentId)}/`;
+
+            console.log("Clicked Student ID:", studentId);
+            console.log("URL:", url);
+
+            // Attempt to open URL in a new tab
+            const newTab = window.open(url, '_blank');
+
+            if (newTab) {
+                newTab.focus();
+            } else {
+                console.error("Failed to open new tab. Check browser settings.");
+                // Handle alternative actions if new tab fails to open
+            }
+        } else {
+            console.error("Invalid index or studentIds array is empty.");
+        }
+    }
+}
+
+
                 }
             });
 
-            return studentProgressChart;
-        }
+            // Function to update student progress chart based on selected instrument
+            function updateStudentProgressChart() {
+                const selectedInstrument = document.getElementById('instrumentFilter').value;
+                let filteredStudentProgressData;
 
-        // Parse login times data from Django context (if needed for other parts of the script)
-        // const loginTimesData = JSON.parse('{{ login_times|escapejs }}');
-        // console.log("Login Times:", loginTimesData);
-    });
+                if (selectedInstrument === 'all') {
+                    filteredStudentProgressData = studentProgressData;
+                } else {
+                    filteredStudentProgressData = studentProgressData.filter(student => student.instrument_minor_name === selectedInstrument);
+                }
+
+                const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
+                const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
+
+                studentProgressChart.data.labels = filteredStudentNames;
+                studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
+                studentProgressChart.update();
+            }
+
+            document.getElementById('instrumentFilter').addEventListener('change', updateStudentProgressChart);
+            document.getElementById('studentFilter').addEventListener('change', updateAttendanceChart);
+    
 </script>
 
 </body>

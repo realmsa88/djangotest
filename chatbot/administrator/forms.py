@@ -191,6 +191,8 @@ class ModuleDetailsForm(forms.ModelForm):
 
 
 class ActivityDetailsForm(forms.ModelForm):
+
+    student = forms.ModelChoiceField(queryset=Student.objects.all(), empty_label="Select Student")
     class Meta:
         model = Activity
         fields = ['activity_name', 'activity_type', 'activity_date', 'start_time', 'end_time', 'location', 'description']
@@ -200,10 +202,14 @@ class ActivityDetailsForm(forms.ModelForm):
             'activity_date': 'Date',
             'start_time': 'Start Time',
             'end_time': 'End Time',
-            
+            'student': 'Student',
             'location': 'Location',
             'description': 'Description',
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['student'].queryset = Student.objects.all()
+        self.fields['student'].required = False
 
 class ModuleForm(forms.ModelForm):
     class Meta:

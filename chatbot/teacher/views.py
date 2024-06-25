@@ -15,37 +15,31 @@ import json, logging
 from pytz import timezone as pytz_timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.db.models.functions import ExtractWeek, ExtractYear
 from django.core.exceptions import MultipleObjectsReturned
 # Create your views here.
 
-@teacher_required
+
+@login_required
+
 def teacher(request):
-    # Ensure that the user is authenticated
     if request.user.is_authenticated:
         try:
             user_details = request.user.auth_user_details
         except auth_user_details.DoesNotExist:
             return HttpResponse("User details do not exist.")
         
-        # Use filter() to retrieve Teacher queryset instead of get()
         teachers = Teacher.objects.filter(teacher=user_details)
         
         if teachers.exists():
-            # Choose the appropriate Teacher instance based on your application logic
-            teacher = teachers.first()  # Or apply your selection logic here
+            teacher = teachers.first()
         else:
             return HttpResponse("Teacher record does not exist for the logged-in user.")
         
-        # Fetch students count assigned to the teacher
         students_count = Student.objects.filter(assigned_teacher=user_details.user).count()
-
-        # Fetch total instruments taught by the teacher
         total_instruments_taught = Instrument.objects.filter(teacher=teacher).count()
-
-        # Fetch instruments taught by the teacher
         instruments_taught = Instrument.objects.filter(teacher=teacher)
 
-        # Initialize instrument data list
         instrument_data = []
         for instrument in instruments_taught:
             students_under_instrument = Student.objects.filter(assigned_teacher=user_details.user, instrument=instrument)
@@ -62,11 +56,9 @@ def teacher(request):
                 'students_count': students_under_instrument.count()
             })
 
-        # Initialize student progress list
         student_progress = []
         total_modules_all_students = 0
 
-        # Fetch students assigned to the teacher and calculate progress
         students = Student.objects.filter(assigned_teacher=user_details.user).annotate(
             pass_progress_count=Count('progressbar', filter=Q(progressbar__result__in=['3', '4', '5']))
         )
@@ -88,10 +80,21 @@ def teacher(request):
             student_progress.append({
                 'studentName': student.studentName,
                 'progress_percentage': progress_percentage,
-                'total_modules': total_modules
+                'total_modules': total_modules,
+                'student_id': student.id
             })
 
-        # Prepare context dictionary for rendering
+        attendance_data = Attendance.objects.filter(
+            teacher_email=user_details.user,
+            status='Approved'
+        ).annotate(
+            week=ExtractWeek('date'),
+            year=ExtractYear('date')
+        ).values('student__id', 'student__studentName', 'week', 'year').annotate(
+            attendance_count=Count('id', filter=Q(attendance='Attend')),
+            absence_count=Count('id', filter=Q(attendance='Absent'))
+        )
+
         context = {
             'first_name': request.user.first_name,
             'last_name': request.user.last_name,
@@ -99,13 +102,15 @@ def teacher(request):
             'total_instruments_taught': total_instruments_taught,
             'instrument_data': instrument_data,
             'instruments_taught': instruments_taught,
-            'student_progress': json.dumps(student_progress),  # Serialize student_progress to JSON
+            'student_progress': json.dumps(student_progress),
+            'attendance_data': json.dumps(list(attendance_data))
         }
 
         return render(request, 'master_teacher.html', context)
     
     else:
         return HttpResponse("You are not logged in.")
+
 @teacher_required
 def teaching_modules(request):
     # Get the logged-in user
@@ -607,3 +612,60 @@ def activity_details(request, id):
     albums = activity.album_set.all()  # Fetch all albums related to this activity
     
     return render(request, 'activity_details_teacher.html', {'activity': activity, 'albums': albums})
+
+@login_required
+def view_report(request, student_id):
+    # Retrieve parent associated with the logged-in user
+    teacher = request.user  # Assuming parent is directly related to User model
+
+    student = get_object_or_404(Student, id=student_id)
+    
+    # Fetch related data for the student
+    book_instruments = BookInstrument.objects.filter(bookID=student.book, instrumentID=student.instrument)
+    module_details = ModuleDetails.objects.filter(bookInstrument__in=book_instruments)
+    
+    # Fetch progress bar objects for the student and modules found
+    progress_bar_objects = ProgressBar.objects.filter(student=student, module__in=module_details)
+
+    print(f"Logged-in parent: {teacher}")
+
+    # Get students related to this parent
+    students = Student.objects.filter(assigned_teacher=teacher)
+
+    # Print debug information
+    print(f"Related students: {students}")
+
+    # Retrieve all attendance records associated with the parent user
+    all_attendance = Attendance.objects.filter(student=student, student__assigned_teacher=teacher)
+
+    
+    # Prepare results by module
+    results_by_module = {}
+    for progress_bar in progress_bar_objects:
+        results_by_module[progress_bar.module_id] = progress_bar.result
+        print(f"Module ID: {progress_bar.module_id}, Result: {progress_bar.result}")
+    
+    
+    # Calculate progress for Practice modules
+    practice_modules = module_details.filter(module_type='Practice')
+    total_practice_modules = practice_modules.count()
+    passed_practice_modules = progress_bar_objects.filter(module__in=practice_modules, result__in=['3', '4', '5']).count()
+    practice_completion_percentage = (passed_practice_modules / total_practice_modules) * 100 if total_practice_modules > 0 else 0
+    
+    # Calculate progress for Repertoire modules
+    repertoire_modules = module_details.filter(module_type='Repertoire')
+    total_repertoire_modules = repertoire_modules.count()
+    passed_repertoire_modules = progress_bar_objects.filter(module__in=repertoire_modules, result__in=['3', '4', '5']).count()
+    repertoire_completion_percentage = (passed_repertoire_modules / total_repertoire_modules) * 100 if total_repertoire_modules > 0 else 0
+    
+    # Prepare data to be passed to the template
+    context = {
+        'student': student,
+        'practice_completion_percentage': practice_completion_percentage,
+        'repertoire_completion_percentage': repertoire_completion_percentage,
+        'results_by_module': results_by_module,
+        'module_details': module_details,
+        'all_attendance': all_attendance  # Include attendance data
+    }
+    
+    return render(request, 'report_template_teacher.html', context)

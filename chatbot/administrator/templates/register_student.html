@@ -292,6 +292,9 @@ function calculateAge() {
                 <p>Instrument</p>
                 {{ student_form.instrument }}
             </div>
+            <div id="teacherList">
+                <!-- Teachers will be displayed here based on instrument selection -->
+              </div>
 
             <!-- <div style="display: inline-block; margin-left: 20px;">
                 <p>Student Photo</p>
@@ -828,6 +831,36 @@ function getCookie(name) {
 
 
 });
+$(document).ready(function() {
+    $('#id_instruments').change(function() {
+      var instrumentId = $(this).val();
+      
+      if (instrumentId) {
+        $.ajax({
+          url: '{% url "fetch_teachers" %}',
+          data: {
+            'instrument_id': instrumentId
+          },
+          dataType: 'json',
+          success: function(data) {
+            var teachers = data.teachers;
+            var html = '<ul>';
+            teachers.forEach(function(teacher) {
+              html += '<li>' + teacher.username + '</li>';
+            });
+            html += '</ul>';
+            $('#teacherList').html(html);
+          },
+          error: function(xhr, status, error) {
+            console.error('Error fetching teachers:', error);
+            $('#teacherList').html('<p>Error fetching teachers.</p>');
+          }
+        });
+      } else {
+        $('#teacherList').html('');
+      }
+    });
+  });
 
 
 

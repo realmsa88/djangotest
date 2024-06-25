@@ -10,10 +10,12 @@ from django.contrib import messages
 from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm
 from django.core.paginator import Paginator
 from django.db import transaction 
-from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin # Import your model
+from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity # Import your model
 from django.views.decorators.csrf import csrf_exempt
 from teacher.models import Attendance, Teacher
 import json
+from collections import defaultdict
+from datetime import date
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.db.models import Q
@@ -21,7 +23,6 @@ from django.views.decorators.http import require_POST
 from datetime import timedelta
 from django.contrib.auth.decorators import user_passes_test
 import logging
-
 
 @admin_required
 def administrator(request):
@@ -80,6 +81,38 @@ def administrator(request):
         # Format months for display in the template
         months_str = [month.strftime('%B %Y') for month in months]
 
+        # Calculate student age groups
+        today = date.today()
+        age_6_10 = Student.objects.filter(birthdate__gte=today.replace(year=today.year-10), birthdate__lte=today.replace(year=today.year-6)).count()
+        age_11_15 = Student.objects.filter(birthdate__gte=today.replace(year=today.year-15), birthdate__lte=today.replace(year=today.year-11)).count()
+        age_16_20 = Student.objects.filter(birthdate__gte=today.replace(year=today.year-20), birthdate__lte=today.replace(year=today.year-16)).count()
+
+        # Get instruments and student enrollments
+        instrument_enrollments = defaultdict(int)
+
+        instruments_major_minor = list(
+            Instrument.objects.values_list('instrument_major_name', 'instrument_minor_name')
+        )
+
+        # Iterate over instruments and aggregate enrollments
+        for major, minor in instruments_major_minor:
+            # Determine the label for the instrument
+            if major and minor:
+                full_instrument_name = f"{minor} {major}"
+            elif major:
+                full_instrument_name = major
+            elif minor:
+                full_instrument_name = minor
+            else:
+                full_instrument_name = "Unknown"  # Handle if both are empty (though this scenario might not apply based on your data model)
+
+            # Count students for the instrument
+            instrument_count = Student.objects.filter(instrument__instrument_major_name=major, instrument__instrument_minor_name=minor).count()
+            instrument_enrollments[full_instrument_name] += instrument_count
+
+        # Convert defaultdict to a regular dictionary for consistency
+        instrument_enrollments = dict(instrument_enrollments)
+
         # Prepare context dictionary for rendering the template
         context = {
             'total_teachers': total_teachers,
@@ -90,13 +123,62 @@ def administrator(request):
             'months': months_str,
             'parent_login_values': [parent_login_counts[month] for month in months],
             'teacher_login_values': [teacher_login_counts[month] for month in months],
+            'age_6_10': age_6_10,
+            'age_11_15': age_11_15,
+            'age_16_20': age_16_20,
+            'instruments': list(instrument_enrollments.keys()),  # Use keys of instrument_enrollments
+            'student_enrollments': [instrument_enrollments[instrument] for instrument in instrument_enrollments.keys()],
         }
+
+        # Handling age and gender filters
+        age_filter = request.GET.get('age', None)
+        gender_filter = request.GET.get('gender', None)
+
+        # Apply age filter
+        if age_filter:
+            if age_filter == '6_10':
+                students_filtered = Student.objects.filter(birthdate__gte=today.replace(year=today.year-10), birthdate__lte=today.replace(year=today.year-6))
+            elif age_filter == '11_15':
+                students_filtered = Student.objects.filter(birthdate__gte=today.replace(year=today.year-15), birthdate__lte=today.replace(year=today.year-11))
+            elif age_filter == '16_20':
+                students_filtered = Student.objects.filter(birthdate__gte=today.replace(year=today.year-20), birthdate__lte=today.replace(year=today.year-16))
+            else:
+                students_filtered = Student.objects.all()
+        else:
+            students_filtered = Student.objects.all()
+
+        # Apply gender filter
+        if gender_filter:
+            if gender_filter == 'Male':
+                students_filtered = students_filtered.filter(gender='Male')
+            elif gender_filter == 'Female':
+                students_filtered = students_filtered.filter(gender='Female')
+            elif gender_filter == 'Other':
+                students_filtered = students_filtered.exclude(gender__in=['Male', 'Female'])
+
+        context['students'] = students_filtered
 
         # Render the template with the context
         return render(request, 'master_admin.html', context)
     
     else:
         return HttpResponse("")
+
+@login_required
+def fetch_students(request, instrument_id):
+    # Fetch instrument details
+    instrument = get_object_or_404(Instrument, pk=instrument_id)
+    instruments = list(Instrument.objects.values('id', 'instrument_major_name', 'instrument_minor_name'))  # Adjust fields as per your Instrument model
+
+
+    print("Instrument ID:", instrument_id)
+
+
+    # Fetch students enrolled under the selected instrument
+    students = Student.objects.filter(instrument=instrument)
+
+    # Render a new template with students data
+    return render(request, 'students_list.html', {'students': students, 'instrument': instrument,'instruments': instruments })
     
 @admin_required
 def delete_account(request, username):
@@ -220,6 +302,11 @@ def register(request):
 
 
 
+def fetch_teachers(request):
+    instrument_id = request.GET.get('instrument_id')
+    teachers = Teacher.objects.filter(instrument_id=instrument_id)
+    teacher_list = [{'username': teacher.teacher.user.username} for teacher in teachers]
+    return JsonResponse({'teachers': teacher_list})
 
 @admin_required
 def success(request):
@@ -550,17 +637,56 @@ def delete_activity(request, activity_id):
         messages.success(request, 'Activity deleted successfully.')
     return redirect('activity')
 
+
+
+
 @admin_required
 def registerActivity(request):
     if request.method == 'POST':
         activity_form = ActivityDetailsForm(request.POST)
         if activity_form.is_valid():
-            activity_form.save()  # Save form data to the database
+            # Save the activity
+            activity = activity_form.save()
+
+            # Get the selected student IDs from the hidden input
+            selected_student_ids = request.POST.get('selected_student_ids', '').split(',')
+
+            # Filter out any empty values
+            selected_student_ids = [id for id in selected_student_ids if id]
+
+            # Save each selected student to the StudentActivity model
+            for student_id in selected_student_ids:
+                student = Student.objects.get(pk=student_id)
+                StudentActivity.objects.create(student=student, activity=activity)
+
             messages.success(request, 'Activity registered successfully!')
             return redirect('register-activity')  # Redirect to the register-activity page
     else:
         activity_form = ActivityDetailsForm()
+
     return render(request, 'register_activity.html', {'activity_form': activity_form})
+
+
+def activity_students_list(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id)
+    student_activities = StudentActivity.objects.filter(activity=activity)
+
+    students_list = []
+    for student_activity in student_activities:
+        student = student_activity.student
+        students_list.append({
+            'studentName': student.studentName,
+            'instrument': student.instrument.instrument_major_name if student.instrument else None,  # Adjust as per your Instrument model
+        })
+
+    context = {
+        'activity': activity,
+        'students_list': students_list,
+    }
+
+    return render(request, 'activity_info.html', context)
+
+
 
 @admin_required
 def activity_details(request, id):

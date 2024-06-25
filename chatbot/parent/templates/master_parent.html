@@ -1,5 +1,4 @@
 {% include 'chatbot.html' %}
-
 {% load static %}
 
 <!DOCTYPE html>
@@ -72,15 +71,16 @@
     <div class="wrapper d-flex align-items-stretch" style="font-size: small;">
         <nav id="sidebar" class="collapsed" style="position: fixed;background-color: #43207a">
             <div class="custom-menu">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
+                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;">
+                </button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-color: #43207a">
+            <div class="img bg-wrap text-center py-4" style="background-color: #43207a !important;">
                 <div class="user-logo">
                     <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
                     <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
-                    <h3 style="font-size: small;">
+                    <h3 style="font-size: small;"> 
                         {% for group in request.user.groups.all %}
-                        You're a {{ group }}
+                           You're a {{ group }}
                         {% endfor %}
                     </h3>
                 </div>
@@ -146,7 +146,7 @@
                 
                     <div class="card-info" style="background-color: #F3E8FF;display: inline-block;">
                         <i class="fa fa-graduation-cap" style="font-size: 24px;"></i>
-                        <h4 style="font-weight: bold; margin-top: 10px;">{{total_modules_all_children}}</h4>
+                        <h4 style="font-weight: bold; margin-top: 10px;">{{ total_modules_all_children }}</h4>
                         <p>Modules Taken</p>
                     </div>
                 
@@ -170,7 +170,6 @@
                     <h5 style="font-weight: bold;">Child Performance</h5>
                     <p>Click on a bar chart to view student detailed report</p>
                     
-                    
                     <canvas id="studentProgressChart"></canvas>
                 </div>
             </div>
@@ -193,8 +192,8 @@
             // Prepare data for student progress chart
             const studentNames = studentProgress.map(student => student.studentName);
             const studentProgressData = studentProgress.map(student => student.progress_percentage);
-            const studentIds = studentProgress.map(student => student.studentId);  // Make sure the key matches your context variable
-            
+            const studentIds = studentProgress.map(student => student.studentId);
+
             // Render the student progress chart
             const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
             const studentProgressChart = new Chart(studentProgressChartCtx, {
@@ -238,42 +237,35 @@
                             const index = activeElements[0].index;
                             const studentId = studentIds[index];
                             const url = `/parent/view_report/${encodeURIComponent(studentId)}/`;
-                            
+
                             console.log("Clicked Student ID:", studentId); // Debugging
                             console.log("URL:", url); // Debugging
-                            
-                            // Attempt to open URL in a new tab
-                            const newTab = window.open(url, '_blank');
-                            
-                            // Check if new tab opened successfully
-                            if (newTab) {
-                                newTab.focus();
+
+                            if (studentId) {
+                                window.open(url, '_blank').focus();
                             } else {
-                                // Handle cases where new tab was blocked
-                                console.error("Failed to open new tab. Check browser settings.");
-                                // You can also redirect current window to the URL as fallback
-                                // window.location.href = url;
+                                console.error("Student ID is undefined.");
                             }
                         }
                     }
                 }
             });
-            
+
             // Parse login times data from Django context
             const loginTimes = JSON.parse('{{ login_times|escapejs }}');
             
             console.log("Login Times:", loginTimes); // Debugging line
-    
+
             // Prepare data for login times chart
             const loginCounts = loginTimes.reduce((acc, dateTime) => {
                 const date = new Date(dateTime).toLocaleDateString();
                 acc[date] = acc[date] ? acc[date] + 1 : 1;
                 return acc;
             }, {});
-    
+
             const loginLabels = Object.keys(loginCounts);
             const loginData = Object.values(loginCounts);
-    
+
             // Render the login times chart
             const loginChartCtx = document.getElementById('parentLoginsChart').getContext('2d');
             const loginChart = new Chart(loginChartCtx, {
@@ -308,8 +300,6 @@
             });
         });
     </script>
-    
-        
 
 </body>
 </html>

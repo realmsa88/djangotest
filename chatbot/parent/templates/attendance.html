@@ -1,4 +1,4 @@
-{% extends 'master_parent.html' %}
+{% extends "master_parent.html" %}
 {% load static %}
 
 {% block content %}
@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 
 <style>
 
@@ -150,6 +151,8 @@
 
 <p class="slide-in-left">Registered Students: {{ students|length }}</p>
 
+
+
 <div class="wrapper" style="margin-top: -35px;">
     <div class="main">
         <div class="container p-5 slide-in">
@@ -291,8 +294,7 @@
     </div>
 </div>
 
-<!-- The Info Modal -->
-<div id="infoModal" class="modal" >
+<div id="infoModal" class="modal">
     <div class="modal-content slide-in" style="margin-top: 30px;">
         <div class="modal-header">
             <p class="modal-title" style="color: white;">Attendance Overview</p>
@@ -302,7 +304,6 @@
         <div id="infoModalContent">
             
             <table id="attendanceTable" class="attendance-table" border="1">
-               
                 <thead>
                     <tr>
                         <th>Title</th>
@@ -310,29 +311,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Table rows will be dynamically added here by JavaScript -->
                     <tr>
                         <td>Attend (Approved)</td>
-                        <td id="attendApprovedCount"></td>
+                        <td id="attendApprovedCount">0</td>
                     </tr>
                     <tr>
                         <td>Attend (Pending Verification)</td>
-                        <td id="attendPendingCount"></td>
+                        <td id="attendPendingCount">0</td>
                     </tr>
                     <tr>
                         <td>Absent (Approved)</td>
-                        <td id="absentApprovedCount"></td>
+                        <td id="absentApprovedCount">0</td>
                     </tr>
                     <tr>
                         <td>Absent (Pending Verification)</td>
-                        <td id="absentPendingCount"></td>
+                        <td id="absentPendingCount">0</td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">Total</td>
-                        <td id="totalAttendanceCount"></td>
+                        <td id="totalAttendanceCount">0</td>
                     </tr>
                 </tbody>
             </table>
+
             <table id="descriptionTable" border="1">
                 <thead>
                     <tr>
@@ -340,17 +341,9 @@
                         <th>Total</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="descriptionTableBody">
                     <!-- Placeholder rows for description data -->
-                    <tr>
-                        <td>Description 1</td>
-                        <td>Count 1</td>
-                    </tr>
-                    <tr>
-                        <td>Description 2</td>
-                        <td>Count 2</td>
-                    </tr>
-                    <!-- Add more rows as needed -->
+                    <!-- These will be populated dynamically by JavaScript -->
                 </tbody>
             </table>
         </div>
@@ -361,121 +354,100 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+   // Function to open the info modal
+   function openInfoModal(studentName, attendanceList) {
+        var infoModal = document.getElementById("infoModal");
+        infoModal.style.display = "block"; // Show the modal
 
-function openInfoModal(studentName, attendanceList) {
-    var infoModal = document.getElementById("infoModal");
-    infoModal.style.display = "block"; // Show the modal
+        // Initialize count variables
+        var attendApprovedCount = 0;
+        var attendPendingCount = 0;
+        var absentApprovedCount = 0;
+        var absentPendingCount = 0;
 
-    var records = attendanceList.slice(1, -1).split('>, <');
-
-    // Initialize counts
-    var attendApprovedCount = 0;
-    var attendPendingCount = 0;
-    var absentApprovedCount = 0;
-    var absentPendingCount = 0;
-
-    // Initialize an object to store descriptions and their counts
-    var descriptionCounts = {};
-
-    records.forEach(function(record) {
-        var cleanedRecord = record.replace(/[<>]/g, '').trim();
-        var components = cleanedRecord.split(' - ');
-
-        var attendanceType = components[2].trim();
-        var attendanceStatus = components[1].trim();
-        var statusStatus = components[6].trim();
-        var description = components[10].trim();
-
-        console.log("Description : " + description);
-
-        if (attendanceType === 'Class') {
-            if (attendanceStatus === 'Attend') {
-                if (statusStatus === 'Approved') {
-                    attendApprovedCount++;
-                } else if (statusStatus === 'Pending Verification') {
-                    attendPendingCount++;
-                }
-            } else if (attendanceStatus === 'Absent') {
-                if (statusStatus === 'Approved') {
-                    absentApprovedCount++;
-                } else if (statusStatus === 'Pending Verification') {
-                    absentPendingCount++;
-                }
+        // Loop through attendanceList to count occurrences
+        attendanceList.forEach(function(attendance) {
+            if (attendance.attendance === "Attend" && attendance.status === "Approved") {
+                attendApprovedCount++;
+            } else if (attendance.attendance === "Attend" && attendance.status === "Pending Verification") {
+                attendPendingCount++;
+            } else if (attendance.attendance === "Absent" && attendance.status === "Approved") {
+                absentApprovedCount++;
+            } else if (attendance.attendance === "Absent" && attendance.status === "Pending Verification") {
+                absentPendingCount++;
             }
-        }
+        });
 
-        if (attendanceStatus === 'Absent' && description) {
-            if (!descriptionCounts[description]) {
-                descriptionCounts[description] = 0;
-            }
-            descriptionCounts[description]++;
-        }
-    });
+        // Update the modal content with attendance counts
+        document.getElementById("attendApprovedCount").textContent = attendApprovedCount;
+        document.getElementById("attendPendingCount").textContent = attendPendingCount;
+        document.getElementById("absentApprovedCount").textContent = absentApprovedCount;
+        document.getElementById("absentPendingCount").textContent = absentPendingCount;
 
-    var totalAttendanceCount = attendApprovedCount + attendPendingCount + absentApprovedCount + absentPendingCount;
-    var tableContent = `
-        <br><p>Class</p>
-        <tr>
-            <td>Attend (Approved)</td>
-            <td>${attendApprovedCount}</td>
-        </tr>
-        <tr>
-            <td>Attend (Pending Verification)</td>
-            <td>${attendPendingCount}</td>
-        </tr>
-        <tr>
-            <td>Absent (Approved)</td>
-            <td>${absentApprovedCount}</td>
-        </tr>
-        <tr>
-            <td>Absent (Pending Verification)</td>
-            <td>${absentPendingCount}</td>
-        </tr>
-        <tr>
-            <td style="font-weight: bold;">Total</td>
-            <td>${totalAttendanceCount}</td>
-        </tr>
-    `;
-
-    // Generate description table rows
-    var descriptionTableContent = '';
-    for (var description in descriptionCounts) {
-        if (descriptionCounts.hasOwnProperty(description)) {
-            descriptionTableContent += `
-                <tr>
-                    <td>${description}</td>
-                    <td>${descriptionCounts[description]}</td>
-                </tr>
-            `;
-        }
+        // Update the student name in the modal
+        document.getElementById("modal-student-name").textContent = studentName;
     }
 
-    document.getElementById("infoModalContent").innerHTML = `
-        <table id="attendanceTable" class="description-table" border="1">
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${tableContent}
-            </tbody>
-        </table>
-        <p>Absences</p>
-        <table id="descriptionTable" class="attendance-table" border="1">
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${descriptionTableContent}
-            </tbody>
-        </table>
-    `;
-}
+    function closeInfoModal() {
+        var infoModal = document.getElementById("infoModal");
+        infoModal.style.display = "none"; // Hide the modal
+    }
+    // Ensure the document is ready
+    $(document).ready(function() {
+        // Function to toggle visibility of attendance containers and scroll to the top of the selected container
+        $('.btn.btn-outline-primary').click(function() {
+            var containerId = $(this).attr('href');
+            var isVisible = $(containerId).is(':visible');
+            $('.collapse').hide();
+            if (!isVisible) {
+                $(containerId).show();
+                $('html, body').animate({
+                    scrollTop: $(containerId).offset().top
+                }, 500);
+            }
+        });
+    });
+
+    // Ensure the document is ready
+    $(document).ready(function() {
+        // Function to handle click event for the verify button
+        $(document).on('click', '.verify-button', function() {
+            var studentName = $(this).data('student-name');
+            var attendanceTitle = $(this).data('attendance-title');
+            var attendanceDate = $(this).data('attendance-date');
+            var attendanceStartTime = $(this).data('attendance-start-time');
+            var attendanceEndTime = $(this).data('attendance-end-time');
+            var attendanceId = $(this).data('attendance-id'); // Assuming you have attendance ID in data attributes
+            var studentId = $(this).data('student-id'); // Retrieve student ID
+            $('#attendance_id').val(attendanceId); 
+            $('#student_id').val(studentId);
+
+            // Update the modal content with data
+            $('#modal-student-name').text(studentName);
+            $('#modal-attendance-title').text(attendanceTitle);
+            $('#modal-attendance-date').text(attendanceDate);
+            $('#modal-start-time').text(attendanceStartTime);
+            $('#modal-end-time').text(attendanceEndTime);
+            $('#verificationModal').data('attendance-id', attendanceId); // Store attendance ID in modal data
+
+            // Show the modal
+            $('#verificationModal').modal('show');
+        });
+
+        // Function to toggle visibility of attendance containers and scroll to the top of the selected container
+        $('.btn.btn-outline-primary').click(function() {
+            var containerId = $(this).attr('href');
+            var isVisible = $(containerId).is(':visible');
+            $('.collapse').hide();
+            if (!isVisible) {
+                $(containerId).show();
+                $('html, body').animate({
+                    scrollTop: $(containerId).offset().top
+                }, 500);
+            }
+        });
+    });
+
 
     $(document).ready(function() {
         // Function to handle click event for the verify button

@@ -126,3 +126,11 @@ class TeacherLogin(models.Model):
 
     def __str__(self):
         return f"{self.teacher.username} - {self.login_time}"
+    
+
+class StudentActivity(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.student} - {self.activity}"
