@@ -4,6 +4,9 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# settings.py
+STRIPE_PUBLIC_KEY = 'pk_test_51PVtJrBRAMWTFzsQDjmWnal7CiUVKbmOf6ul022YMF1CvJxEgH0f6uFygnLjSx2zUf0cPO5dKiYAw5tbEyBOVbU000kRwEQzG3'
+STRIPE_SECRET_KEY = 'sk_test_51PVtJrBRAMWTFzsQ7iCtui1YPpm0iITlHb8H6Vd9wQPB7cHU6poxyFYd3OZz6WO4UcAYmQbcQ67br5agiyUhCtcG00blSpKeNQ'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

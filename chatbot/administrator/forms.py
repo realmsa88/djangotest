@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, User
 import datetime
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import auth_user_details, Teacher, Student, Instrument, TeachingMode, ModuleDetails, Activity, Book  # Import your model
+from .models import auth_user_details, Teacher, Student, Instrument, TeachingMode, ModuleDetails, Activity, Book, Billing  # Import your model
 
 
 class GroupModelChoiceField(ModelChoiceField):
@@ -247,3 +247,21 @@ class RegisterInstrumentForm(forms.Form):
 
         # Set the queryset for the books field
         self.fields['books'].queryset = unique_books_queryset
+
+class BillingForm(forms.ModelForm):
+
+    category = forms.ModelChoiceField(queryset=Instrument.objects.all(), empty_label='Select Instrument')
+
+    class Meta:
+        model = Billing
+        fields = ['title', 'category', 'fee', 'description']
+        labels = {
+            'category': 'Instrument List'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = Instrument.objects.all()
+        self.fields['category'].widget.attrs['style'] = 'width: 400px; height: 40px;border-color:gray; border-radius:8px; padding:8px;'
+        self.fields['category'].label_from_instance = lambda obj: f"{obj.instrument_minor_name} {obj.instrument_major_name}"    
+   

@@ -23,8 +23,8 @@ urlpatterns = [
     path('attend-student/', views.attend_student, name='attend_student'),
     path('teacher/media-teacher', views.media, name='media-teacher'),
     path('teacher/media/activity-details/<int:id>/', views.activity_details, name='activity-details'),
-     path('teacher/view_report/<int:student_id>/', views.view_report, name='view_report')
-    # path('performers/', views.performers, name='performers'),
+     path('teacher/view_report/<int:student_id>/', views.view_report, name='view_report'),
+     path('teacher/activity-detail/<int:activity_id>/', views.activity_students_list_teacher, name='activity-students-list-teacher'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

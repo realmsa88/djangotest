@@ -1,0 +1,48 @@
+{% extends "master_parent.html" %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Checkout</title>
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <button id="checkout-button">Checkout</button>
+
+    <script type="text/javascript">
+        // Ensure the public key is correct
+        const stripe = Stripe('{{ stripe_public_key }}');
+
+        const checkoutButton = document.getElementById('checkout-button');
+
+        checkoutButton.addEventListener('click', () => {
+            fetch("{% url 'create_checkout_session' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(session => {
+                return stripe.redirectToCheckout({ sessionId: session.sessionId });
+            })
+            .then(result => {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+{% endblock %}

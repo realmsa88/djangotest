@@ -105,6 +105,10 @@
                     <a href="{% url 'modules' %}"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
                 </li>
 
+                <li class="{% if request.path == '/administrator/modules/' or request.path == '/administrator/modules/register-modules/' %}active{% endif %}">
+                    <a href="{% url 'billing' %}"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
+                </li>
+
                 <li class="{% if request.path == '/administrator/activity/' or request.path == '/administrator/activity/register-activity/' %}active{% endif %}">
                     <a href="{% url 'activity' %}"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
                 </li>

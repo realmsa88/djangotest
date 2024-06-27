@@ -7,7 +7,8 @@ from .decorators import admin_required
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm
+from django.conf import settings
+from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm, BillingForm
 from django.core.paginator import Paginator
 from django.db import transaction 
 from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity # Import your model
@@ -676,7 +677,13 @@ def activity_students_list(request, activity_id):
         student = student_activity.student
         students_list.append({
             'studentName': student.studentName,
-            'instrument': student.instrument.instrument_major_name if student.instrument else None,  # Adjust as per your Instrument model
+            'instrument_major_name': student.instrument.instrument_major_name,
+            'instrument_minor_name': student.instrument.instrument_minor_name,
+            'book' : student.book,
+            'gender' : student.gender,
+            'teacher_first_name' : student.assigned_teacher.first_name,
+            'teacher_last_name' : student.assigned_teacher.last_name,
+            'age' : student.age  # Adjust as per your Instrument model
         })
 
     context = {
@@ -745,4 +752,18 @@ def navbartest(request):
 def dashboard(request):
 
     return render(request, 'dashboard.html')
+
+
+@admin_required    
+def billing(request):
+    if request.method == 'POST':
+        form = BillingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Optionally, add success message or redirect to another page
+            messages.success(request, 'Payment bill added successfully.')
+            return redirect('billing')  # Replace with your success URL name
+    else:
+        form = BillingForm()
     
+    return render(request, 'billing.html', {'form': form})

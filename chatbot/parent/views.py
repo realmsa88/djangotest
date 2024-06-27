@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .decorators import parent_required
-from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin
+from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin, StudentActivity
 from teacher.models import ProgressBar, Attendance
 from django.template import loader
 from django.contrib import messages
 from django.http import JsonResponse
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
@@ -450,3 +451,93 @@ def view_report(request, student_id):
     }
     
     return render(request, 'report_template.html', context)
+
+
+def activity_students_list_parent(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id)
+    student_activities = StudentActivity.objects.filter(activity=activity)
+
+    students_list = []
+    for student_activity in student_activities:
+        student = student_activity.student
+        students_list.append({
+            'studentName': student.studentName,
+            'instrument_major_name': student.instrument.instrument_major_name,
+            'instrument_minor_name': student.instrument.instrument_minor_name,
+            'book' : student.book,
+            'gender' : student.gender,
+            'teacher_first_name' : student.assigned_teacher.first_name,
+            'teacher_last_name' : student.assigned_teacher.last_name,
+            'age' : student.age  # Adjust as per your Instrument model
+        })
+
+    context = {
+        'activity': activity,
+        'students_list': students_list,
+    }
+
+    return render(request, 'activity_info_teacher.html', context)
+
+
+
+
+
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+YOUR_DOMAIN = 'http://localhost:8000'  # Replace with your actual domain
+
+def checkout_view(request):
+    context = {
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+    }
+    return render(request, 'checkout.html', context)
+
+def create_checkout_session(request):
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': 'Sample Product',
+                        },
+                        'unit_amount': 1000,  # Amount in cents
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=YOUR_DOMAIN + '/success/',
+            cancel_url=YOUR_DOMAIN + '/cancel/',
+        )
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=403)
+
+    return JsonResponse({'sessionId': checkout_session['id']})
+
+@csrf_exempt
+def stripe_webhook(request):
+    # You can handle webhook events here
+    payload = request.body
+    sig_header = request.headers.get('Stripe-Signature', None)
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        # Invalid payload
+        return JsonResponse({'error': 'Invalid payload'}, status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return JsonResponse({'error': 'Invalid signature'}, status=400)
+
+    # Handle the event
+    if event['type'] == 'checkout.session.completed':
+        # Payment is successful, handle accordingly
+        pass
+
+    return JsonResponse({'status': 'success'})

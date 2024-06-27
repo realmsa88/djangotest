@@ -38,6 +38,10 @@ urlpatterns = [
     path('administrator/fetch_students/<int:instrument_id>/', views.fetch_students, name='fetch_students'),
     path('fetch_teachers/', views.fetch_teachers, name='fetch_teachers'),
     path('activity/details/<int:activity_id>/', views.activity_students_list, name='activity-students-list'),
+    path('administrator/billing', views.billing, name='billing'),
+
+    # path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
+    # path('checkout/', views.checkout_view, name='checkout_view'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
 if settings.DEBUG:

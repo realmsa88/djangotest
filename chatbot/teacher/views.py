@@ -3,7 +3,7 @@ from .decorators import teacher_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
-from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details,Activity
+from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details,Activity, StudentActivity
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from collections import defaultdict, Counter
@@ -669,3 +669,28 @@ def view_report(request, student_id):
     }
     
     return render(request, 'report_template_teacher.html', context)
+
+def activity_students_list_teacher(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id)
+    student_activities = StudentActivity.objects.filter(activity=activity)
+
+    students_list = []
+    for student_activity in student_activities:
+        student = student_activity.student
+        students_list.append({
+            'studentName': student.studentName,
+            'instrument_major_name': student.instrument.instrument_major_name,
+            'instrument_minor_name': student.instrument.instrument_minor_name,
+            'book' : student.book,
+            'gender' : student.gender,
+            'teacher_first_name' : student.assigned_teacher.first_name,
+            'teacher_last_name' : student.assigned_teacher.last_name,
+            'age' : student.age  # Adjust as per your Instrument model
+        })
+
+    context = {
+        'activity': activity,
+        'students_list': students_list,
+    }
+
+    return render(request, 'activity_info_teacher.html', context)

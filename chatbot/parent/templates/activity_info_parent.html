@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Progress Report</title>
     <style>
+        
         /* Basic styling, adjust as needed */
         body {
             font-family: Georgia, 'Times New Roman', Times, serif;
@@ -156,7 +157,7 @@
                     <th>Student Name</th>
                     <th>Instrument</th>
                     <th>Gender</th>
-                    <th>Age</th>
+                
                     <th>Teacher</th>
                     
                 </tr>
@@ -167,7 +168,7 @@
                     <td>{{ student.studentName }}</td>
                     <td>{{ student.instrument_minor_name }} {{ student.instrument_major_name }}</td>
                     <td>{{ student.gender }}</td>
-                    <td>{{ student.age }}</td>
+                    
                     <td>{{ student.teacher_first_name }} {{ student.teacher_last_name }}</td>
                 </tr>
                 {% empty %}
