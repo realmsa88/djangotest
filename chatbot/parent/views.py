@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .decorators import parent_required
-from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin, StudentActivity
+from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin, StudentActivity, Billing
 from teacher.models import ProgressBar, Attendance
 from django.template import loader
 from django.contrib import messages
@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import StudentPhotoForm
 from xhtml2pdf import pisa 
 from django.template.loader import get_template
+from .models import StudentBilling
 
 @parent_required
 @login_required
@@ -488,56 +489,124 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 YOUR_DOMAIN = 'http://localhost:8000'  # Replace with your actual domain
 
 def checkout_view(request):
+    student_id = request.GET.get('student_id')
+    student = get_object_or_404(Student, id=student_id)
+    
+    # Fetch the instrument associated with the student
+    instrument = student.instrument
+    
+    # Fetch all bills related to the instrument
+    student_bills = Billing.objects.filter(category=instrument)
+    
+    # Get paid bill IDs from StudentBilling model
+    paid_bill_ids = list(StudentBilling.objects.filter(student=student, is_paid=True).values_list('billing_id', flat=True))
+    
+    # Filter out bills that are already paid
+    unpaid_student_bills = student_bills.exclude(id__in=paid_bill_ids)
+
+    # Fetch payment history for the student
+    payment_history = StudentBilling.objects.filter(student=student)
+
     context = {
-        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+        'student': student,
+        'instrument': instrument,
+        'student_bills': unpaid_student_bills,
+        'payment_history': payment_history,
+        'paid_bills': paid_bill_ids,  # To use in the template for conditional rendering
     }
     return render(request, 'checkout.html', context)
 
+
+
+
+
+from django.utils import timezone
+from datetime import timedelta
+@csrf_exempt
 def create_checkout_session(request):
-    try:
-        checkout_session = stripe.checkout.Session.create(
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bill_id = data.get('bill_id')
+        student_id = data.get('student_id')
+
+        # Retrieve the Billing object
+        bill = get_object_or_404(Billing, id=bill_id)
+        
+        # Retrieve the selected Student object
+        student = get_object_or_404(Student, id=student_id, assigned_parent=request.user)
+
+        # Create a Stripe Checkout Session
+        session = stripe.checkout.Session.create(
             payment_method_types=['card'],
-            line_items=[
-                {
-                    'price_data': {
-                        'currency': 'usd',
-                        'product_data': {
-                            'name': 'Sample Product',
-                        },
-                        'unit_amount': 1000,  # Amount in cents
+            line_items=[{
+                'price_data': {
+                    'currency': 'myr',
+                    'product_data': {
+                        'name': bill.title,
                     },
-                    'quantity': 1,
+                    'unit_amount': int(bill.fee * 100),  # Stripe expects amount in cents
                 },
-            ],
+                'quantity': 1,
+            }],
             mode='payment',
             success_url=YOUR_DOMAIN + '/success/',
             cancel_url=YOUR_DOMAIN + '/cancel/',
         )
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=403)
 
-    return JsonResponse({'sessionId': checkout_session['id']})
+        # Create a StudentBilling record
+        StudentBilling.objects.create(
+            student=student,
+            billing=bill,
+            due_date=timezone.now() + timedelta(days=30),  # Adjust due date as needed
+            is_paid=True  # This will be updated upon successful payment
+        )
+
+        return JsonResponse({'sessionId': session.id})
+    else:
+        return HttpResponse(status=405)
+
+
 
 @csrf_exempt
 def stripe_webhook(request):
-    # You can handle webhook events here
     payload = request.body
-    sig_header = request.headers.get('Stripe-Signature', None)
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = settings.STRIPE_ENDPOINT_SECRET
 
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            payload, sig_header, endpoint_secret
         )
     except ValueError as e:
         # Invalid payload
-        return JsonResponse({'error': 'Invalid payload'}, status=400)
+        return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        return JsonResponse({'error': 'Invalid signature'}, status=400)
+        return HttpResponse(status=400)
 
-    # Handle the event
+    # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
-        # Payment is successful, handle accordingly
-        pass
+        session = event['data']['object']
+        # Fetch the StudentBilling record and update it
+        student_billing = StudentBilling.objects.get(stripe_session_id=session.id)
+        student_billing.is_paid = True
+        student_billing.save()
 
-    return JsonResponse({'status': 'success'})
+    return HttpResponse(status=200)
+
+
+def student_billing(request):
+    user = request.user
+    students = None
+
+    if user.groups.filter(name='parent').exists():
+        students = Student.objects.filter(assigned_parent=user)
+    elif user.groups.filter(name='teacher').exists():
+        students = Student.objects.filter(assigned_teacher=user)
+
+    context = {
+        'user': user,
+        'students': students,
+    }
+    return render(request,'student_billing.html', context)

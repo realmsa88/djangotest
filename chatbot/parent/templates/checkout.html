@@ -10,26 +10,114 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stripe Checkout</title>
-    <script src="https://js.stripe.com/v3/"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stripe Checkout</title>
+<script src="https://js.stripe.com/v3/"></script>
 
-    <button id="checkout-button">Checkout</button>
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Billing</h1>
+</div>
+<hr class="slide-in-left">
 
-    <script type="text/javascript">
-        // Ensure the public key is correct
-        const stripe = Stripe('{{ stripe_public_key }}');
+<h4>Class Payment for {{ student.studentName }}</h4>
+<br>
 
-        const checkoutButton = document.getElementById('checkout-button');
+<p>Fee List</p>
 
-        checkoutButton.addEventListener('click', () => {
+{% for bill in student_bills %}
+<div class="row mb-3 justify-content-center align-items-center slide-in-left">
+
+    <div class="card mb-3" style="width: 90%;height: 90%; padding: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); border-radius: 10px;">
+        <div class="row g-0">
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center"
+                style="border-right: 1px solid black;">
+                <div class="month" style="color: black;">{{ activity.activity_date|date:"F" }}</div>
+                <div class="day" style="color: black;">{{ activity.activity_date|date:"d" }}</div>
+
+            </div>
+            
+            <div class="col-md-6">
+                
+                <div class="card-body">
+                    <h5 class="card-title mb-4">{{bill.title}}</h5>
+                    <input type="hidden" id="bill-id" value="{{ bill.id }}">
+                    
+                    <div class="no-padding">
+                        <p class="card-text" style=" margin-left: 6px;"><span class="emoji-text">📍</span>
+                            {{bill.description}}
+                         </p>
+                    </div>
+                </div>
+                
+            </div>
+            
+
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+                <div class="month" style="font-weight: normal; color: black; font-size:medium;"> RM {{bill.fee}}</div>
+            </div>
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+                <div class=" mt-2 text-center">
+                    {% if bill.id in paid_bills %}
+                        <button class="invoice-button">Invoice</button>
+                    {% else %}
+                        <!-- Details Button -->
+                        <button class="checkout-button" data-bill-id="{{ bill.id }}" data-student-id="{{ student.id }}">Pay</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<p>Payment History</p>
+
+{% for payment in payment_history %}
+    <div class="row mb-3 justify-content-center align-items-center slide-in-left">
+        <div class="card mb-3" style="width: 90%; padding: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); border-radius: 10px;">
+            <div class="row g-0">
+                <div class="col-md-6">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">{{ payment.billing.title }}</h5>
+                        <p>Due Date: {{ payment.due_date }}</p>
+                        {% if payment.is_paid %}
+                            <p>Status: Paid</p>
+                        {% else %}
+                            <p>Status: Unpaid</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                    <div class="month" style="font-weight: normal; color: black; font-size:medium;"> RM {{ payment.billing.fee }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p>No payment history available.</p>
+{% endfor %}
+
+<script type="text/javascript">
+    // Ensure the public key is correct
+    const stripe = Stripe('{{ stripe_public_key }}');
+
+    const checkoutButtons = document.querySelectorAll('.checkout-button');
+
+    checkoutButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const billId = button.getAttribute('data-bill-id');
+            const studentId = button.getAttribute('data-student-id');
             fetch("{% url 'create_checkout_session' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
-                }
+                },
+                body: JSON.stringify({
+                    bill_id: billId,  // Send the bill ID to the server
+                    student_id: studentId  // Send the student ID to the server
+                })
             })
             .then(response => response.json())
             .then(session => {
@@ -44,5 +132,6 @@
                 console.error('Error:', error);
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}
