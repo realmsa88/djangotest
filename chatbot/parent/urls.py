@@ -21,6 +21,7 @@ urlpatterns = [
     path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
     path('parent/billing', views.student_billing, name='student-billing'),
     path('checkout/', views.checkout_view, name='checkout_view'),
+    path('parent/account-update', views.account_update, name='account-update')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

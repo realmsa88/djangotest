@@ -146,22 +146,6 @@
                 data-address="{{ user_address|get_value:account.id }}">
                 {{ account.first_name }} {{ account.last_name }}
             </td>
-            <!-- <td 
-                data-email="{{ account.email }}" 
-                data-name="{{ account.first_name }} {{ account.last_name }}" 
-                data-us="{{ account.username }}" 
-                data-phone="{{ user_phone_numbers|get_value:account.id }}" 
-                data-address="{{ user_address|get_value:account.id }}">
-                {{account.email}}
-            </td>
-            <td 
-                data-email="{{ account.email }}" 
-                data-name="{{ account.first_name }} {{ account.last_name }}" 
-                data-us="{{ account.username }}" 
-                data-phone="{{ user_phone_numbers|get_value:account.id }}" 
-                data-address="{{ user_address|get_value:account.id }}">
-                {{ user_phone_numbers|get_value:account.id }}
-            </td> -->
             <td 
             data-id="{{ account.id }}"
             data-email="{{ account.email }}" 
@@ -181,19 +165,6 @@
             <td style="text-align: center;">
                 <div class="filter-buttons-container" style="height: 20px;">
 
-                    <!-- <button class="details-button" 
-                        data-account="{{ account.id }}" 
-                        data-email="{{ account.email }}" 
-                        data-name="{{ account.first_name }} {{ account.last_name }}" 
-                        data-us="{{ account.username }}" 
-                        data-phone="{{ user_phone_numbers|get_value:account.id }}" 
-                        data-address="{{ user_address|get_value:account.id }}">
-                        Details
-                    </button> -->
-
-                    <!-- <div class = "pencil-container" onclick="confirmUpdate(this)">
-                        <a class="fa fa-pencil"></a>
-                    </div> -->
                     
                     <div class="icon-container" onclick="confirmDelete(this)" data-username="{{ account.username }}" style="margin-left: 0px;">
                         <i class="fa fa-trash" id="deleteIcon"></i>

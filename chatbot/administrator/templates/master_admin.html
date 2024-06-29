@@ -65,26 +65,90 @@
             height: 400px;
             padding: 16px;
         }
+        .user-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px auto;
+        margin-left: 30px;
+    }
+
+    .user-logo .img {
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+    }
+
+    .user-details {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-details h3 {
+        margin: 0 10px;
+    }
+
+    .user-details h3:first-child {
+        font-size: medium;
+    }
+
+    .user-details h3:last-child {
+        font-size: small;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        margin-top: 10%;
+    }
+
+    .header-image {
+        width: 50%;
+        z-index: -1;
+    }
+
+    .header p {
+        margin: 0;
+    }
     </style>
 </head>
 <body>
+    
     {% include 'loading_screen.html' %}
     <div class="wrapper d-flex align-items-stretch " style="font-size: small;">
         <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #43207a">
             <div class="custom-menu">
                 <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-color: #43207a !important;">
-                <div class="user-logo">
-                    <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
-                    <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
-                    <h3 style="font-size: small;">
-                        {% for group in request.user.groups.all %}
-                            You're an {{ group }}
-                        {% endfor %}
-                    </h3>
-                </div>
+            
+            
+          
+            <div class="header">
+                <!-- <img src="{% static 'images/music1.png' %}" alt="IMG" class="header-image" style="background-size: 30px;"> -->
+                <p style="color: white;">Music Academy Management System</p>
             </div>
+            
+            
+                <hr style="background-color: gray;">
+                <div class="user-logo" >
+                    <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
+                    <div class="user-details">
+                        <h3 style="color: white;">{{ request.user.first_name }} {{ request.user.last_name }} </h3>
+                        <h3 style="font-size: small; color: white;">
+                            {% for group in request.user.groups.all %}
+                            | {{ group }}
+                            {% endfor %}
+                        </h3>
+                    </div>
+                </div>
+                
+         
+
+            <hr style="background-color: gray;">
 
             <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #43207a;">
                 <li class="{% if request.path == '/administrator/dashboard/' %}active{% endif %}">
@@ -101,13 +165,13 @@
                     <a href="{% url 'student' %}"><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Information</span></a>   
                 </li>
 
-                <li class="{% if request.path == '/administrator/modules/' or request.path == '/administrator/modules/register-modules/' %}active{% endif %}">
+                <li class="{% if request.path == '/administrator/modules/' or request.path == '/administrator/modules/register-modules/ or ' %}active{% endif %} ">
                     <a href="{% url 'modules' %}"><span class="fa fa-trophy mr-3"></span><span class="text"> Learning Modules</span></a>
                 </li>
 
-                <li class="{% if request.path == '/administrator/modules/' or request.path == '/administrator/modules/register-modules/' %}active{% endif %}">
-                    <a href="{% url 'billing' %}"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
-                </li>
+                <!-- <li class="{% if request.path == '/administrator/payment-history' or request.path == '/administrator/modules/register-modules/' %}active{% endif %}">
+                    <a href="{% url 'payment-list' %}"><span class="fa fa-money mr-3"></span><span class="text"> Billing</span></a>
+                </li> -->
 
                 <li class="{% if request.path == '/administrator/activity/' or request.path == '/administrator/activity/register-activity/' %}active{% endif %}">
                     <a href="{% url 'activity' %}"><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
@@ -116,12 +180,16 @@
                 <li class="{% if request.path == '/administrator/media/' %}active{% endif %}">
                     <a href="{% url 'media' %}"><span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span></a>
                 </li>
+                
 
                 <li style="position: absolute; bottom: 0; left: 0; width: 100%;">
                     <a href="{% url 'logout' %}"><span class="fa fa-sign-out mr-3"></span><span class="text"> Sign Out</span></a>
                 </li>
             </ul>
+            
+            
         </nav>
+        
 
         <div id="content" class="p-4 p-md-5 pt-5">
             {% block content %}

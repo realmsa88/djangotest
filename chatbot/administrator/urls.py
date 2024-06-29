@@ -39,7 +39,7 @@ urlpatterns = [
     path('fetch_teachers/', views.fetch_teachers, name='fetch_teachers'),
     path('activity/details/<int:activity_id>/', views.activity_students_list, name='activity-students-list'),
     path('administrator/billing', views.billing, name='billing'),
-
+    path('administrator/payment-history', views.payment_list_view, name='payment-list')
     # path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
     # path('checkout/', views.checkout_view, name='checkout_view'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

@@ -1,0 +1,98 @@
+{% extends "master_parent.html" %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+<link rel="stylesheet" href="{% static 'css/student_results.css' %}">
+<style>.progress-background-title {
+    width: 97.8%; /* Ensure it fits the form width */
+    height: 10%;
+    text-align: center; /* Center align text */
+    padding: 10px; /* Padding for better appearance */
+    margin-left: 13px;
+    margin-top: 25px;
+    color: white; /* White text color */
+    line-height: 50px; 
+}
+.form-background {
+        background-color: #ffffff; /* Light gray background */
+        padding: 40px; /* Padding around the form */
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Shadow for depth */
+        margin-top: -45px; /* Space from the top */
+        margin-left: -50px;
+        width: 110%;
+    }
+    .form-control,
+    .form-select {
+        border: 1px solid #ced4da; /* Light border color */
+        padding: .375rem .75rem; /* Padding inside the fields */
+        border-radius: .25rem; /* Rounded corners */
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #80bdff; /* Border color on focus */
+        outline: 0; /* Remove default outline */
+        box-shadow: 0 0 0 .2rem rgba(0, 123, 255, .25); /* Blue shadow on focus */
+    }
+
+label {
+        font-weight: normal;
+        font-size: 14px;
+        color: black; /* Black text color for labels */
+    }</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Update Account Details</h1>
+    <!-- <div id="navbar">
+        <a href="{% url 'attendance' %}" class="navbar-link">Attendance List</a>
+        <a href="{% url 'leave' %}" class="navbar-link">Apply Leave</a>
+    </div> -->
+</div>
+
+<hr class="slide-in-left" style="margin-top: 10px;">
+
+<!-- <div class="container">
+    <div class="card">
+        <div class="progress-background-title" style="margin-top: 30px;height: 60px;">
+            <p style="margin-top: -5px;color: white;">Fill in to register Instrument & Book</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+    </div>
+</div> -->
+
+<div class="wrapper slide-in">
+    <div class="main">
+        <div class="container">
+            <div class="form-container p-5">
+                <div class="form-background">
+                    <div class="progress-background-title" style="margin-top: 30px;height: 60px;">
+                        <p style="margin-top: -5px;color: white;">Update Account</p>
+                    </div>
+                    <hr>
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div> <!-- End of form-background div -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

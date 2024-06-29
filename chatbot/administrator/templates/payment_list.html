@@ -1,0 +1,265 @@
+{% extends 'master_admin.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'js/navbar.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/student_results.css' %}">
+<link rel="stylesheet" href="{% static 'css/learning_modules.css' %}">
+<style>
+    .form-background {
+        background-color: #ffffff; /* Light gray background */
+        padding: 40px; /* Padding around the form */
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+        margin-top: -45px; /* Space from the top */
+        margin-left: -50px;
+        width: 110%;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da; /* Light border color */
+        padding: .375rem .75rem; /* Padding inside the fields */
+        border-radius: .25rem; /* Rounded corners */
+    }
+
+    label {
+        font-weight: normal;
+        font-size: 14px;
+    }
+
+    .form-select {
+        border: 1px solid #ced4da; /* Light border color */
+        padding: .375rem .75rem; /* Padding inside the fields */
+        border-radius: .25rem; /* Rounded corners */
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff; /* Border color on focus */
+        outline: 0; /* Remove default outline */
+        box-shadow: 0 0 0 .2rem rgba(0, 123, 255, .25); /* Blue shadow on focus */
+    }
+
+    .cancel-btn {
+        background-color: #dc3545; /* Red background color */
+        color: white; /* White text color */
+        border: none; /* Remove border */
+        padding: .375rem .75rem; /* Padding */
+        border-radius: .25rem; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor */
+    }
+
+    .buttons {
+        background-color: #28a745; /* Green background color */
+        color: white; /* White text color */
+        border: none; /* Remove border */
+        padding: .375rem .75rem; /* Padding */
+        border-radius: .25rem; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor */
+    }
+
+    .form-control::placeholder,
+    .form-select::placeholder {
+        color: gray; /* Placeholder text color */
+        opacity: 1; /* Ensure placeholder is fully visible */
+    }
+
+    .cancel-btn:hover, .buttons:hover {
+        opacity: 0.8; /* Hover effect */
+    }
+
+    label {
+        color: black; /* Black text color for labels */
+    }
+
+    .form-control {
+        border: 1px solid #ced4da; /* Light border color */
+        padding: .375rem .75rem; /* Padding inside the fields */
+        border-radius: .25rem; /* Rounded corners */
+        color: black; /* Text color */
+    }
+
+    .form-select {
+        border: 1px solid #ced4da; /* Light border color */
+        padding: .375rem .75rem; /* Padding inside the fields */
+        border-radius: .25rem; /* Rounded corners */
+        color: black; /* Text color */
+    }
+
+    #successMessage {
+        display: none;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        border-radius: 5px;
+    }
+
+    #selectedStudents {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    #selectedStudents li {
+        list-style-type: none;
+        margin-bottom: 5px;
+        padding: 5px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+
+    .progress-background-title {
+        width: 97.8%; /* Ensure it fits the form width */
+        height: 10%;
+        text-align: center; /* Center align text */
+        padding: 10px; /* Padding for better appearance */
+        margin-left: 13px;
+        margin-top: 25px;
+        color: white; /* White text color */
+        line-height: 50px; 
+    }
+
+    .payment-card {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        margin-bottom: 15px;
+        padding: 15px;
+        width: 1150px;
+    }
+
+    .payment-card h4 {
+        margin-top: 0;
+    }
+
+    .payment-card p {
+        margin-bottom: 5px;
+    }
+    .card {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+</style>
+
+<div class="header-container">
+    <h1 style="font-size: 20px;" class="slide-in-left">Payment List</h1>
+
+    <div id="navbar">
+        <a href="{% url 'payment-list' %}" class="navbar-link">Payment List</a>
+        <a href="{% url 'billing' %}" class="navbar-link">Create Payment</a>
+    </div>
+</div>
+
+<hr class="slide-in-left">
+
+<!-- <div class="search-container">
+    <input type="text" id="searchInput" onkeyup="searchFunction()" placeholder="Search by student name...">
+</div> -->
+<br>
+<div id="all-payments" class="slide-in">
+    <p style="font-size: 16px; font-weight: bold;" class="slide-in-left">Payments History</p>
+    <br>
+    <div class="row">
+        {% for payment in all_payments %}
+        <div class="col-md-4">
+            <div class="payment-card" style="padding: 16px;">
+                <p style="font-size: 14px;"><strong>{{ payment.billing.title }}</strong></p>
+                <p><strong></strong> {{ payment.student.studentName }}</p>  
+                <p><strong></strong> {{ payment.student.instrument }}</p>
+                <p><strong>Due Date:</strong> {{ payment.due_date }}</p>
+                
+                {% if payment.is_paid %}
+                    <p><strong></strong> <span class="text-success font-italic">Paid</span></p>
+                {% else %}
+                    <p><strong></strong> <span class="text-danger font-italic">Unpaid</span></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
+            <div class="month" style="font-weight: normal; color: black; font-size:medium;"> RM {{payment.billing.fee}}</div>
+        </div>
+        {% empty %}
+        <div class="col-md-12">
+            <p>No payments found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<hr style="background-color: gray;" class="slide-in-left">
+
+<div id="unpaid-students" class="slide-in">
+    <p style="font-size: 16px; font-weight: bold;" class="slide-in-left">Pending Payments</p>
+  
+    {% for instrument, unpaid_students in unpaid_students_by_instrument.items %}
+    <div class="instrument-section">
+
+        {% if unpaid_students %}
+            <div class="card-deck">
+                {% for entry in unpaid_students %}
+                <div class="card mb-3">
+                    <div class="card-header" style="color: black; font-weight: bold;">
+                        {{ entry.student.studentName }}
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for billing_entry in entry.unpaid_billings %}
+                        <li class="list-group-item">
+                            <strong>{{ billing_entry.title }}</strong> <br>
+                            <strong>Category:</strong> {{ billing_entry.category }}<br>
+                            <strong></strong> RM {{ billing_entry.fee }}<br>
+                            <strong>Description:</strong> {{ billing_entry.description }}<br>
+           
+
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No students with unpaid bills for this instrument.</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+
+<script>
+    function searchFunction() {
+        var input, filter, cards, cardContainer, studentName, i;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        cardContainer = document.getElementById("all-payments");
+        cards = cardContainer.getElementsByClassName("payment-card");
+
+        for (i = 0; i < cards.length; i++) {
+            studentName = cards[i].querySelector("p:nth-child(2)"); // Adjust to target the correct element containing student name
+            if (studentName.innerText.toUpperCase().indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+
+
+
+
+{% endblock %}

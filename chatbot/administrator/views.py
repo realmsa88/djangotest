@@ -11,7 +11,8 @@ from django.conf import settings
 from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm, BillingForm
 from django.core.paginator import Paginator
 from django.db import transaction 
-from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity # Import your model
+from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity, Billing # Import your model
+from parent.models import StudentBilling
 from django.views.decorators.csrf import csrf_exempt
 from teacher.models import Attendance, Teacher
 import json
@@ -767,3 +768,42 @@ def billing(request):
         form = BillingForm()
     
     return render(request, 'billing.html', {'form': form})
+
+def payment_list(request):
+    return render(request,'payment_list.html')
+
+def payment_list_view(request):
+    # Retrieve all instruments
+    instruments = Instrument.objects.all()
+
+    unpaid_students_by_instrument = {}
+
+    for instrument in instruments:
+        # Get all students enrolled in the instrument
+        students_in_instrument = Student.objects.filter(instrument=instrument)
+
+        # Filter students who haven't paid yet for this instrument's bills
+        unpaid_students = students_in_instrument.exclude(
+            id__in=StudentBilling.objects.filter(billing__category=instrument, is_paid=True).values('student_id')
+        )
+
+        # Fetch unpaid billings directly from Billing model for unpaid students
+        unpaid_students_with_billings = []
+        for student in unpaid_students:
+            unpaid_billings = Billing.objects.filter(category=instrument).exclude(
+                id__in=StudentBilling.objects.filter(student=student, is_paid=True).values('billing_id')
+            )
+            unpaid_students_with_billings.append({
+                'student': student,
+                'unpaid_billings': unpaid_billings
+            })
+
+        # Append to dictionary if there are unpaid students with their unpaid billings
+        if unpaid_students_with_billings:
+            unpaid_students_by_instrument[instrument] = unpaid_students_with_billings
+
+    context = {
+        'unpaid_students_by_instrument': unpaid_students_by_instrument,
+        'all_payments': StudentBilling.objects.all()  # Adjust this as needed
+    }
+    return render(request, 'payment_list.html', context)

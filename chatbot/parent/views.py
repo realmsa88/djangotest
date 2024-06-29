@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .decorators import parent_required
 from administrator.models import Student, BookInstrument, ModuleDetails, Instrument, Teacher, auth_user_details, Activity, ParentLogin, StudentActivity, Billing
 from teacher.models import ProgressBar, Attendance
+from django.contrib.auth.forms import PasswordChangeForm
 from django.template import loader
 from django.contrib import messages
 from django.http import JsonResponse
@@ -18,7 +19,7 @@ from .forms import StudentPhotoForm
 from xhtml2pdf import pisa 
 from django.template.loader import get_template
 from .models import StudentBilling
-
+from .forms import UserUpdateForm
 @parent_required
 @login_required
 def parent(request):
@@ -517,6 +518,36 @@ def checkout_view(request):
     }
     return render(request, 'checkout.html', context)
 
+from django.contrib.auth import update_session_auth_hash
+def account_update(request):
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        password_form = PasswordChangeForm(request.user, request.POST)
+        
+        if user_form.is_valid():
+            user = user_form.save(commit=False)
+            
+            # Check if the password fields are provided and valid
+            if 'new_password1' in request.POST and request.POST['new_password1']:
+                if password_form.is_valid():
+                    user.set_password(password_form.cleaned_data['new_password1'])
+                    update_session_auth_hash(request, user)  # Important to maintain the session
+                    messages.success(request, 'Your password was successfully updated!')
+                else:
+                    messages.error(request, 'Password update failed. Please correct the errors.')
+
+            user.save()  # Save user details regardless of password update
+            messages.success(request, 'Your account details have been updated.')
+            return redirect('dashboard')  # Redirect to dashboard or wherever after update
+        
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        password_form = PasswordChangeForm(request.user)
+    
+    return render(request, 'account_update.html', {
+        'form': user_form,
+        'password_form': password_form,
+    })
 
 
 
@@ -554,12 +585,11 @@ def create_checkout_session(request):
             cancel_url=YOUR_DOMAIN + '/cancel/',
         )
 
-        # Create a StudentBilling record
         StudentBilling.objects.create(
             student=student,
             billing=bill,
-            due_date=timezone.now() + timedelta(days=30),  # Adjust due date as needed
-            is_paid=True  # This will be updated upon successful payment
+            due_date=timezone.now() + timedelta(days=30), 
+            is_paid=True  
         )
 
         return JsonResponse({'sessionId': session.id})
@@ -588,12 +618,40 @@ def stripe_webhook(request):
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        # Fetch the StudentBilling record and update it
-        student_billing = StudentBilling.objects.get(stripe_session_id=session.id)
-        student_billing.is_paid = True
-        student_billing.save()
+        
+        # Retrieve the Stripe Session ID from the event
+        stripe_session_id = session['id']
+
+        # Retrieve the Billing ID from the session metadata (you may need to customize this based on your implementation)
+        bill_id = session['metadata']['bill_id']
+        
+        # Retrieve the Student ID from the session metadata
+        student_id = session['metadata']['student_id']
+
+        # Retrieve the Billing object
+        bill = get_object_or_404(Billing, id=bill_id)
+        
+        # Retrieve the selected Student object
+        student = get_object_or_404(Student, id=student_id, assigned_parent=request.user)
+
+        # Create a StudentBilling record
+        StudentBilling.objects.create(
+            student=student,
+            billing=bill,
+            due_date=timezone.now() + timedelta(days=30),  # Adjust due date as needed
+            is_paid=True,
+            stripe_session_id=stripe_session_id  # Save the Stripe Session ID
+        )
 
     return HttpResponse(status=200)
+
+
+
+
+
+
+
+
 
 
 def student_billing(request):

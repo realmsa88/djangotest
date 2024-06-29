@@ -1,7 +1,7 @@
 {
     "attendance": {
         "parent": [
-            "To check your child's attendance, navigate to the following: Dashboard > Attendance",
+            "To check your child's attendance, navigate to the following: Dashboard > Student Attendance. Click on the 'View Attendance' button of a child to view their current attendance records.",
             "Attendance records are available for parent viewing on the student dashboard."
         ],
         "teacher": [

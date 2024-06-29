@@ -10,6 +10,17 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 
+<style>
+    button {
+        background-color: green;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        width: 150%;
+        height: 150%;
+    }
+</style>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stripe Checkout</title>
@@ -20,22 +31,18 @@
 </div>
 <hr class="slide-in-left">
 
-<h4>Class Payment for {{ student.studentName }}</h4>
+<p style="font-size: 14px;" class="slide-in">Class Payment for {{ student.studentName }}</p>
 <br>
 
-<p>Fee List</p>
+<p style="font-weight: bold;" class="slide-in-left">Fee List</p>
+<hr style="background-color: gray; " class="slide-in-left">
 
 {% for bill in student_bills %}
-<div class="row mb-3 justify-content-center align-items-center slide-in-left">
+<div class="row mb-3 justify-content-center align-items-center slide-in">
 
     <div class="card mb-3" style="width: 90%;height: 90%; padding: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); border-radius: 10px;">
         <div class="row g-0">
-            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center"
-                style="border-right: 1px solid black;">
-                <div class="month" style="color: black;">{{ activity.activity_date|date:"F" }}</div>
-                <div class="day" style="color: black;">{{ activity.activity_date|date:"d" }}</div>
-
-            </div>
+            
             
             <div class="col-md-6">
                 
@@ -44,7 +51,7 @@
                     <input type="hidden" id="bill-id" value="{{ bill.id }}">
                     
                     <div class="no-padding">
-                        <p class="card-text" style=" margin-left: 6px;"><span class="emoji-text">📍</span>
+                        <p class="card-text" style=" "><span class="emoji-text"></span>
                             {{bill.description}}
                          </p>
                     </div>
@@ -69,12 +76,16 @@
         </div>
     </div>
 </div>
+{% empty %}
+    <p>No payment history available.</p>
 {% endfor %}
+<br>
 
-<p>Payment History</p>
+<p style="font-weight: bold;" class="slide-in-left">Payment History</p>
+<hr style="background-color: gray;" class="slide-in-left">
 
 {% for payment in payment_history %}
-    <div class="row mb-3 justify-content-center align-items-center slide-in-left">
+    <div class="row mb-3 justify-content-center align-items-center slide-in">
         <div class="card mb-3" style="width: 90%; padding: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); border-radius: 10px;">
             <div class="row g-0">
                 <div class="col-md-6">
@@ -82,10 +93,10 @@
                         <h5 class="card-title mb-4">{{ payment.billing.title }}</h5>
                         <p>Due Date: {{ payment.due_date }}</p>
                         {% if payment.is_paid %}
-                            <p>Status: Paid</p>
-                        {% else %}
-                            <p>Status: Unpaid</p>
-                        {% endif %}
+                    <p><strong></strong> <span class="text-success font-italic">Paid</span></p>
+                {% else %}
+                    <p><strong></strong> <span class="text-danger font-italic">Unpaid</span></p>
+                {% endif %}
                     </div>
                 </div>
                 <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
@@ -95,7 +106,7 @@
         </div>
     </div>
 {% empty %}
-    <p>No payment history available.</p>
+    <p class="slide-in">No payment history available.</p>
 {% endfor %}
 
 <script type="text/javascript">

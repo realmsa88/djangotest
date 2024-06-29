@@ -61,30 +61,92 @@
             padding: 16px;
             margin-left: 15px;
         }
+        .user-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px auto;
+        margin-left: 30px;
+    }
+
+    .user-logo .img {
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+    }
+
+    .user-details {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-details h3 {
+        margin: 0 10px;
+    }
+
+    .user-details h3:first-child {
+        font-size: medium;
+    }
+
+    .user-details h3:last-child {
+        font-size: small;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        margin-top: 10%;
+    }
+
+    .header-image {
+        width: 50%;
+        z-index: -1;
+    }
+
+    .header p {
+        margin: 0;
+    }
 
     </style>
 </head>
 <body>
 
     {% include 'loading_screen.html' %}
-
-    <div class="wrapper d-flex align-items-stretch" style="font-size: small;">
-        <nav id="sidebar" class="collapsed" style="position: fixed;background-color: #43207a">
+    <div class="wrapper d-flex align-items-stretch " style="font-size: small;">
+        <nav id="sidebar" class="collapsed" style="position: fixed; background-color: #43207a">
             <div class="custom-menu">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;">
-                </button>
+                <button type="button" id="sidebarCollapse" class="btn btn-primary" style="background-color: #32373d;"></button>
             </div>
-            <div class="img bg-wrap text-center py-4" style="background-color: #43207a !important;">
-                <div class="user-logo">
-                    <div class="img" style="background-image: url({% static 'images/face2.jpg' %})"></div>
-                    <h3>Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h3>
-                    <h3 style="font-size: small;"> 
-                        {% for group in request.user.groups.all %}
-                           You're a {{ group }}
-                        {% endfor %}
-                    </h3>
+            
+            
+          
+            <div class="header">
+                <!-- <img src="{% static 'images/music1.png' %}" alt="IMG" class="header-image" style="background-size: 30px;"> -->
+                <p style="color: white;">Music Academy Management System</p>
+            </div>
+            
+            
+                <hr style="background-color: gray;">
+                <div class="user-logo" >
+                    <div class="img" style="background-image: url('http://bootdey.com/img/Content/avatar/avatar1.png')"></div>
+                    <div class="user-details">
+                        <h3 style="color: white;">{{ request.user.first_name }} {{ request.user.last_name }} </h3>
+                        <h3 style="font-size: small; color: white;">
+                            {% for group in request.user.groups.all %}
+                            | {{ group }}
+                            {% endfor %}
+                        </h3>
+                    </div>
                 </div>
-            </div>
+                
+         
+
+            <hr style="background-color: gray;">
+
             <ul class="list-unstyled components mb-5" style="padding-left: 0; background-color: #43207a">
                 <li class="{% if request.path == '/parent/' %}active{% endif %}">
                     <a href="{% url 'parent' %}">
@@ -106,11 +168,11 @@
                         <span class="fa fa-book mr-3"></span><span class="text"> Student Attendance</span>
                     </a>
                 </li>
-                <li>
+                <!-- <li>
                     <a href="{% url 'student-billing' %}">
                         <span class="fa fa-money mr-3"></span><span class="text"> Billing</span>
                     </a>
-                </li>
+                </li> -->
                 <li>
                     <a href="{% url 'activities-list' %}">
                         <span class="fa fa-pencil mr-3"></span><span class="text"> Activities List</span>
