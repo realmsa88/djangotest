@@ -213,7 +213,7 @@
 
             <!-- Additional field for instruments -->
             <div style="margin-top: 20px;" id="instrumentsContainer">
-                <label for="id_instruments">Instruments Teaching</label><br>
+                <label for="id_instruments" style="color: black;">Instruments Teaching</label><br>
                 {{teacher_form.instruments}}
             </div>
 
@@ -264,7 +264,7 @@
 
         function toggleInstrumentsContainer() {
             var selectedGroup = groupDropdown.options[groupDropdown.selectedIndex].text;
-            if (selectedGroup === 'Teacher') {
+            if (selectedGroup === 'teacher') {
                 instrumentsContainer.style.display = 'block';
             } else {
                 instrumentsContainer.style.display = 'none';

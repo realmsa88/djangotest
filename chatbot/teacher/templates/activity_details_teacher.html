@@ -2,47 +2,609 @@
 {% load static %}
 
 {% block content %}
+
+<link href="{% static 'css/main.css' %}" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery-bundle.min.css">
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
+
+    p {
+        color: black;
+    }
+    .modal-container {
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            min-height: 435px;
+            margin: auto;
+            background-color: white;
+            border-radius: 16px;
+            /* box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px; */
+        }
+
+        .header-section {
+            padding: 25px 0px;
+        }
+
+        .header-section h1 {
+            font-weight: 500;
+            font-size: 1.7rem;
+            text-transform: uppercase;
+            color: #707EA0;
+            margin: 0px;
+            margin-bottom: 8px;
+        }
+
+        .header-section p {
+            margin: 5px;
+            font-size: 0.95rem;
+            color: #707EA0;
+        }
+
+        .drop-section {
+            min-height: 250px;
+            border: 1px dashed #A8B3E3;
+            background-image: linear-gradient(180deg, white, #F1F6FF);
+            margin: 5px 35px 35px 35px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .drop-section div.col:first-child {
+            opacity: 1;
+            visibility: visible;
+            transition-duration: 0.2s;
+            transform: scale(1);
+            width: 200px;
+            margin: auto;
+        }
+
+        .drop-section div.col:last-child {
+            font-size: 40px;
+            font-weight: 700;
+            color: #c0cae1;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            margin: auto;
+            width: 200px;
+            height: 55px;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.6);
+            transition-duration: 0.2s;
+        }
+
+        .drag-over-effect div.col:first-child {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+
+        .drag-over-effect div.col:last-child {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .drop-section .cloud-icon {
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        .drop-section span,
+        .drop-section button {
+            display: block;
+            margin: auto;
+            color: #707EA0;
+            margin-bottom: 10px;
+        }
+
+        .drop-section button {
+            color: white;
+            background-color: #5874C6;
+            border: none;
+            outline: none;
+            padding: 7px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+        }
+
+        .drop-section input {
+            display: none;
+        }
+
+        .list-section {
+            display: none;
+            text-align: left;
+            margin: 0px 35px;
+            padding-bottom: 20px;
+        }
+
+        .list-section .list-title {
+            font-size: 0.95rem;
+            color: #707EA0;
+        }
+
+        .list-section li {
+            display: flex;
+            margin: 15px 0px;
+            padding-top: 4px;
+            padding-bottom: 2px;
+            border-radius: 8px;
+            transition-duration: 0.2s;
+        }
+
+        .list-section li:hover {
+            box-shadow: #E3EAF9 0px 0px 4px 0px, #E3EAF9 0px 12px 16px 0px;
+        }
+
+        .list-section li .col {
+            flex: .1;
+        }
+
+        .list-section li .col:nth-child(1) {
+            flex: .15;
+            text-align: center;
+        }
+
+        .list-section li .col:nth-child(2) {
+            flex: .75;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #3e4046;
+            padding: 8px 10px;
+        }
+
+        .list-section li .col:nth-child(2) div.name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: 250px;
+            display: inline-block;
+        }
+
+        .list-section li .col .file-name span {
+            color: #707EA0;
+            float: right;
+        }
+
+        .list-section li .file-progress {
+            width: 100%;
+            height: 5px;
+            margin-top: 8px;
+            border-radius: 8px;
+            background-color: #dee6fd;
+        }
+
+        .list-section li .file-progress span {
+            display: block;
+            width: 0%;
+            height: 100%;
+            border-radius: 8px;
+            background-image: linear-gradient(120deg, #6b99fd, #9385ff);
+            transition-duration: 0.4s;
+        }
+
+        .list-section li .col .file-size {
+            font-size: 0.75rem;
+            margin-top: 3px;
+            color: #707EA0;
+        }
+
+        .list-section li .col svg.cross,
+        .list-section li .col svg.tick {
+            fill: #8694d2;
+            background-color: #dee6fd;
+            position: relative;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        .list-section li .col svg.tick {
+            fill: #50a156;
+            background-color: transparent;
+        }
+
+        .list-section li.complete span,
+        .list-section li.complete .file-progress,
+        .list-section li.complete svg.cross {
+            display: none;
+        }
+
+        .list-section li.in-prog .file-size,
+        .list-section li.in-prog svg.tick {
+            display: none;
+        }
     .media-item {
         display: inline-block;
-        width: calc(25% - 10px); /* 25% width for each item with 10px margin */
-        margin: 5px; /* Adjust margin as needed */
-        text-align: center; /* Center align images */
+        width: calc(25% - 10px);
+        margin: 5px;
+        text-align: center;
     }
 
     .media-item img {
-        max-width: 100%; /* Ensure images don't exceed container width */
-        height: auto; /* Maintain aspect ratio */
+        max-width: 100%;
+        height: auto;
     }
+
+    .img-fixed {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    .floating-button {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background-color: #165227;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .floating-button:hover {
+        background-color: #148634;
+    }
+
+    .modal-header {
+        background-color: #165227;
+        color: white;
+    }
+
+    .gallery {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    .gallery-item-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 5px;
+        width: 23%;
+    }
+
+    .gallery a {
+        position: relative;
+        display: inline-block;
+        height: 250px;
+        width: 100%;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 10px 10px 5px #888888;
+    }
+    .modal-backdrop {
+    display: none;
+}
+
+
+    .gallery a img,
+    .gallery a video {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        will-change: transform;
+    }
+
+    .gallery a img:hover,
+    .gallery a video:hover {
+        transform: scale(1.1);
+    }
+
+    .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        color: white;
+        pointer-events: none;
+    }
+
+    .gallery-item {
+        width: 200px;
+        padding: 5px;
+        box-shadow: 10px 10px 5px #888888;
+    }
+
+    .lg-toolbar svg {
+        fill: #999;
+        width: 22px;
+        height: 22px;
+    }
+
+    
+    .modal-dialog {
+        max-width: 800px; /* Increase this value as needed */
+    }
+
+
+    .lg-toolbar .lg-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card,
+    .accordion,
+    .form-container {
+        box-shadow: 10px 10px 5px #888888;
+    }
+
+    .drop-section {
+    min-height: 250px;
+    border: 1px dashed #A8B3E3;
+    background-image: linear-gradient(180deg, white, #F1F6FF);
+    margin: 5px 35px 35px 35px;
+    border-radius: 12px;
+    position: relative;
+    text-align: center;
+}
+
+.drag-over-effect {
+    background-color: #f0f0f0; /* Adjust as needed */
+    border-color: #707EA0; /* Adjust as needed */
+}
+
 </style>
 
-<p style="font-size: 18px;">Activity Details</p>
-<hr>
+<div class="wrapper">
+    <div class="main">
+        <header>
+            <span class="ms-2">Media Gallery</span>
+        </header>
+        <hr>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb ms-5 mt-2">
+                <li class="breadcrumb-item"><a href="">Gallery</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Media</li>
+            </ol>
+        </nav>
 
-<p style="font-size: 18px;">{{ activity.activity_name }}</p>
-<p>Date: {{ activity.activity_date }}</p>
-<p>Type: {{ activity.activity_type }}</p>
-
-{% if albums %}
-    <!-- <p>Albums and Media:</p> -->
-    {% for album in albums %}
-        <!-- <p>Album ID: {{ album.id }}</p> -->
-        <!-- <p>Album Activity: {{ album.activityID }}</p> Ensure this line makes sense based on your model structure -->
-        <div class="media-container">
-            <!-- Display media items associated with the album -->
-            {% for media_item in album.media_set.all %}
-                {% if forloop.counter0|divisibleby:4 %}
-                    </div><div class="media-container">
-                {% endif %}
-                <div class="media-item">
-                    <!-- Assuming media_name is the field storing the image filename -->
-                    <img src="{% static 'images/' %}{{ media_item.media_name }}" alt="{{ media_item.media_type }}">
+        <div class="container p-5">
+            <div class="gallery" id="gallery">
+                {% if not albums %}
+                <div class="row mb-3 justify-content-center align-items-center">
+                    <div class="card mb-3" style="width: 100%; border: 2px solid black; padding: 0;">
+                        <div class="row g-0">
+                            <div class="col-md-12 d-flex flex-column justify-content-center align-items-center">
+                                <div class="card-body">
+                                    No Media Uploaded
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            {% endfor %}
+                {% else %}
+                {% for album in albums %}
+                <div class="media-container">
+                    {% for media_item in album.media_set.all %}
+                    {% if forloop.counter0|divisibleby:4 %}
+                    </div><div class="media-container">
+                    {% endif %}
+                    <div class="media-item">
+                        <a href="{% static 'media/' %}{{ media_item.file }}">
+                            {% if media_item.is_image %}
+                            <img src="{% static 'media/' %}{{ media_item.file }}" alt="" class="img-fixed" style="border: 1px solid white;">
+                            {% elif media_item.is_video %}
+                            <video src="{% static 'media/' %}{{ media_item.file }}" class="img-fixed" style="border: 1px solid white;"></video>
+                            <div class="play-button">
+                                <i class="bi bi-play-circle"></i>
+                            </div>
+                            {% endif %}
+                        </a>
+                        <form action="" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this media?');" class="btn btn-danger btn-xs mt-3">Delete</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            <button id="uploadMedia" class="floating-button" role="button" data-toggle="modal" data-target="#uploadMediaModal" data-tippy-content="Upload Media">+</button>
+
+            <div class="modal fade" id="uploadMediaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="uploadMediaModal">Upload Media</h5>
+                            <button type="button" class="custom-close-button" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Content loaded dynamically via AJAX -->
+                            <div class="modal-container">
+                                <div class="header-section">
+                                    <!-- <h1>Upload Files</h1> -->
+                                    <p>Upload images or videos that you want to share.</p>
+                                </div>
+                                <div class="drop-section">
+                                    <div class="col">
+                                        <div class="cloud-icon">
+                                            <img src="../pictures/icons/cloud.png" alt="cloud">
+                                        </div>
+                                        <!-- <span><?php echo $albumID ?></span> -->
+                                        <span>Drag & Drop your files here</span>
+                                        <span>OR</span>
+                                        <button class="file-selector">Browse Files</button>
+                                        <input type="file" class="file-selector-input" accept="image/*,video/*" multiple>
+                                    </div>
+                                    <div class="col">
+                                        <div class="drop-here">Drop Here</div>
+                                    </div>
+                                </div>
+                                <div class="list-section">
+                                    <div class="list-title">Uploaded Files</div>
+                                    <div class="list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endfor %}
-{% else %}
-    <p>No albums or media associated with this activity.</p>
-{% endif %}
+    </div>
+</div>
+
+
+<hr>
+<p style="font-size: 18px;">{{ activity.activity_name }}</p>
+<p> {{ activity.activity_date }}</p>
+<p>{{ activity.activity_type }}</p>
+
+<script>
+
+const dropArea = $('.drop-section');
+const listSection = $('.list-section');
+const listContainer = $('.list');
+const fileSelector = $('.file-selector');
+const fileSelectorInput = $('.file-selector-input');
+
+// Upload files with browse button
+fileSelector.on('click', () => fileSelectorInput.click());
+fileSelectorInput.on('change', function () {
+    [...this.files].forEach(file => {
+        if (typeValidation(file.type)) {
+            uploadFile(file);
+        }
+    });
+});
+
+// When file is over the drag area
+dropArea.on('dragover', function (e) {
+    e.preventDefault();
+    [...e.originalEvent.dataTransfer.items].forEach(item => {
+        if (typeValidation(item.type)) {
+            dropArea.addClass('drag-over-effect');
+        }
+    });
+});
+
+// When file leaves the drag area
+dropArea.on('dragleave', () => dropArea.removeClass('drag-over-effect'));
+
+// When file drops on the drag area
+dropArea.on('drop', function (e) {
+    e.preventDefault();
+    dropArea.removeClass('drag-over-effect');
+    if (e.originalEvent.dataTransfer.items) {
+        [...e.originalEvent.dataTransfer.items].forEach(item => {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                if (typeValidation(file.type)) {
+                    uploadFile(file);
+                }
+            }
+        });
+    } else {
+        [...e.originalEvent.dataTransfer.files].forEach(file => {
+            if (typeValidation(file.type)) {
+                uploadFile(file);
+            }
+        });
+    }
+});
+
+// Check the file type
+function typeValidation(type) {
+    const splitType = type.split('/')[0];
+    return splitType === 'image' || splitType === 'video';
+}
+
+// Upload file function
+function uploadFile(file) {
+    listSection.show();
+    const li = $(`
+        <li class="in-prog">
+            <div class="col">
+                <img src="../pictures/icons/${iconSelector(file.type)}" alt="">
+            </div>
+            <div class="col">
+                <div class="file-name">
+                    <div class="name">${file.name}</div>
+                    <span>0%</span>
+                </div>
+                <div class="file-progress">
+                    <span></span>
+                </div>
+                <div class="file-size">${(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+            </div>
+            <div class="col">
+                <svg xmlns="http://www.w3.org/2000/svg" class="cross" height="20" width="20">
+                    <path d="m5.979 14.917-.854-.896 4-4.021-4-4.062.854-.896 4.042 4.062 4-4.062.854.896-4 4.062 4 4.021-.854.896-4-4.063Z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="tick" height="20" width="20">
+                    <path d="m8.229 14.438-3.896-3.917 1.438-1.438 2.458 2.459 6-6L15.667 7Z"/>
+                </svg>
+            </div>
+        </li>
+    `);
+    listContainer.prepend(li);
+    const http = new XMLHttpRequest();
+    const data = new FormData();
+    data.append('file', file);
+    // Adjust the URL and data as needed for your backend
+    http.onload = () => {
+        if (http.status === 200) {
+            li.addClass('complete').removeClass('in-prog');
+        } else {
+            li.remove();
+        }
+    };
+    http.upload.onprogress = e => {
+        const percent_complete = (e.loaded / e.total) * 100;
+        li.find('.file-name span').text(Math.round(percent_complete) + '%');
+        li.find('.file-progress span').css('width', percent_complete + '%');
+    };
+    http.open('POST', '/your-upload-endpoint', true); // Adjust the endpoint URL
+    http.send(data);
+    li.find('.cross').on('click', () => http.abort());
+    http.onabort = () => li.remove();
+}
+
+// Find icon for file
+function iconSelector(type) {
+    const splitType = type.split('/')[0];
+    return splitType + '.png';
+}
+
+
+        http.onload = () => {
+            if (http.status === 200) {
+                console.log('Upload successful:', http.responseText);
+                li.addClass('complete').removeClass('in-prog');
+            } else {
+                console.error('Upload failed:', http.responseText);
+                li.remove();
+            }
+        };
+</script>
 
 {% endblock %}

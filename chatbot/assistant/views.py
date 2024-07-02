@@ -1,19 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .forms import UserInputForm
 from .models import Conversation, DatasetEntry, Label, PredictedCategory
-from .pipeline import X, clean_text, tfidf_vectorizer, voting_classifier
-from django.db import transaction
+from .pipeline import clean_text, tfidf_vectorizer, voting_classifier
 from django.utils import timezone
 import openai
-import os, random
+from django.db import transaction
+import os
 import json
-from .forms import UserInputForm
-from django.http import JsonResponse
 from fuzzywuzzy import fuzz
-from django.views.decorators.csrf import csrf_exempt
 
 # Set your OpenAI API key
-openai.api_key = 'sk-proj-AHJWIDMGtfWVJDaeSzSET3BlbkFJBTRlLnLqZw8PTNmnRORs'  # Replace with your actual API key
+openai.api_key = 'sk-proj-ponELUze39kLA3NR56jaT3BlbkFJcOQVQGYGrCkcCpeziM4I'  # Replace with your actual API key
 
 # Get the directory of the current file
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +37,7 @@ def get_most_similar_response(user_input, predefined_responses):
             most_similar_response = response
     
     return most_similar_response
-# @csrf_exempt
+@csrf_exempt
 @transaction.atomic
 def chat(request):
     if request.method == 'POST':
@@ -141,6 +140,3 @@ def generate_assistant_response(user_input):
         stop=None,
     )
     return response.choices[0].message['content']
-
-
-

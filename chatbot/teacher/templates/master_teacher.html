@@ -84,8 +84,8 @@
             </div>
 
             <ul class="list-unstyled components mb-5" style="padding-left: 0;background-color: #43207a " >
-                <li class="{% if request.path == '/teacher' %}active{% endif %}">
-                    <a href="{% url 'teacher' %}"  style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-home mr-3" ></span><span class="text"> Home</span></a>
+                <li class="{% if request.path == '/teacher/' %}active{% endif %}">
+                    <a href="{% url 'teacher' %}"  style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-home mr-3" ></span><span class="text"> Dashboard</span></a>
                 </li>
                 <li class = "{% if request.path == '/teacher/teaching-modules' %}active{% endif %} ">
                     <a href="{% url 'teaching_modules' %}" style="margin-left: 0px;" onclick="showLoadingScreen()"><span class="fa fa-trophy mr-3"></span><span class="text"> Student Performance</span></a>
@@ -93,10 +93,10 @@
                 <li class="{% if request.path == '/teacher/student-attendance/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
                     <a href="{% url 'student-attendance' %}" style="margin-left: 1px;" ><span class="fa fa-info-circle mr-3"></span><span class="text"> Student Attendance</span></a>
                 </li>
-                <li class="{% if request.path == '/administrator/student/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
+                <li class="{% if request.path == '/teacher/activity-list/' %}active{% endif %} {% if request.path == '/administrator/student/register-student/' %}active{% endif %}">
                     <a href="{% url 'activity-list' %}" style="margin-left: 1px;" ><span class="fa fa-pencil mr-3"></span><span class="text"> Activity List</span></a>
                 </li>
-                <li class="{% is_active '/administrator/modules/' '/administrator/modules/book_detail/' %}">
+                <li class="{% if request.path == '/teacher/media-teacher' %}active{% endif %}">
                     <a href="{% url 'media-teacher' %}" style="margin-left: 1px;">
                         <span class="fa fa-camera mr-3"></span><span class="text"> Media Gallery</span>
                     </a>
@@ -129,11 +129,11 @@
                         <p>Instruments</p>
                     </div>
                 
-                    <div class="card-info" style="background-color: #DCFCE7;display: inline-block;">
+                    <!-- <div class="card-info" style="background-color: #DCFCE7;display: inline-block;">
                         <i class="fa fa-trophy" style="font-size: 24px;"></i>
                         <h4 style="font-weight: bold; margin-top: 10px;">{{ total_instruments }}</h4>
                         <p>Total Instruments</p>
-                    </div>
+                    </div> -->
                 </div>
         
                 <div class="details new-div slide-in" style="display: block;  width: 43%;">
@@ -159,10 +159,11 @@
                     <p style="font-style: italic; color: blue; display: inline-block;float: right;">*Click on student bar to view detailed student report</p>
                     <select id="instrumentFilter" onchange="updateStudentProgressChart()">
                         <option value="all">All Instruments</option>
-                        {% for instrument in instruments_taught %}
+                        {% for instrument in instruments_choices %}
                             <option value="{{ instrument.instrument_minor_name }}">{{ instrument.instrument_minor_name }} {{ instrument.instrument_major_name }}</option>
                         {% endfor %}
                     </select>
+                    
                     <canvas id="studentProgressChart"></canvas>
                 </div>
             </div>
@@ -180,6 +181,53 @@
 
   <!-- Add this section to the existing HTML -->
   <script>
+
+function updateStudentProgressChart() {
+    const selectedInstrument = document.getElementById('instrumentFilter').value;
+
+    // Filter student progress data based on selected instrument
+    let filteredStudentProgressData;
+    if (selectedInstrument === 'all') {
+        filteredStudentProgressData = studentProgressData; // Show all students if 'all' is selected
+    } else {
+        filteredStudentProgressData = studentProgressData.filter(student => student.instrument.instrument_minor_name === selectedInstrument);
+    }
+
+    // Extract filtered student names and progress percentages
+    const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
+    const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
+
+    // Update the student progress chart data
+    studentProgressChart.data.labels = filteredStudentNames;
+    studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
+    studentProgressChart.update();
+}
+
+    // Function to update student progress chart based on selected instrument
+function updateStudentProgressChart() {
+    const selectedInstrument = document.getElementById('instrumentFilter').value;
+
+    // Filter student progress data based on selected instrument
+    let filteredStudentProgressData;
+    if (selectedInstrument === 'all') {
+        filteredStudentProgressData = studentProgressData; // Show all students if 'all' is selected
+    } else {
+        filteredStudentProgressData = studentProgressData.filter(student => student.instrument.instrument_minor_name === selectedInstrument);
+    }
+
+    // Extract filtered student names and progress percentages
+    const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
+    const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
+
+    // Update the student progress chart data
+    studentProgressChart.data.labels = filteredStudentNames;
+    studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
+    studentProgressChart.update();
+}
+
+// Attach event listener to the instrument filter dropdown
+document.getElementById('instrumentFilter').addEventListener('change', updateStudentProgressChart);
+
     document.addEventListener('DOMContentLoaded', function() {
         const attendanceData = JSON.parse('{{ attendance_data|escapejs }}');
 
@@ -283,106 +331,112 @@ document.getElementById('sidebarCollapse').addEventListener('click', function ()
             });
 
             // Student progress chart rendering and updating
-            const studentProgressData = JSON.parse('{{ student_progress|escapejs }}');
-            const studentIds = studentProgressData.map(student => student.student_id);
-            const studentNames = studentProgressData.map(student => student.studentName);
-            const studentProgressPercentages = studentProgressData.map(student => student.progress_percentage);
+const studentProgressData = JSON.parse('{{ student_progress|escapejs }}');
 
-            console.log("Student Progress Data:", studentProgressData);
-console.log("Mapped Student IDs:", studentIds);
+// Function to filter unique student entries
+function filterUniqueStudents(data) {
+    const uniqueStudents = [];
+    const studentIds = new Set();
 
-            
-            const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
-            const studentProgressChart = new Chart(studentProgressChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: studentNames,
-                    datasets: [{
-                        label: 'Module Progress Percentage',
-                        data: studentProgressPercentages,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Progress Percentage (%)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Students'
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                title: (tooltipItem) => tooltipItem[0].label,
-                                label: (tooltipItem) => `Progress: ${tooltipItem.raw.toFixed(2)}%`
-                            }
-                        }
-                    },
-                    onClick: (event, activeElements) => {
-    if (activeElements.length > 0) {
-        const index = activeElements[0].index;
-        console.log("Clicked index:", index);
-        console.log("Student IDs:", studentIds);
-
-        // Ensure index is within bounds of studentIds array
-        if (index >= 0 && index < studentIds.length) {
-            const studentId = studentIds[index];
-            const url = `/teacher/view_report/${encodeURIComponent(studentId)}/`;
-
-            console.log("Clicked Student ID:", studentId);
-            console.log("URL:", url);
-
-            // Attempt to open URL in a new tab
-            const newTab = window.open(url, '_blank');
-
-            if (newTab) {
-                newTab.focus();
-            } else {
-                console.error("Failed to open new tab. Check browser settings.");
-                // Handle alternative actions if new tab fails to open
-            }
-        } else {
-            console.error("Invalid index or studentIds array is empty.");
+    data.forEach(student => {
+        if (!studentIds.has(student.student_id)) {
+            studentIds.add(student.student_id);
+            uniqueStudents.push(student);
         }
-    }
+    });
+
+    return uniqueStudents;
 }
 
+// Filter unique students from progress data
+const uniqueStudentProgressData = filterUniqueStudents(studentProgressData);
 
-                }
-            });
+// Extract unique student names and progress percentages
+const studentNames = uniqueStudentProgressData.map(student => student.studentName);
+const studentProgressPercentages = uniqueStudentProgressData.map(student => student.progress_percentage);
 
-            // Function to update student progress chart based on selected instrument
-            function updateStudentProgressChart() {
-                const selectedInstrument = document.getElementById('instrumentFilter').value;
-                let filteredStudentProgressData;
+// Console log to verify unique student names and IDs
+console.log("Unique Student Names:", studentNames);
+console.log("Unique Student IDs:", uniqueStudentProgressData.map(student => student.student_id));
 
-                if (selectedInstrument === 'all') {
-                    filteredStudentProgressData = studentProgressData;
+const studentProgressChartCtx = document.getElementById('studentProgressChart').getContext('2d');
+// Update the studentProgressChart options section
+const studentProgressChart = new Chart(studentProgressChartCtx, {
+    type: 'bar',
+    data: {
+        labels: studentNames,
+        datasets: [{
+            label: 'Module Progress Percentage',
+            data: studentProgressPercentages,
+            backgroundColor: studentProgressPercentages.map(progress => {
+                if (progress >= 100) {
+                    return 'rgba(153, 102, 255, 0.2)'; // Purple for 100%
+                } else if (progress >= 71) {
+                    return 'rgba(75, 192, 192, 0.2)'; // Green for above 71%
+                } else if (progress >= 51) {
+                    return 'rgba(255, 159, 64, 0.2)'; // Orange for 51-70%
                 } else {
-                    filteredStudentProgressData = studentProgressData.filter(student => student.instrument_minor_name === selectedInstrument);
+                    return 'rgba(255, 99, 132, 0.2)'; // Red for less than 50%
                 }
-
-                const filteredStudentNames = filteredStudentProgressData.map(student => student.studentName);
-                const filteredStudentProgressPercentages = filteredStudentProgressData.map(student => student.progress_percentage);
-
-                studentProgressChart.data.labels = filteredStudentNames;
-                studentProgressChart.data.datasets[0].data = filteredStudentProgressPercentages;
-                studentProgressChart.update();
+            }),
+            borderColor: studentProgressPercentages.map(progress => {
+                if (progress >= 100) {
+                    return 'rgba(153, 102, 255, 1)';
+                } else if (progress >= 71) {
+                    return 'rgba(75, 192, 192, 1)';
+                } else if (progress >= 51) {
+                    return 'rgba(255, 159, 64, 1)';
+                } else {
+                    return 'rgba(255, 99, 132, 1)';
+                }
+            }),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                suggestedMax: 100, // Ensure y-axis maximum is 100%
+                title: {
+                    display: true,
+                    text: 'Progress Percentage (%)'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Students'
+                }
             }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: (tooltipItem) => tooltipItem[0].label,
+                    label: (tooltipItem) => `Progress: ${tooltipItem.raw.toFixed(2)}%`
+                }
+            }
+        },
+        onClick: (event, activeElements) => {
+            if (activeElements.length > 0) {
+                const index = activeElements[0].index;
 
-            document.getElementById('instrumentFilter').addEventListener('change', updateStudentProgressChart);
-            document.getElementById('studentFilter').addEventListener('change', updateAttendanceChart);
+                if (index >= 0 && index < uniqueStudentProgressData.length) {
+                    const student = uniqueStudentProgressData[index];
+                    const studentId = student.student_id;
+                    const url = `/teacher/view_report/${encodeURIComponent(studentId)}/`;
+
+                    window.open(url, '_blank').focus();
+                }
+            }
+        }
+    }
+});
+
+// Function to update student progress chart based on selected instrument
+
+
     
 </script>
 

@@ -11,7 +11,7 @@ from django.conf import settings
 from .forms import CreateUserForm,  UserDetailsForm, StudentDetailsForm,  ModuleDetailsForm, ActivityDetailsForm, ModuleForm, RegisterInstrumentForm, TeacherInstrumentForm, BillingForm
 from django.core.paginator import Paginator
 from django.db import transaction 
-from .models import auth_user_details, Student, Instrument, TeachingMode, BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity, Billing # Import your model
+from .models import auth_user_details, Student, Instrument,  BookInstrument, Book, Activity, ModuleDetails, Media, Teacher, ParentLogin, TeacherLogin, StudentActivity, Billing # Import your model
 from parent.models import StudentBilling
 from django.views.decorators.csrf import csrf_exempt
 from teacher.models import Attendance, Teacher
@@ -646,23 +646,34 @@ def delete_activity(request, activity_id):
 def registerActivity(request):
     if request.method == 'POST':
         activity_form = ActivityDetailsForm(request.POST)
+        
         if activity_form.is_valid():
-            # Save the activity
-            activity = activity_form.save()
-
+            # Save the activity form data
+            activity = activity_form.save(commit=False)  # Commit=False to handle related models
+            
+            # Save the activity instance
+            activity.save()
+            
             # Get the selected student IDs from the hidden input
             selected_student_ids = request.POST.get('selected_student_ids', '').split(',')
-
+            
             # Filter out any empty values
             selected_student_ids = [id for id in selected_student_ids if id]
-
+            
             # Save each selected student to the StudentActivity model
             for student_id in selected_student_ids:
-                student = Student.objects.get(pk=student_id)
-                StudentActivity.objects.create(student=student, activity=activity)
+                try:
+                    student = Student.objects.get(pk=student_id)
+                    StudentActivity.objects.create(student=student, activity=activity)
+                except Student.DoesNotExist:
+                    # Handle case where student with given ID doesn't exist
+                    messages.warning(request, f'Student with ID {student_id} not found. Skipping.')
 
             messages.success(request, 'Activity registered successfully!')
-            return redirect('register-activity')  # Redirect to the register-activity page
+            return redirect('register-activity')  # Redirect to the register-activity page after successful save
+        else:
+            # Handle case where form is not valid
+            messages.error(request, 'Invalid form submission. Please check your input.')
     else:
         activity_form = ActivityDetailsForm()
 
@@ -724,8 +735,8 @@ def register_modules(request):
             # Associate selected books with the instrument
             for book_name in books:
                 # Find or create the book if necessary
-                book, created = Book.objects.get_or_create(name=book_name)
-                BookInstrument.objects.create(book=book, instrument=instrument)
+                book, created = Book.objects.get_or_create(book=book_name)
+                BookInstrument.objects.create(bookID=book, instrumentID=instrument)
 
             messages.success(request, 'Instrument and associated books registered successfully.')
             return redirect('register-modules')

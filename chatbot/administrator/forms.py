@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, User
 import datetime
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import auth_user_details, Teacher, Student, Instrument, TeachingMode, ModuleDetails, Activity, Book, Billing  # Import your model
+from .models import auth_user_details, Teacher, Student, Instrument,  ModuleDetails, Activity, Book, Billing  # Import your model
 
 
 class GroupModelChoiceField(ModelChoiceField):
@@ -37,7 +37,7 @@ class CreateUserForm(UserCreationForm):
     def clean(self):
         cleaned_data = super().clean()
         group = cleaned_data.get("group")
-        if group and group.name == "Teacher":
+        if group and group.name == "teacher":
             self.fields['additional_info'].widget.attrs.update({'style': 'width: 300px;height:40px;display:block'})  # Show additional_info field
         else:
             self.fields['additional_info'].widget.attrs.update({'style': 'display:none'})  # Hide additional_info field
@@ -86,7 +86,7 @@ class TeacherInstrumentForm(forms.Form):
 class ParentChoiceField(forms.ModelChoiceField):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.queryset = User.objects.filter(groups__name='Parent')
+        self.queryset = User.objects.filter(groups__name='parent')
         self.empty_label = "Select parent"
 
 
@@ -106,8 +106,8 @@ class StudentDetailsForm(forms.ModelForm):
         ('Others', 'Others'),
     ]
 
-    learning_modes = TeachingMode.objects.all()
-    learning_mode_choices = [(mode.id, mode.name) for mode in learning_modes]
+    # learning_modes = TeachingMode.objects.all()
+    # learning_mode_choices = [(mode.id, mode.name) for mode in learning_modes]
 
     assigned_parent = forms.ModelChoiceField(queryset=User.objects.filter(groups__id=parent_group_id),
                                              empty_label="Select Parent Account")
@@ -115,11 +115,11 @@ class StudentDetailsForm(forms.ModelForm):
                                               empty_label="Select Assigned Teacher")
     instrument = forms.ModelChoiceField(queryset=Instrument.objects.all(), empty_label="Select Instrument")
 
-    learningmode = forms.ChoiceField(
-        choices=learning_mode_choices,
-        widget=forms.RadioSelect(attrs={'class': 'radio-inline'}),
-        required=False
-    )
+    # learningmode = forms.ChoiceField(
+    #     choices=learning_mode_choices,
+    #     widget=forms.RadioSelect(attrs={'class': 'radio-inline'}),
+    #     required=False
+    # )
 
     gender = forms.ChoiceField(choices=GENDER_CHOICES, required=True)
     race = forms.ChoiceField(choices=RACE, required=True)
@@ -129,15 +129,15 @@ class StudentDetailsForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ['studentName', 'age', 'identification_number', 'birthdate', 'assigned_parent', 'gender', 'race',
-                  'assigned_teacher', 'instrument', 'learningmode', 'book', 'picture']
+                  'assigned_teacher', 'instrument',  'book', 'picture']
 
     def __init__(self, *args, **kwargs):
         super(StudentDetailsForm, self).__init__(*args, **kwargs)
 
-        parent_group = Group.objects.get(name='Parent')
+        parent_group = Group.objects.get(name='parent')
         parent_users = parent_group.user_set.all()
 
-        teacher_group = Group.objects.get(name='Teacher')
+        teacher_group = Group.objects.get(name='teacher')
         teacher_users = teacher_group.user_set.all()
         if 'instrument' in self.data:
             try:

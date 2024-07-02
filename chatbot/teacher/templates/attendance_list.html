@@ -58,7 +58,7 @@
     border-radius: 5px;
     margin-bottom: 10px;
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .attendance-card-header {
@@ -258,9 +258,10 @@ button:active {
         {% for student_group in student_records %}
         
             <div class="attendance-card">
-                <div class="fa fa-info" style="display: inline-block; float: right;border-color: #165227; color: #5b7cfa;cursor: pointer;"
-                         onclick="openInfoModal('{{ student_group.grouper }}', '{{ student_group.list|safe }}', '{{ student_group.list.0.student.picture.url }}')">
-                </div>
+                <div class="fa fa-info" style="display: inline-block; float: right; border-color: #165227; color: #5b7cfa; cursor: pointer;"
+     onclick="openInfoModal('{{ student_group.grouper }}', '{{ student_group.list|safe }}', '{% if student_group.list.0.student.picture %}{{ student_group.list.0.student.picture.url }}{% else %}http://bootdey.com/img/Content/avatar/avatar1.png{% endif %}')">
+</div>
+
                 <div class="attendance-card-header" onclick="toggleAttendanceCard(this)">
                     <div class="attendance-card-title" style="color: black; font-size: 14px; font-weight: normal;display: inline-block;">
                         {{ student_group.grouper }}

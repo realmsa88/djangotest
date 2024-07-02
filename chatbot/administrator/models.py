@@ -11,11 +11,11 @@ class auth_user_details(models.Model):
     def __str__(self):
         return f"{self.user} - {self.phone_number} - {self.address} - {self.birthdate}"
 
-class TeachingMode(models.Model):
-    name = models.CharField(max_length=50)
+# class TeachingMode(models.Model):
+#     name = models.CharField(max_length=50)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
     
 class Instrument(models.Model):
     instrument_minor_name = models.CharField(max_length=50, null=True)
@@ -28,7 +28,7 @@ class Instrument(models.Model):
 
 class Teacher (models.Model) :
     teacher = models.ForeignKey(auth_user_details, on_delete=models.CASCADE)
-    teachingmode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
+    # teachingmode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, null=True)
 
     def __str__ (self) :
@@ -99,7 +99,7 @@ class Student(models.Model):
     picture = models.ImageField(upload_to='student_pictures/', blank=True, null=True)
     assigned_teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='student_assigned_teacher')
     assigned_parent = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='student_assigned_parent')
-    teaching_mode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
+    # teaching_mode = models.ForeignKey(TeachingMode, on_delete=models.CASCADE, null=True)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, null=True)
     book = models.ForeignKey(Book, on_delete=models.CASCADE, null=True)
 

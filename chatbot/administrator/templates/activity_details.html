@@ -14,6 +14,24 @@
         max-width: 100%; /* Ensure images don't exceed container width */
         height: auto; /* Maintain aspect ratio */
     }
+
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #5B7CFA;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 
 <p style="font-size: 18px;">Activity Details</p>
@@ -44,5 +62,7 @@
 {% else %}
     <p>No albums or media associated with this activity.</p>
 {% endif %}
+
+<button class="floating-button">+</button>
 
 {% endblock %}
