@@ -193,4 +193,3 @@ EMAIL_PORT = 587  # You can use 587 for STARTTLS
 EMAIL_HOST_USER = 'AKIA4MTWNWBSXQPA4HNP'  # Your SES SMTP access key
 EMAIL_HOST_PASSWORD = 'BIs4mFbTe3ApY/HTgLUdiymqglbJst07gWdaMqv2TOlJ'  # Your SES SMTP secret key
 EMAIL_USE_TLS = True  # Use TLS encryption
-
