@@ -1,4 +1,15 @@
-{
+{   
+
+    "course": {
+        "parent": [
+            "To explore student performance, follow these steps: 1. Access Student Performance: Begin by navigating to the 'Student Performance' section within the system. 2. Select Instrument and Book: Choose your desired instrument from the list, followed by selecting a corresponding book. 3. View Student Progress: The system will automatically generate and display a comprehensive list of students, showcasing their current progress in the selected instrument and book. ",
+            "Navigate to the 'Student Performance'. Click on an instrument and a book. The system will display the list of students and their current progress.",
+            "You can check the current enrolled course by clicking on 'Student Information' or 'Student Performance' for a better course overview."
+        ],
+        "teacher": [
+            "Teachers can access student information through the Student Performance."
+        ]
+    },
     "attendance": {
         "parent": [
             "To check your child's attendance, navigate to the following: Dashboard > Student Attendance. Click on the 'View Attendance' button of a child to view their current attendance records.",
@@ -21,4 +32,5 @@
             "Teachers can access billing information through the teacher dashboard."
         ]
     }
+    
 }

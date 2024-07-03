@@ -8,7 +8,7 @@ from django.utils import timezone
 import openai
 from django.db import transaction
 import os
-import json
+import json, time
 from fuzzywuzzy import fuzz
 
 # Set your OpenAI API key
@@ -80,6 +80,8 @@ def chat(request):
 
             # Get predefined response based on predicted category
             predefined_response, probability = get_predefined_response(predicted_category, predicted_category_probability, user_input)
+
+            time.sleep(3) 
 
             # Return the predefined response or generate one if not found
             if predefined_response is not None:

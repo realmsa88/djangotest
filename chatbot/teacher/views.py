@@ -3,7 +3,7 @@ from .decorators import teacher_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.template import loader
-from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details,Activity, StudentActivity
+from administrator.models import Student, Teacher, Instrument, Book, BookInstrument, ModuleDetails, auth_user_details,Activity, StudentActivity, Media, Album
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from collections import defaultdict, Counter
@@ -407,14 +407,18 @@ def attend_student(request):
                 ongoing_class.status = 'Approved'
                 ongoing_class.save()
 
-                return JsonResponse({
-                    'success': True,
-                    'status': 'Approved',
-                    'student_name': ongoing_class.student.studentName,
-                    'start_time': ongoing_class.start_time.strftime("%I:%M %p"),
-                    'end_time': ongoing_class.end_time.strftime("%I:%M %p"),
-                    'attendance_id': attendance_id
-                })
+                # return JsonResponse({
+                #     'success': True,
+                #     'status': 'Approved',
+                #     'student_name': ongoing_class.student.studentName,
+                #     'start_time': ongoing_class.start_time.strftime("%I:%M %p"),
+                #     'end_time': ongoing_class.end_time.strftime("%I:%M %p"),
+                #     'attendance_id': attendance_id
+                # })
+                messages.success(request, "Attendance verified and approved successfully!")
+                return redirect('student-attendance') 
+            
+            
             else:
                 print("No ongoing class found")
                 return JsonResponse({'success': False, 'error': 'No ongoing class found at the current time for the current teacher.'})
@@ -610,6 +614,13 @@ def activity_list_teacher(request):
         'activity_types': activity_types,
     })
 
+
+
+
+
+
+
+
 @teacher_required
 def media (request) :
     activities = Activity.objects.all()
@@ -620,11 +631,78 @@ def media (request) :
     
     return render(request, 'media_teacher.html', context)
 
-def activity_details(request, id):
-    activity = get_object_or_404(Activity, id=id)
-    albums = activity.album_set.all()  # Fetch all albums related to this activity
+
+def upload_media(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id)
     
-    return render(request, 'activity_details_teacher.html', {'activity': activity, 'albums': albums})
+    if request.method == 'POST' and request.FILES.get('file'):
+        file = request.FILES['file']
+        
+        # Create a new instance of Media associated with the activity
+        media = Media(activity=activity, media_name=file)
+        media.save()
+        
+        return JsonResponse({'message': 'File uploaded successfully.'})
+    
+    return JsonResponse({'error': 'File upload failed.'}, status=400)
+
+@csrf_exempt
+def activity_details(request, id):
+    try:
+        # Retrieve the Activity instance
+        activity = get_object_or_404(Activity, pk=id)
+        
+        # Process file upload logic
+        if request.method == 'POST' and request.FILES:
+            files = request.FILES.getlist('media_files')
+            logger.debug(f"Files received: {files}")
+            
+            # Retrieve the related Album instance (assuming one album per activity for simplicity)
+            album = Album.objects.filter(activityID=activity).first()
+            
+            if not album:
+                logger.error("No album found for this activity.")
+                return JsonResponse({'success': False, 'message': 'No album found for this activity.'})
+            
+            for file in files:
+                media_type = 'image' if file.content_type.startswith('image') else 'video'
+                try:
+                    Media.objects.create(
+                        albumID=album,
+                        media_type=media_type,
+                        media_name=file,
+                    )
+                    logger.info(f"File {file.name} uploaded successfully and stored as media.")
+                except Exception as e:
+                    logger.error(f"Failed to upload file {file.name}: {str(e)}")
+                    return JsonResponse({'success': False, 'message': f'Failed to upload file {file.name}: {str(e)}'})
+            
+            # Return JSON response indicating success
+            return JsonResponse({'success': True, 'message': 'File(s) uploaded successfully.'})
+
+        # Handle GET requests to render the template
+        albums = Album.objects.filter(activityID=activity).order_by('-id')
+        media_items = Media.objects.filter(albumID__in=albums).order_by('-id')
+        return render(request, 'activity_details_teacher.html', {'activity': activity, 'albums': albums, 'media_items': media_items})
+    
+    except Exception as e:
+        logger.error(f"Error in activity_details view: {str(e)}")
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'})
+    
+
+
+
+
+def delete_media(request, media_id):
+    media = get_object_or_404(Media, id=media_id)
+    media.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'redirect_if_referer_not_found'))
+
+
+
+
+
+
 
 @login_required
 def view_report(request, student_id):

@@ -9,6 +9,10 @@
 <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
+#success-message {
+    display: none; /* Hidden by default */
+    /* Your styles for success message */
+}
 
     p {
         color: black;
@@ -226,9 +230,9 @@
         .list-section li.in-prog svg.tick {
             display: none;
         }
-    .media-item {
+        .media-item {
         display: inline-block;
-        width: calc(25% - 10px);
+        width: calc(25% - 10px); /* Adjusted width for 4 items per row */
         margin: 5px;
         text-align: center;
     }
@@ -248,7 +252,7 @@
         position: fixed;
         bottom: 80px;
         right: 20px;
-        background-color: #165227;
+        background-color: #5b7cfa;
         color: white;
         border: none;
         border-radius: 50%;
@@ -324,6 +328,27 @@
         pointer-events: none;
     }
 
+
+
+@media (max-width: 1200px) {
+    .media-item {
+        flex: 0 0 calc(33.33% - 10px); /* Three items per row on medium screens */
+    }
+}
+
+@media (max-width: 992px) {
+    .media-item {
+        flex: 0 0 calc(50% - 10px); /* Two items per row on small screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .media-item {
+        flex: 0 0 100%; /* One item per row on extra small screens */
+    }
+}
+
+
     .gallery-item {
         width: 200px;
         padding: 5px;
@@ -371,6 +396,7 @@
 
 </style>
 
+
 <div class="wrapper">
     <div class="main">
         <header>
@@ -379,82 +405,96 @@
         <hr>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb ms-5 mt-2">
-                <li class="breadcrumb-item"><a href="">Gallery</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'media-teacher' %}">Gallery</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Media</li>
             </ol>
         </nav>
 
+        <div id="top"></div>
+
+        <div id="success-message" class="alert alert-success alert-dismissible fade show" style="display: none;">
+            File uploaded successfully!
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+
+       
         <div class="container p-5">
-            <div class="gallery" id="gallery">
-                {% if not albums %}
-                <div class="row mb-3 justify-content-center align-items-center">
-                    <div class="card mb-3" style="width: 100%; border: 2px solid black; padding: 0;">
-                        <div class="row g-0">
-                            <div class="col-md-12 d-flex flex-column justify-content-center align-items-center">
-                                <div class="card-body">
-                                    No Media Uploaded
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
+            <!-- Drop section for drag and drop -->
+            
+
+            <!-- Gallery to display uploaded media -->
+            <div id="gallery" class="gallery slide-in">
                 {% for album in albums %}
-                <div class="media-container">
-                    {% for media_item in album.media_set.all %}
-                    {% if forloop.counter0|divisibleby:4 %}
-                    </div><div class="media-container">
-                    {% endif %}
-                    <div class="media-item">
-                        <a href="{% static 'media/' %}{{ media_item.file }}">
-                            {% if media_item.is_image %}
-                            <img src="{% static 'media/' %}{{ media_item.file }}" alt="" class="img-fixed" style="border: 1px solid white;">
-                            {% elif media_item.is_video %}
-                            <video src="{% static 'media/' %}{{ media_item.file }}" class="img-fixed" style="border: 1px solid white;"></video>
-                            <div class="play-button">
-                                <i class="bi bi-play-circle"></i>
+                    <div class="media-container">
+                        {% for media_item in album.media_set.all %}
+                            <div class="media-item">
+                                <a href="{{ media_item.media_name.url }}">
+                                    {% if media_item.media_type == 'image' %}
+                                        <img src="{{ media_item.media_name.url }}" alt="" class="img-fixed">
+                                    {% elif media_item.media_type == 'video' %}
+                                        <video src="{{ media_item.media_name.url }}" class="img-fixed"></video>
+                                        <div class="play-button">
+                                            <i class="bi bi-play-circle"></i>
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <form action="{% url 'delete-media' media_item.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('Are you sure you want to delete this media?');" class="btn btn-danger btn-xs mt-3">Delete</button>
+                                </form>
                             </div>
-                            {% endif %}
-                        </a>
-                        <form action="" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" onclick="return confirm('Are you sure you want to delete this media?');" class="btn btn-danger btn-xs mt-3">Delete</button>
-                        </form>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
                 {% endfor %}
-                {% endif %}
             </div>
 
-            <button id="uploadMedia" class="floating-button" role="button" data-toggle="modal" data-target="#uploadMediaModal" data-tippy-content="Upload Media">+</button>
+            <div id="drop-section" class="drop-section">
+                <div class="col">
+                    <div class="cloud-icon">
+                        <img src="{% static 'pictures/icons/cloud.png' %}" alt="cloud">
+                    </div>
+                    <span>Drag & Drop your files here</span>
+                    <span>OR</span>
+                    <button type="button" id="file-selector" class="file-selector">Browse Files</button>
+                    <input type="file" id="file-selector-input" class="file-selector-input" accept="image/*,video/*" multiple>
+                </div>
+                <div class="col">
+                    <div class="drop-here">Drop Here</div>
+                </div>
+            </div>
+    
+           
 
+            <button id="uploadMedia" class="floating-button" data-toggle="modal" data-target="#uploadMediaModal" data-tippy-content="Upload Media">+</button>
+
+            <!-- Modal for uploading media -->
             <div class="modal fade" id="uploadMediaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="uploadMediaModal">Upload Media</h5>
-                            <button type="button" class="custom-close-button" data-dismiss="modal" aria-label="Close">
+                            <h5 class="modal-title" id="exampleModalLabel">Upload Media</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <!-- Content loaded dynamically via AJAX -->
+                            <!-- Content dynamically loaded via JavaScript -->
                             <div class="modal-container">
                                 <div class="header-section">
-                                    <!-- <h1>Upload Files</h1> -->
                                     <p>Upload images or videos that you want to share.</p>
                                 </div>
-                                <div class="drop-section">
+                                <div id="modal-drop-section" class="drop-section">
                                     <div class="col">
                                         <div class="cloud-icon">
-                                            <img src="../pictures/icons/cloud.png" alt="cloud">
+                                            <img src="{% static 'pictures/icons/cloud.png' %}" alt="cloud">
                                         </div>
-                                        <!-- <span><?php echo $albumID ?></span> -->
                                         <span>Drag & Drop your files here</span>
                                         <span>OR</span>
-                                        <button class="file-selector">Browse Files</button>
-                                        <input type="file" class="file-selector-input" accept="image/*,video/*" multiple>
+                                        <button type="button" id="modal-file-selector" class="file-selector">Browse Files</button>
+                                        <input type="file" id="modal-file-selector-input" class="file-selector-input" accept="image/*,video/*" multiple>
                                     </div>
                                     <div class="col">
                                         <div class="drop-here">Drop Here</div>
@@ -473,138 +513,165 @@
     </div>
 </div>
 
-
 <hr>
 <p style="font-size: 18px;">{{ activity.activity_name }}</p>
-<p> {{ activity.activity_date }}</p>
+<p>{{ activity.activity_date }}</p>
 <p>{{ activity.activity_type }}</p>
 
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 
-const dropArea = $('.drop-section');
-const listSection = $('.list-section');
-const listContainer = $('.list');
-const fileSelector = $('.file-selector');
-const fileSelectorInput = $('.file-selector-input');
-
-// Upload files with browse button
-fileSelector.on('click', () => fileSelectorInput.click());
-fileSelectorInput.on('change', function () {
-    [...this.files].forEach(file => {
-        if (typeValidation(file.type)) {
-            uploadFile(file);
-        }
+$(document).ready(function() {
+        // Scroll to the top of the page on load
+        $('html, body').animate({
+            scrollTop: $('#top').offset().top
+        }, 'slow');
     });
-});
+    jQuery(document).ready(function($) {
+        const dropArea = $('#drop-section');
+        const fileSelector = $('#file-selector');
+        const fileSelectorInput = $('#file-selector-input');
+        const modalDropArea = $('#modal-drop-section');
+        const modalFileSelector = $('#modal-file-selector');
+        const modalFileSelectorInput = $('#modal-file-selector-input');
+    
+        // Function to upload files
+        // Function to upload files
+        function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('media_files', file);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-// When file is over the drag area
-dropArea.on('dragover', function (e) {
-    e.preventDefault();
-    [...e.originalEvent.dataTransfer.items].forEach(item => {
-        if (typeValidation(item.type)) {
-            dropArea.addClass('drag-over-effect');
-        }
-    });
-});
+    $.ajax({
+        url: '{% url "activity-details" activity.id %}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response && response.success) {
+                // Store success message in session storage
+                sessionStorage.setItem('uploadSuccess', 'true');
 
-// When file leaves the drag area
-dropArea.on('dragleave', () => dropArea.removeClass('drag-over-effect'));
-
-// When file drops on the drag area
-dropArea.on('drop', function (e) {
-    e.preventDefault();
-    dropArea.removeClass('drag-over-effect');
-    if (e.originalEvent.dataTransfer.items) {
-        [...e.originalEvent.dataTransfer.items].forEach(item => {
-            if (item.kind === 'file') {
-                const file = item.getAsFile();
-                if (typeValidation(file.type)) {
-                    uploadFile(file);
-                }
+                // Reload the page
+                location.reload();
+            } else {
+                alert('File upload failed: ' + (response && response.message ? response.message : 'Unknown error'));
             }
-        });
-    } else {
-        [...e.originalEvent.dataTransfer.files].forEach(file => {
-            if (typeValidation(file.type)) {
-                uploadFile(file);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            alert('An error occurred while uploading the file. Please try again.');
+        }
+    });
+}
+
+$(document).ready(function() {
+        // Check if upload success flag is set in session storage
+        const uploadSuccess = sessionStorage.getItem('uploadSuccess');
+        if (uploadSuccess === 'true') {
+            $('#success-message').html('File uploaded successfully!').fadeIn();
+            // Clear the session storage item after displaying the message
+            sessionStorage.removeItem('uploadSuccess');
+        }
+    });
+    
+        // Function to delete media
+        // Function to delete media
+// Function to delete media
+function deleteMedia(mediaId) {
+    if (confirm('Are you sure you want to delete this media?')) {
+        $.ajax({
+            url: '/teacher/media/delete/' + mediaId + '/',  // Ensure this URL matches your Django URL pattern
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success: function(response) {
+                if (response && response.success) {
+                    $('#success-message').html('Media deleted successfully!').fadeIn();
+                    setTimeout(function() {
+                        $('#success-message').fadeOut();
+                    }, 3000); // Hide success message after 3 seconds
+                    // Optionally reload the gallery or update dynamically
+                    // $('#media-' + mediaId).remove();
+                } else {
+                    alert('Failed to delete media: ' + (response && response.message ? response.message : 'Unknown error'));
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting media. Please try again.');
             }
         });
     }
-});
-
-// Check the file type
-function typeValidation(type) {
-    const splitType = type.split('/')[0];
-    return splitType === 'image' || splitType === 'video';
 }
 
-// Upload file function
-function uploadFile(file) {
-    listSection.show();
-    const li = $(`
-        <li class="in-prog">
-            <div class="col">
-                <img src="../pictures/icons/${iconSelector(file.type)}" alt="">
-            </div>
-            <div class="col">
-                <div class="file-name">
-                    <div class="name">${file.name}</div>
-                    <span>0%</span>
-                </div>
-                <div class="file-progress">
-                    <span></span>
-                </div>
-                <div class="file-size">${(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-            </div>
-            <div class="col">
-                <svg xmlns="http://www.w3.org/2000/svg" class="cross" height="20" width="20">
-                    <path d="m5.979 14.917-.854-.896 4-4.021-4-4.062.854-.896 4.042 4.062 4-4.062.854.896-4 4.062 4 4.021-.854.896-4-4.063Z"/>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="tick" height="20" width="20">
-                    <path d="m8.229 14.438-3.896-3.917 1.438-1.438 2.458 2.459 6-6L15.667 7Z"/>
-                </svg>
-            </div>
-        </li>
-    `);
-    listContainer.prepend(li);
-    const http = new XMLHttpRequest();
-    const data = new FormData();
-    data.append('file', file);
-    // Adjust the URL and data as needed for your backend
-    http.onload = () => {
-        if (http.status === 200) {
-            li.addClass('complete').removeClass('in-prog');
-        } else {
-            li.remove();
+    
+        // Upload files on drop in main drop area
+        dropArea.on('drop', function(e) {
+            e.preventDefault();
+            [...e.originalEvent.dataTransfer.files].forEach(file => {
+                if (typeValidation(file.type)) {
+                    uploadFile(file);
+                }
+            });
+        });
+    
+        // Upload files on drop in modal drop area
+        modalDropArea.on('drop', function(e) {
+            e.preventDefault();
+            [...e.originalEvent.dataTransfer.files].forEach(file => {
+                if (typeValidation(file.type)) {
+                    uploadFile(file);
+                }
+            });
+        });
+    
+        // Upload files with file selector in main area
+        fileSelector.on('click', () => fileSelectorInput.click());
+        fileSelectorInput.on('change', function() {
+            [...this.files].forEach(file => {
+                if (typeValidation(file.type)) {
+                    uploadFile(file);
+                }
+            });
+        });
+    
+        // Upload files with file selector in modal area
+        modalFileSelector.on('click', () => modalFileSelectorInput.click());
+        modalFileSelectorInput.on('change', function() {
+            [...this.files].forEach(file => {
+                if (typeValidation(file.type)) {
+                    uploadFile(file);
+                }
+            });
+        });
+    
+        // Function to handle delete button click
+        $('.delete-media-btn').on('click', function(e) {
+            e.preventDefault();
+            const mediaId = $(this).data('media-id');
+            deleteMedia(mediaId);
+        });
+    
+        // Validate file type
+        function typeValidation(fileType) {
+            if (fileType.startsWith('image/') || fileType.startsWith('video/')) return true;
+            alert('Invalid file type. Only image and video files are allowed.');
+            return false;
         }
-    };
-    http.upload.onprogress = e => {
-        const percent_complete = (e.loaded / e.total) * 100;
-        li.find('.file-name span').text(Math.round(percent_complete) + '%');
-        li.find('.file-progress span').css('width', percent_complete + '%');
-    };
-    http.open('POST', '/your-upload-endpoint', true); // Adjust the endpoint URL
-    http.send(data);
-    li.find('.cross').on('click', () => http.abort());
-    http.onabort = () => li.remove();
-}
+    });
+    </script>
+    
 
-// Find icon for file
-function iconSelector(type) {
-    const splitType = type.split('/')[0];
-    return splitType + '.png';
-}
-
-
-        http.onload = () => {
-            if (http.status === 200) {
-                console.log('Upload successful:', http.responseText);
-                li.addClass('complete').removeClass('in-prog');
-            } else {
-                console.error('Upload failed:', http.responseText);
-                li.remove();
-            }
-        };
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.7/umd/popper.min.js"></script>
+<script src="https://unpkg.com/tippy.js@6/dist/tippy.umd.min.js"></script>
+<script>
+    tippy('[data-tippy-content]', {
+        placement: 'left',
+    });
 </script>
 
 {% endblock %}

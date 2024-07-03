@@ -86,7 +86,7 @@ class Media(models.Model):
     media_name = models.ImageField(upload_to='media_files/', null=True, blank=True)
 
     def __str__(self):
-        return str(self.media_name)  # Convert to string
+        return self.media_name.name  # Convert to string
 
 
 class Student(models.Model):

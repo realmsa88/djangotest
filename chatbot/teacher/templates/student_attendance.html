@@ -22,6 +22,8 @@
     </div>
 </div>
 
+
+
 <style>
     button {
         border-radius: 10px;
@@ -145,11 +147,25 @@
 
 <hr>
 
-<div class="slide-in-left">
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb ms-5 mt-2">
+        
+        <li class="breadcrumb-item active" aria-current="page">Calendar</li>
+    </ol>
+</nav>
+
+{% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
+<!-- <div class="slide-in-left">
     <hr style="background-color: black;">
     <p>Calendar</p>
     <hr style="background-color: black;">
-</div>
+</div> -->
 
 <div id="warning-message" style="background-color: rgb(193, 81, 81); display: none; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 20px; border-radius: 5px;
 height: 20%;" class="slide-in-left">
@@ -180,10 +196,12 @@ height: 20%;" class="slide-in-left">
     </div>
 </div>
 
+
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
         const calendar = flatpickr("#calendar-container", {
             inline: true,
             dateFormat: "Y-m-d",
@@ -200,76 +218,59 @@ height: 20%;" class="slide-in-left">
             }
         });
 
-    const currentDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
-    fetchStudentsForDate(currentDate);
+        const currentDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        fetchStudentsForDate(currentDate);
 
-    function fetchStudentsForDate(dateTime) {
-        const teacherId = document.getElementById('teacher-id').dataset.teacherId;
-        const date = dateTime.split(' ')[0];
-        
-        fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
-            .then(response => response.json())
-            .then(data => {
-                const studentsUl = document.getElementById('students');
-                studentsUl.innerHTML = '';
-                const warningMessage = document.getElementById('warning-message');
-                const buttonAttend = document.getElementById('buttonAttend');
-                let ongoingClassFound = false;
-                
-                if (data.students.length > 0) {
-                    data.students.forEach(student => {
-                        const li = document.createElement('li');
-                        const startTime = formatTime(student.start_time);
-                        const endTime = formatTime(student.end_time);
-                        const attendanceDateTime = `${date} ${student.start_time}`;
-                        const attendanceEndDateTime = `${date} ${student.end_time}`;
+        function fetchStudentsForDate(dateTime) {
+            const teacherId = document.getElementById('teacher-id').dataset.teacherId;
+            const date = dateTime.split(' ')[0];
+            
+            fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const studentsUl = document.getElementById('students');
+                    studentsUl.innerHTML = '';
+                    const warningMessage = document.getElementById('warning-message');
+                    const buttonAttend = document.getElementById('buttonAttend');
+                    let ongoingClassFound = false;
+                    
+                    if (data.students.length > 0) {
+                        data.students.forEach(student => {
+                            const li = document.createElement('li');
+                            const startTime = formatTime(student.start_time);
+                            const endTime = formatTime(student.end_time);
+                            const attendanceDateTime = `${date} ${student.start_time}`;
+                            const attendanceEndDateTime = `${date} ${student.end_time}`;
 
-                        li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
-                        
-                        if (dateTime >= attendanceDateTime && dateTime <= attendanceEndDateTime) {
-                            // li.innerHTML += '<span style="color: red;"> (Ongoing)</span>';
-                            li.classList.add('highlighted');
-                            ongoingClassFound = true;
-                            document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}`;
-                            document.getElementById('studentIdInput').value = student.id;
-                            document.getElementById('attendanceIdInput').value = student.attendance_id;
-                        }
-
-                        li.addEventListener('click', function() {
-                            highlightSelectedClass(li);
+                            li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
+                            li.dataset.status = student.status; // Add status to li data attributes
+                            
+                            if (dateTime >= attendanceDateTime && dateTime <= attendanceEndDateTime) {
+                                li.classList.add('highlighted');
+                                ongoingClassFound = true;
+                                document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}`;
+                                document.getElementById('studentIdInput').value = student.id;
+                                document.getElementById('attendanceIdInput').value = student.attendance_id;
+                                buttonAttend.classList.toggle('hidden', student.status === 'Approved'); // Toggle button visibility based on status
+                            }
+                            studentsUl.appendChild(li);
                         });
+                    } else {
+                        studentsUl.innerHTML = '<li>No classes for the selected day</li>';
+                    }
+                    warningMessage.style.display = ongoingClassFound ? 'block' : 'none';
+                })
+                .catch(error => console.error('Error fetching students:', error));
+        }
 
-                        studentsUl.appendChild(li);
-                    });
-                } else {
-                    const li = document.createElement('li');
-                    li.textContent = 'No students scheduled for this date.';
-                    studentsUl.appendChild(li);
-                }
-
-                if (ongoingClassFound) {
-                    warningMessage.style.display = 'block';
-                    buttonAttend.style.display = 'inline-block';
-                    document.getElementById('ongoing-class-label').style.display = 'block';
-                } else {
-                    warningMessage.style.display = 'block';
-                    warningMessage.style.backgroundColor = '#5b7cfa'; 
-                    document.getElementById('ongoing-class-label').innerText = 'No ongoing classes at the moment';
-                    buttonAttend.style.display = 'none';
-                    document.getElementById('ongoing-class-details').innerText = '';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching student data:', error);
-            });
-    }
-
-    function formatTime(time) {
-        const [hours, minutes] = time.split(':');
-        const amOrPm = hours < 12 ? 'AM' : 'PM';
-        const formattedHours = hours % 12 || 12;
-        return `${formattedHours}:${minutes} ${amOrPm}`;
-    }
+        function formatTime(timeStr) {
+            const [hour, minute, second] = timeStr.split(':');
+            const hourInt = parseInt(hour, 10);
+            const amPm = hourInt >= 12 ? 'PM' : 'AM';
+            const formattedHour = hourInt % 12 || 12;
+            return `${formattedHour}:${minute} ${amPm}`;
+        }
+    });
 
     function highlightSelectedClass(selectedLi) {
         const lis = document.querySelectorAll('#students li');
@@ -278,7 +279,7 @@ height: 20%;" class="slide-in-left">
         });
         selectedLi.classList.add('highlighted');
     }
-});
+
 
         window.addEventListener('load', function() {
             filterInstruments(null, '{{ instruments.0.instrument_major_name }}');

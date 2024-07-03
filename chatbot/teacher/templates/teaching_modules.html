@@ -42,7 +42,7 @@
     {% with book=bookinstrument.bookID %}
     <a href="{% url 'student_progress' instrument_minor=instrument.instrument_minor_name instrument_major=instrument.instrument_major_name book_id=book.id %}">
 
-            <div class="book-container" style="background-color: white;">
+            <div class="book-container" style="background-color: white;box-shadow: 10px 10px 5px #888888;">
                 <ul>
                     <li style="margin-left: 10px;">{{ book.book }}</li>
                 </ul>
