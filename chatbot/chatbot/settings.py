@@ -13,12 +13,12 @@ STRIPE_SECRET_KEY = 'sk_test_51PVtJrBRAMWTFzsQ7iCtui1YPpm0iITlHb8H6Vd9wQPB7cHU6p
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bwqjcr0-+zl&60e8frlqctw&xbxor$gbs5$pdr5=_fdww^dfyl'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split("")
 
 SESSION_COOKIE_AGE = 6000  # 1 hour in seconds
 
@@ -124,7 +124,9 @@ DATABASES = {
     }
 }
 
-DATABASES["default"] = dj_database_url.parse("postgresql://mifzalfauzi_django_render_user:tmf449BKsd60n3DocbZfZQOKHo6C3WVM@dpg-cpvu1p6ehbks73e3b4o0-a.oregon-postgres.render.com/mifzalfauzi_django_render")
+
+database_url = os.environ.get("DATABASE_URL")
+DATABASES["default"] = dj_database_url.parse(database_url)
 
 
 # Password validation
