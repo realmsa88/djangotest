@@ -124,7 +124,7 @@ DATABASES = {
     }
 }
 
-# DATABASES["default"] = dj_database_url.parse("postgresql://mifzalfauzi_django_render_user:tmf449BKsd60n3DocbZfZQOKHo6C3WVM@dpg-cpvu1p6ehbks73e3b4o0-a.oregon-postgres.render.com/mifzalfauzi_django_render")
+DATABASES["default"] = dj_database_url.parse("postgresql://mifzalfauzi_django_render_user:tmf449BKsd60n3DocbZfZQOKHo6C3WVM@dpg-cpvu1p6ehbks73e3b4o0-a.oregon-postgres.render.com/mifzalfauzi_django_render")
 
 
 # Password validation

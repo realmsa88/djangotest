@@ -67,7 +67,7 @@ def chat(request):
                                                         timestamp=timezone.now())
             
             # Save user query to DatasetEntry with roles as 'parent'
-            dataset_entry = DatasetEntry.objects.create( content=user_input, roles='parent',
+            dataset_entry = DatasetEntry.objects.create( content=user_input, roles='teacher',
                                                         timestamp=timezone.now())
 
             # Associate label with DatasetEntry

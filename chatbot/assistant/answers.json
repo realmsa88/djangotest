@@ -2,12 +2,12 @@
 
     "course": {
         "parent": [
-            "To explore student performance, follow these steps: 1. Access Student Performance: Begin by navigating to the 'Student Performance' section within the system. 2. Select Instrument and Book: Choose your desired instrument from the list, followed by selecting a corresponding book. 3. View Student Progress: The system will automatically generate and display a comprehensive list of students, showcasing their current progress in the selected instrument and book. ",
-            "Navigate to the 'Student Performance'. Click on an instrument and a book. The system will display the list of students and their current progress.",
             "You can check the current enrolled course by clicking on 'Student Information' or 'Student Performance' for a better course overview."
         ],
         "teacher": [
-            "Teachers can access student information through the Student Performance."
+            "Teachers can access student information through the Student Performance.",
+            "To explore student performance, follow these steps: 1. Access Student Performance: Begin by navigating to the 'Student Performance' section within the system. 2. Select Instrument and Book: Choose your desired instrument from the list, followed by selecting a corresponding book. 3. View Student Progress: The system will automatically generate and display a comprehensive list of students, showcasing their current progress in the selected instrument and book. ",
+            "Navigate to the 'Student Performance'. Click on an instrument and a book. The system will display the list of students and their current progress."
         ]
     },
     "attendance": {
@@ -16,8 +16,8 @@
             "Attendance records are available for parent viewing on the student dashboard."
         ],
         "teacher": [
-            "You can view attendance records for your students through the teacher dashboard.",
-            "Attendance tracking is available on the teacher portal."
+            "You can view attendance records for your students through the teacher dashboard by clicking on the performance bar or navigate to the 'Student Attendance'. Select 'Attendance List' if you prefer to go to the 'Student Attendance' section."
+            
         ]
     },
     "billing": {

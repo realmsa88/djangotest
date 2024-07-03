@@ -507,7 +507,27 @@ def student_attendance_view(request):
     except auth_user_details.DoesNotExist:
         return render(request, 'student_attendance.html', {'error': 'Teacher does not exist for the logged-in user'})
     
-    ongoing_classes = Attendance.objects.filter(date=current_date, start_time__lte=current_time, end_time__gte=current_time, teacher=teacher_instance)
+    ongoing_classes = Attendance.objects.filter(
+        date=current_date,
+        start_time__lte=current_time,
+        end_time__gte=current_time,
+        teacher=teacher_instance
+    )
+    
+    serialized_classes = []
+    for attendance in ongoing_classes:
+        serialized_classes.append({
+            'id': attendance.id,
+            'name': attendance.student.studentName,
+            'start_time': attendance.start_time.strftime('%H:%M:%S'),
+            'end_time': attendance.end_time.strftime('%H:%M:%S'),
+            'status': attendance.status,  # Include status field
+            'is_ongoing': attendance.is_ongoing,
+        })
+    
+    # Return JSON response if requested via AJAX or similar
+    if request.is_ajax():
+        return JsonResponse({'ongoing_classes': serialized_classes})
     
     context = {
         'ongoing_classes': ongoing_classes,

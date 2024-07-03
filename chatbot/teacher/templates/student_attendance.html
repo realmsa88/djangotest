@@ -185,11 +185,12 @@ height: 20%;" class="slide-in-left">
     <div id="calendar-container"></div>
     
     <div id="student-list" style="width: 600px;margin-left: -300px;">
-        <p style="font-size: 16px;">Students for Selected Day</p>
+        <p style="font-size: 14px;">Students for Selected Day</p>
+        <p style="font-style: italic; color: red;">*Ongoing classes will be highlighted in blue</p>
         <ul id="students">
             {% for attendance in ongoing_classes %} 
             <li data-attendance-id="{{ attendance.id }}" data-teacher-id="{{ teacher_id }}" > 
-                Name: {{ attendance.student.user.studentName }}, Time: {{ attendance.start_time }} - {{ attendance.end_time }}
+                Name: {{ attendance.student.user.studentName }}, Time: {{ attendance.start_time }} - {{ attendance.end_time }},Status: {{ attendance.status }} 
             </li>
             {% endfor %}
         </ul>
@@ -202,76 +203,85 @@ height: 20%;" class="slide-in-left">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-        const calendar = flatpickr("#calendar-container", {
-            inline: true,
-            dateFormat: "Y-m-d",
+    const calendar = flatpickr("#calendar-container", {
+        inline: true,
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr, instance) {
+            const selectedDateTime = `${dateStr} 00:00:00`;
+            fetchStudentsForDate(selectedDateTime);
             
-            onChange: function(selectedDates, dateStr, instance) {
-                const selectedDateTime = `${dateStr} 00:00:00`;
-                fetchStudentsForDate(selectedDateTime);
-                
-                // Check if the selected date is today's date
-                const today = dayjs().format("YYYY-MM-DD");
-                if (dateStr === today) {
-                    window.location.reload(); // Reload the page
-                }
+            const today = dayjs().format("YYYY-MM-DD");
+            if (dateStr === today) {
+                window.location.reload();
             }
-        });
-
-        const currentDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
-        fetchStudentsForDate(currentDate);
-
-        function fetchStudentsForDate(dateTime) {
-            const teacherId = document.getElementById('teacher-id').dataset.teacherId;
-            const date = dateTime.split(' ')[0];
-            
-            fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const studentsUl = document.getElementById('students');
-                    studentsUl.innerHTML = '';
-                    const warningMessage = document.getElementById('warning-message');
-                    const buttonAttend = document.getElementById('buttonAttend');
-                    let ongoingClassFound = false;
-                    
-                    if (data.students.length > 0) {
-                        data.students.forEach(student => {
-                            const li = document.createElement('li');
-                            const startTime = formatTime(student.start_time);
-                            const endTime = formatTime(student.end_time);
-                            const attendanceDateTime = `${date} ${student.start_time}`;
-                            const attendanceEndDateTime = `${date} ${student.end_time}`;
-
-                            li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
-                            li.dataset.status = student.status; // Add status to li data attributes
-                            
-                            if (dateTime >= attendanceDateTime && dateTime <= attendanceEndDateTime) {
-                                li.classList.add('highlighted');
-                                ongoingClassFound = true;
-                                document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}`;
-                                document.getElementById('studentIdInput').value = student.id;
-                                document.getElementById('attendanceIdInput').value = student.attendance_id;
-                                buttonAttend.classList.toggle('hidden', student.status === 'Approved'); // Toggle button visibility based on status
-                            }
-                            studentsUl.appendChild(li);
-                        });
-                    } else {
-                        studentsUl.innerHTML = '<li>No classes for the selected day</li>';
-                    }
-                    warningMessage.style.display = ongoingClassFound ? 'block' : 'none';
-                })
-                .catch(error => console.error('Error fetching students:', error));
-        }
-
-        function formatTime(timeStr) {
-            const [hour, minute, second] = timeStr.split(':');
-            const hourInt = parseInt(hour, 10);
-            const amPm = hourInt >= 12 ? 'PM' : 'AM';
-            const formattedHour = hourInt % 12 || 12;
-            return `${formattedHour}:${minute} ${amPm}`;
         }
     });
 
+    const currentDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
+    fetchStudentsForDate(currentDate);
+
+    function fetchStudentsForDate(dateTime) {
+        const teacherId = document.getElementById('teacher-id').dataset.teacherId;
+        const date = dateTime.split(' ')[0];
+        
+        fetch(`/students-for-date/${date}/?teacher_id=${teacherId}`)
+            .then(response => response.json())
+            .then(data => {
+                const studentsUl = document.getElementById('students');
+                studentsUl.innerHTML = '';
+                const warningMessage = document.getElementById('warning-message');
+                const buttonAttend = document.getElementById('buttonAttend');
+                let ongoingClassFound = false;
+                
+                if (data.students.length > 0) {
+                    data.students.forEach(student => {
+                        console.log('Student Data:', student); // Debugging statement
+                        const li = document.createElement('li');
+                        const startTime = formatTime(student.start_time);
+                        const endTime = formatTime(student.end_time);
+                        const attendanceDateTime = `${date} ${student.start_time}`;
+                        const attendanceEndDateTime = `${date} ${student.end_time}`;
+
+                        li.innerHTML = `Name: ${student.name}, Time: ${startTime} - ${endTime}`;
+                        li.dataset.status = student.status;
+
+                        console.log('Student Status:', student.status); // Debugging statement
+
+                        if (dateTime >= attendanceDateTime && dateTime <= attendanceEndDateTime) {
+                            li.classList.add('highlighted');
+                            ongoingClassFound = true;
+                            document.getElementById('ongoing-class-details').innerText = `Name: ${student.name}, Time: ${startTime} - ${endTime}, Date: ${date}`;
+                            document.getElementById('studentIdInput').value = student.id;
+                            document.getElementById('attendanceIdInput').value = student.attendance_id;
+
+                            if (student.status === 'Approved') {
+                                buttonAttend.classList.add('hidden');
+                            } else if (student.status === 'Pending Verification') {
+                                buttonAttend.classList.remove('hidden');
+                            } else {
+                                buttonAttend.classList.add('hidden');
+                            }
+                        }
+                        studentsUl.appendChild(li);
+                    });
+                    
+                    warningMessage.style.display = ongoingClassFound ? 'block' : 'none';
+                    buttonAttend.classList.toggle('hidden', !ongoingClassFound);
+                } else {
+                    warningMessage.style.display = 'none';
+                    buttonAttend.classList.add('hidden');
+                }
+            })
+            .catch(error => console.error('Error fetching students:', error));
+    }
+
+    function formatTime(time) {
+        const [hours, minutes] = time.split(':');
+        const formattedHours = hours % 12 || 12;
+        const period = hours >= 12 ? 'PM' : 'AM';
+        return `${formattedHours}:${minutes} ${period}`;
+    }
+});
     function highlightSelectedClass(selectedLi) {
         const lis = document.querySelectorAll('#students li');
         lis.forEach(li => {
